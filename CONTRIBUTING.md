@@ -48,51 +48,51 @@ When you open a Pull Request, the PR template includes a CLA checkbox. Simply ch
 7. Open a Pull Request with:
    - A clear description of the changes
    - Reference to any related issues
-   - **CLA checkbox checked** (PRs without this may be delayed/closed) (PRs without this statement may be delayed/closed)
+   - **CLA checkbox checked** (PRs without this may be delayed/closed)
 
 ## Development Setup
 
-### 环境要求 / Requirements
+### Yêu cầu môi trường / Requirements
 
 - Python 3.10+
-- [uv](https://github.com/astral-sh/uv) - Python 包管理器
-- Node.js 16+ 和 npm
-- 有效的 API 密钥（详见 `.env.example`）
+- [uv](https://github.com/astral-sh/uv) - Trình quản lý gói Python (Python package manager)
+- Node.js 16+ và npm
+- Khóa API hợp lệ (xem chi tiết trong `.env.example`)
 
-### 安装步骤 / Installation
+### Các bước cài đặt / Installation
 
 ```bash
-# 克隆代码仓库
+# Sao chép kho mã nguồn (Clone repository)
 git clone https://github.com/Anionex/banana-slides.git
 cd banana-slides
 
-# 安装 uv（如果尚未安装）
+# Cài đặt uv (nếu chưa cài đặt)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 安装后端依赖（在项目根目录运行）
+# Cài đặt phụ thuộc backend (chạy tại thư mục gốc của dự án)
 uv sync
 
-# 配置环境变量
+# Cấu hình biến môi trường
 cp .env.example .env
-# 编辑 .env 文件，配置你的 API 密钥
+# Chỉnh sửa tệp .env và điền khóa API của bạn
 
-# 安装前端依赖
+# Cài đặt phụ thuộc frontend
 cd frontend
 npm install
 ```
 
-### 启动开发服务器 / Start Development Server
+### Khởi động máy chủ phát triển / Start Development Server
 
 ```bash
-# 启动后端（在项目根目录）
+# Khởi động backend (tại thư mục gốc của dự án)
 cd backend
 uv run alembic upgrade head && uv run python app.py
-# 后端运行在 http://localhost:5011
+# Backend chạy tại http://localhost:5011
 
-# 启动前端（新开一个终端）
+# Khởi động frontend (mở một cửa sổ dòng lệnh mới)
 cd frontend
 npm run dev
-# 前端运行在 http://localhost:3011
+# Frontend chạy tại http://localhost:3011
 ```
 
 ## Code Style

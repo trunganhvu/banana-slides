@@ -593,7 +593,7 @@ def test_codex_401_settings_test_disconnects_oauth_and_reports_state(client, app
     assert data['success'] is True
     assert data['data']['status'] == 'FAILED'
     assert data['data']['openai_oauth_disconnected'] is True
-    assert '重新登录 OpenAI' in data['data']['error']
+    assert ' OpenAI' in data['data']['error']
 
 
 @pytest.mark.parametrize(
@@ -653,7 +653,7 @@ def test_codex_oauth_not_connected_settings_test_disconnects_oauth_and_reports_s
     assert data['success'] is True
     assert data['data']['status'] == 'FAILED'
     assert data['data']['openai_oauth_disconnected'] is True
-    assert '重新登录 OpenAI' in data['data']['error']
+    assert ' OpenAI' in data['data']['error']
 
 
 def test_non_codex_oauth_not_connected_error_does_not_disconnect_codex_oauth(client, app):

@@ -9,7 +9,7 @@ const DOCS_URL = 'https://docs.bananaslides.online';
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const { i18n } = useTranslation();
-  const docsLabel = i18n.language?.startsWith('zh') ? '文档' : 'Docs';
+  const docsLabel = !i18n.language?.startsWith('en') ? '' : 'Docs';
 
   return (
     <footer className="relative w-full py-6 px-4 mt-auto">
@@ -19,11 +19,11 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span>© {currentYear}</span>
             <span className="font-medium bg-gradient-to-r from-banana-600 to-orange-500 bg-clip-text text-transparent">
-              蕉幻 Banana Slides
+              Banana Slides Banana Slides
             </span>
           </div>
 
-          {/* Divider - 仅在大屏显示 */}
+          {/* UI element */}
           <span className="hidden sm:inline text-gray-300 dark:text-border-primary">·</span>
 
           {/* GitHub Link */}

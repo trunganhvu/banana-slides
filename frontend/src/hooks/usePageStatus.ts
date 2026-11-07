@@ -1,17 +1,17 @@
 import { useT } from '@/hooks/useT';
 import type { Page, PageStatus } from '@/types';
 
-// usePageStatus hook 自包含翻译
+
 const pageStatusI18n = {
   zh: {
     status: {
-      draft: "草稿", generatingDescription: "描述生成中", descriptionGenerated: "描述已生成", queued: "排队中", generating: "生成中",
-      completed: "已完成", failed: "失败", unknown: "未知",
-      notGeneratedDesc: "未生成描述", noDescription: "还没有生成描述",
-      descGenerated: "描述已生成", notGeneratedImage: "未生成图片",
-      waitingForImage: "等待生成图片", queuedImage: "排队等待生成", generatingImage: "正在生成图片",
-      imageFailed: "图片生成失败", imageCompleted: "图片已生成",
-      statusUnknown: "状态未知", draftStage: "草稿阶段", allCompleted: "全部完成"
+      draft: "Bản nháp", generatingDescription: "Đang tạo mô tả", descriptionGenerated: "Đã tạo mô tả", queued: "Đang chờ", generating: "Đang tạo",
+      completed: "Đã hoàn thành", failed: "Thất bại", unknown: "Không rõ",
+      notGeneratedDesc: "Chưa có mô tả", noDescription: "Chưa tạo mô tả",
+      descGenerated: "Đã tạo mô tả", notGeneratedImage: "Chưa tạo ảnh",
+      waitingForImage: "Chờ tạo ảnh", queuedImage: "Đang xếp hàng chờ tạo", generatingImage: "Đang tạo ảnh",
+      imageFailed: "Tạo ảnh thất bại", imageCompleted: "Ảnh đã được tạo",
+      statusUnknown: "Trạng thái không rõ", draftStage: "Giai đoạn bản nháp", allCompleted: "Đã hoàn thành tất cả"
     }
   },
   en: {

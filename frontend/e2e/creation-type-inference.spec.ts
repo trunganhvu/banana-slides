@@ -1,13 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * createProject 现在优先使用显式传入的 creation_type，只在缺省时才按文本字段推断。
- * 这条路径所有创建方式都会走，所以三种老方式必须保持原有推断结果不变。
+ * createProject  creation_type
+ * 
  */
 
 const CREATE_URL = '**/api/projects';
 
-/** 拦截创建请求，返回捕获到的 payload；用 mock 响应避免真实建项目和后续 AI 调用 */
+/**  payload mock  AI  */
 async function capturePayload(page: Page, act: () => Promise<void>): Promise<any> {
   let body: any = null;
   await page.route(CREATE_URL, async route => {
@@ -30,7 +30,7 @@ async function capturePayload(page: Page, act: () => Promise<void>): Promise<any
 }
 
 async function openHome(page: Page) {
-  // 首次访问会弹出"快速开始"引导弹窗，会挡住下面所有点击
+  // Test verification logic
   await page.addInitScript(() => {
     localStorage.setItem('hasSeenHelpModal', 'true');
   });
@@ -45,66 +45,66 @@ async function selectTab(page: Page, names: RegExp) {
 }
 
 async function fillContent(page: Page, text: string) {
-  // MarkdownTextarea 是 contenteditable div，不是 <textarea>
+  // Test verification logic
   const box = page.locator('[contenteditable="true"]').first();
   await box.waitFor({ state: 'visible', timeout: 10000 });
   await box.click();
   await page.keyboard.insertText(text);
-  // 等 React state 同步（提交按钮靠 content.trim() 解除 disabled）
+  // Test verification logic
   await expect(
-    page.getByRole('button', { name: /^(下一步|Next)$/ }).first()
+    page.getByRole('button', { name: /^(|Next)$/ }).first()
   ).toBeEnabled({ timeout: 10000 });
 }
 
 async function clickCreate(page: Page) {
-  // 提交按钮用的是 common.next（"下一步"），不是 home.actions.createProject
+  // Test verification logic
   await page
-    .getByRole('button', { name: /^(下一步|Next)$/ })
+    .getByRole('button', { name: /^(|Next)$/ })
     .first()
     .click();
 }
 
-test.describe('creation_type 推断', () => {
-  test('一句话生成 -> idea', async ({ page }) => {
+test.describe('creation_type ', () => {
+  test(' -> idea', async ({ page }) => {
     await openHome(page);
-    await selectTab(page, /一句话生成|From Idea/);
-    await fillContent(page, 'AI 发展史');
+    await selectTab(page, /|From Idea/);
+    await fillContent(page, 'AI ');
     const body = await capturePayload(page, () => clickCreate(page));
 
     expect(body.creation_type).toBe('idea');
-    expect(body.idea_prompt).toBe('AI 发展史');
+    expect(body.idea_prompt).toBe('AI ');
     expect(body.outline_text).toBeUndefined();
     expect(body.description_text).toBeUndefined();
   });
 
-  test('从大纲生成 -> outline', async ({ page }) => {
+  test(' -> outline', async ({ page }) => {
     await openHome(page);
-    await selectTab(page, /从大纲生成|From Outline/);
-    await fillContent(page, '第一页：起源');
+    await selectTab(page, /|From Outline/);
+    await fillContent(page, '');
     const body = await capturePayload(page, () => clickCreate(page));
 
     expect(body.creation_type).toBe('outline');
-    expect(body.outline_text).toBe('第一页：起源');
+    expect(body.outline_text).toBe('');
     expect(body.idea_prompt).toBeUndefined();
   });
 
-  test('从描述生成 -> descriptions', async ({ page }) => {
+  test(' -> descriptions', async ({ page }) => {
     await openHome(page);
-    await selectTab(page, /从描述生成|From Description/);
-    await fillContent(page, '第一页：起源，左文右图');
+    await selectTab(page, /|From Description/);
+    await fillContent(page, '');
     const body = await capturePayload(page, () => clickCreate(page));
 
-    // 注意后端用的是复数 descriptions
+    // Test verification logic
     expect(body.creation_type).toBe('descriptions');
-    expect(body.description_text).toBe('第一页：起源，左文右图');
+    expect(body.description_text).toBe('');
     expect(body.idea_prompt).toBeUndefined();
   });
 
-  test('空白项目 -> blank，且不带任何文本字段', async ({ page }) => {
+  test(' -> blank', async ({ page }) => {
     await openHome(page);
     const body = await capturePayload(page, async () => {
       await page
-        .getByRole('button', { name: /或从空白项目开始|Or start from a blank project/ })
+        .getByRole('button', { name: /|Or start from a blank project/ })
         .first()
         .click();
     });

@@ -5,9 +5,9 @@ This demo module provides simple APIs for image editing/generation and text gene
 using the LazyLLM framework, mimicking the style of gemini_genai.py.
 
 Supported Image Providers:
-  - qwen (阿里云通义千问)
-  - doubao (火山引擎豆包)
-  - siliconflow (硅基流动)
+  - qwen ()
+  - doubao ()
+  - siliconflow ()
 
 Supported Text Providers:
   - deepseek
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     # Test 1: Text Generation
     print("\n[Test 1] Text Generation (Deepseek)")
     try:
-        text = gen_text("中国的首都是哪里?")
+        text = gen_text("?")
         print(f"Result: {text[:100]}...")
     except Exception as e:
         print(f"Error: {e}")
@@ -170,7 +170,7 @@ if __name__ == "__main__":
     print("\n[Test 2] JSON Text Generation")
     try:
         json_text = gen_json_text(
-            "随机生成一个JSON文件，包含姓名、年龄、性别三个字段"
+            "JSON"
         )
         print(f"Result: {json_text}")
     except Exception as e:
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     print("\n[Test 3] Image Generation (Qwen)")
     try:
         image = gen_image(
-            "在参考图片中插入 'lazyllm' 这串英文",
+            " 'lazyllm' ",
             ref_image_path='path/to/your/image.png', # depending on your local image path
             source="qwen",
             resolution="2K"

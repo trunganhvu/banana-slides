@@ -11,17 +11,17 @@ Var DataStorageBrowseButton
 
 ; Use LCIDs because electron-builder includes this file before its language constants.
 LangString DataStorageTitle 1033 "Data storage location"
-LangString DataStorageTitle 2052 "数据存储位置"
+LangString DataStorageTitle 2052 "Vị trí lưu trữ dữ liệu"
 LangString DataStorageSubtitle 1033 "Choose where projects and generated files are stored."
-LangString DataStorageSubtitle 2052 "选择项目和生成文件的存储位置。"
+LangString DataStorageSubtitle 2052 "Chọn vị trí lưu trữ dự án và các tệp được tạo. "
 LangString DataStorageDescription 1033 "Banana Slides stores projects, generated images, uploaded files, and export cache in this folder. You can change it later in Settings."
-LangString DataStorageDescription 2052 "Banana Slides 会在此文件夹保存项目、生成图片、上传文件和导出缓存。安装后也可在设置中修改。"
+LangString DataStorageDescription 2052 "Banana Slides sẽ lưu dự án, ảnh đã tạo, tệp tải lên và bộ nhớ đệm xuất trong thư mục này, tạo ảnh, tệp tải lên và bộ nhớ đệm xuất. Sau khi cài đặt cũng có thể thay đổi trong Cài đặt. "
 LangString DataStorageBrowse 1033 "Browse..."
-LangString DataStorageBrowse 2052 "浏览..."
+LangString DataStorageBrowse 2052 "Duyệt..."
 LangString DataStorageBrowsePrompt 1033 "Select the Banana Slides data storage location"
-LangString DataStorageBrowsePrompt 2052 "选择 Banana Slides 数据存储位置"
+LangString DataStorageBrowsePrompt 2052 "Chọn Banana Slides Vị trí lưu trữ dữ liệu"
 LangString DataStorageInvalid 1033 "The selected folder could not be created or is not writable. Choose another data storage location."
-LangString DataStorageInvalid 2052 "无法创建所选文件夹或该文件夹不可写。请选择其他数据存储位置。"
+LangString DataStorageInvalid 2052 "Không thể tạo thư mục đã chọn hoặc thư mục không có quyền ghi. Vui lòng chọn vị trí lưu trữ dữ liệu khác. "
 
 !macro customPageAfterChangeDir
   !insertmacro DataStoragePageDefinitions

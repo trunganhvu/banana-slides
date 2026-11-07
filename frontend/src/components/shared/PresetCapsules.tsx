@@ -9,14 +9,14 @@ import { loadStoredPresets, type StoredPreset } from '@/utils/presetStorage';
 const presetI18n = {
   zh: {
     preset: {
-      addCustom: '自定义',
-      modalTitle: '添加自定义预设',
-      nameLabel: '预设名称',
-      namePlaceholder: '例如：学术风格',
-      contentLabel: '提示词内容',
-      contentPlaceholder: '例如：使用学术论文的严谨表述，引用数据时标注来源',
-      add: '添加',
-      cancel: '取消',
+      addCustom: 'Tùy chỉnh',
+      modalTitle: 'Thêm mẫu thiết lập tùy chỉnh',
+      nameLabel: 'Tên mẫu thiết lập',
+      namePlaceholder: 'ví dụ: Phong cách học thuật',
+      contentLabel: 'Nội dung câu lệnh (Prompt)',
+      contentPlaceholder: 'ví dụ: Sử dụng cách diễn đạt chuẩn mực của bài báo học thuật, Ghi rõ nguồn khi trích dẫn dữ liệu',
+      add: 'Thêm',
+      cancel: 'Hủy',
     },
   },
   en: {
@@ -83,7 +83,7 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const { i18n } = useTranslation();
-  const currentLang = i18n.language?.startsWith('zh') ? 'zh' : 'en';
+  const currentLang = !i18n.language?.startsWith('en') ? 'zh' : 'en';
   const systemPresets = SYSTEM_PRESETS[type][currentLang];
 
   useEffect(() => {

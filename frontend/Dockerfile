@@ -1,15 +1,15 @@
-# 镜像源配置参数（可通过 build args 覆盖）
+# Tham số cấu hình nguồn mirror (có thể ghi đè qua build args)
 ARG DOCKER_REGISTRY=
 ARG NPM_REGISTRY=
 ARG APP_VERSION_TAG=
 ARG APP_COMMIT_SHA=
 ARG APP_COMMIT_SHORT_SHA=
 
-# 构建阶段
-# 如果指定了 DOCKER_REGISTRY，使用镜像源；否则使用官方源
+# Giai đoạn build
+# Nếu chỉ định DOCKER_REGISTRY thì dùng mirror; ngược lại dùng nguồn chính thức
 FROM ${DOCKER_REGISTRY:-}node:18-alpine AS builder
 
-# 重新声明ARG（FROM之后ARG作用域失效，需要重新声明）
+# Khai báo lại ARG (sau FROM phạm vi ARG bị đặt lại)
 ARG NPM_REGISTRY=
 ARG APP_VERSION_TAG=
 ARG APP_COMMIT_SHA=
@@ -20,36 +20,35 @@ ENV VITE_APP_COMMIT_SHORT_SHA=${APP_COMMIT_SHORT_SHA}
 
 WORKDIR /app
 
-# 复制 package.json
+# Sao chép package.json
 COPY frontend/package.json ./
 
-# 安装依赖（如果配置了 NPM_REGISTRY，先设置镜像源）
+# Cài đặt phụ thuộc (nếu cấu hình NPM_REGISTRY thì đặt nguồn mirror trước)
 COPY frontend/package-lock.json* ./
 RUN if [ -n "$NPM_REGISTRY" ]; then \
         npm config set registry "$NPM_REGISTRY"; \
     fi && \
     (npm install --frozen-lockfile || npm install)
 
-# 复制前端源代码
+# Sao chép mã nguồn frontend
 COPY frontend/ ./
 
-# 构建应用
-# Web deployments must resolve entry assets from the origin on nested routes.
-# Keep the default relative-base build for Electron's local file loading.
+# Dựng ứng dụng
+# Triển khai web cần phân giải tài nguyên từ gốc trên các đường dẫn lồng nhau.
 RUN npm run build:web
 
-# 生产阶段
-# 如果指定了 DOCKER_REGISTRY，使用镜像源；否则使用官方源
+# Giai đoạn production
+# Nếu chỉ định DOCKER_REGISTRY thì dùng mirror; ngược lại dùng nguồn chính thức
 FROM ${DOCKER_REGISTRY:-}nginx:alpine
 
-# 复制构建产物到 nginx
+# Sao chép sản phẩm build sang nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 复制 nginx 配置文件
+# Sao chép tệp cấu hình nginx
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-# 暴露端口
+# Mở cổng
 EXPOSE 80
 
-# 启动 nginx
+# Khởi động nginx
 CMD ["nginx", "-g", "daemon off;"]

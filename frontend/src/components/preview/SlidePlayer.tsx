@@ -7,17 +7,17 @@ import type { Page } from '@/types';
 const playerI18n = {
   zh: {
     player: {
-      playing: '播放中',
-      exitPlayer: '退出播放',
-      exitPlayerFs: '退出播放',
-      fullscreen: '全屏播放',
-      exitFullscreen: '退出全屏',
-      prevPage: '上一页',
-      nextPage: '下一页',
-      notGenerated: '尚未生成图片',
-      queued: '排队等待生成...',
-      generating: '正在生成中...',
-      fullscreenUnavailable: '当前环境不支持全屏，请稍后再试',
+      playing: "Playing",
+      exitPlayer: "Exit presentation",
+      exitPlayerFs: "Exit presentation",
+      fullscreen: "Fullscreen",
+      exitFullscreen: "Exit fullscreen",
+      prevPage: "Previous slide",
+      nextPage: "Next slide",
+      notGenerated: "Image not generated yet",
+      queued: "Queued for generation...",
+      generating: "Đang tạo...",
+      fullscreenUnavailable: "Fullscreen is not supported in this environment",
     },
   },
   en: {
@@ -46,9 +46,9 @@ interface SlidePlayerProps {
   onIndexChange?: (index: number) => void;
 }
 
-/** 顶部栏 + 底部控制条 + 上下留白占用的纵向空间（px） */
+/* Component logic */
 const VERTICAL_RESERVED = 168;
-/** 真全屏下控制条无操作自动隐藏的延迟（ms） */
+/* Component logic */
 const HIDE_CONTROLS_DELAY = 2500;
 
 function parseAspectRatio(aspectRatio: string): number {
@@ -84,7 +84,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
   const errorTimerRef = useRef<number | null>(null);
   const hideTimerRef = useRef<number | null>(null);
 
-  // 每次打开都从调用方指定的当前页开始
+  // Component logic
   useEffect(() => {
     if (open) setIndex(initialIndex);
   }, [open, initialIndex]);
@@ -101,12 +101,12 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
   const prev = useCallback(() => goTo(clampedIndex - 1), [goTo, clampedIndex]);
   const next = useCallback(() => goTo(clampedIndex + 1), [goTo, clampedIndex]);
 
-  // 播放中把页码同步给宿主页面，退出后主预览区停留在最后播放的页
+  // Component logic
   useEffect(() => {
     if (open) onIndexChange?.(clampedIndex);
   }, [open, clampedIndex, onIndexChange]);
 
-  // 键盘：←/→ 翻页，Esc 退出播放（原生全屏时 Esc 由浏览器先退出全屏）
+  // Component logic
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -124,7 +124,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, next, prev, onClose]);
 
-  // 同步浏览器原生全屏状态（用户按 Esc 退出原生全屏时回到近似全屏）
+  // Component logic
   useEffect(() => {
     if (!open) return;
     const handler = () => setIsNativeFullscreen(!!document.fullscreenElement);
@@ -132,7 +132,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
     return () => document.removeEventListener('fullscreenchange', handler);
   }, [open]);
 
-  // 打开时刷新一次视口尺寸（避免沿用上次会话的陈旧值），随后跟随 resize
+  // Component logic
   useEffect(() => {
     if (!open) return;
     setViewport({ w: window.innerWidth, h: window.innerHeight });
@@ -141,7 +141,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
     return () => window.removeEventListener('resize', onResize);
   }, [open]);
 
-  // 真全屏（PPT 放映观感）：控制条平时隐藏，鼠标/触摸移动时短暂出现
+  // Component logic
   useEffect(() => {
     if (!open || !isNativeFullscreen) {
       setControlsVisible(true);
@@ -164,7 +164,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
     };
   }, [open, isNativeFullscreen]);
 
-  // 焦点陷阱：Tab 在播放器内循环，避免焦点逃逸到背景页面
+  // Component logic
   useEffect(() => {
     if (!open) return;
     const root = playerRef.current;
@@ -183,8 +183,8 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
       const last = items[items.length - 1];
       const active = document.activeElement;
       const inRoot = !!active && root.contains(active);
-      // 焦点在 overlay 内但落在 items 之外（如 pending 期间被禁用的按钮）时同样回绕，
-      // 否则浏览器默认 Tab 会把焦点送出 overlay
+      // Component logic
+      // Component logic
       const inItems = inRoot && !!active && items.includes(active as HTMLElement);
       if (e.shiftKey && (!inItems || active === first)) {
         e.preventDefault();
@@ -194,20 +194,20 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
         first.focus();
       }
     };
-    // capture 阶段挂在 document：进入原生全屏后焦点可能落在 body/root 之外，
-    // 此时 keydown 不经过 playerRef，仍要兜住 Tab 防止焦点逃逸
+    // Component logic
+    // Component logic
     document.addEventListener('keydown', onTab, true);
     return () => document.removeEventListener('keydown', onTab, true);
   }, [open]);
 
-  // 关闭播放时若仍在原生全屏，先退出全屏
+  // Component logic
   useEffect(() => {
     if (!open && document.fullscreenElement) {
       document.exitFullscreen?.().catch(() => {});
     }
   }, [open]);
 
-  // 全屏失败提示自动消失
+  // Component logic
   useEffect(() => {
     if (!fullscreenError) return;
     errorTimerRef.current = window.setTimeout(() => setFullscreenError(false), 2500);
@@ -262,7 +262,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
       aria-label={t('player.playing')}
       className="fixed inset-0 z-[100] flex flex-col bg-black select-none"
     >
-      {/* 顶部：播放标识 + 退出 */}
+      {/* UI element */}
       <header
         data-testid="player-header"
         className={`flex flex-shrink-0 items-center justify-between px-4 py-3 md:px-6 ${
@@ -296,7 +296,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
         </div>
       )}
 
-      {/* 画面区：等比缩放居中；真全屏时铺满整个屏幕（PPT 放映观感） */}
+      {/* UI element */}
       <div
         className={`flex min-h-0 flex-1 items-center justify-center ${
           isNativeFullscreen ? 'w-full' : 'px-4 md:px-8'
@@ -338,7 +338,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
               </div>
             </div>
           )}
-          {/* 点击翻页：左 1/3 上一页，右 2/3 下一页（PowerPoint 习惯） */}
+          {/* UI element */}
           <div className="absolute inset-0 flex">
             <button
               type="button"
@@ -360,7 +360,7 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
         </div>
       </div>
 
-      {/* 底部控制条：真全屏时悬浮在画面上、无操作自动隐藏 */}
+      {/* UI element */}
       <footer
         className={`flex items-center justify-center px-4 pb-4 pt-2 transition-[opacity,visibility] duration-300 ${
           isNativeFullscreen ? 'absolute inset-x-0 bottom-0 z-10' : 'flex-shrink-0'

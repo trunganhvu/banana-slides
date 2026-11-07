@@ -1,14 +1,14 @@
 /**
- * Zustand Store 测试
+ * Zustand Store 
  * 
- * 测试useProjectStore的核心状态管理功能
+ * useProjectStore
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useProjectStore } from '@/store/useProjectStore'
 
-// Mock API模块
+// Test verification logic
 vi.mock('@/api/endpoints', () => ({
   createProject: vi.fn(),
   getProject: vi.fn(),
@@ -30,7 +30,7 @@ import { deleteTemplateAsset, uploadTemplateAsset, generateOutlineStream } from 
 
 describe('useProjectStore', () => {
   beforeEach(() => {
-    // 重置store状态
+    // Test verification logic
     const { result } = renderHook(() => useProjectStore())
     act(() => {
       result.current.setCurrentProject(null)
@@ -40,7 +40,7 @@ describe('useProjectStore', () => {
     })
   })
 
-  describe('初始状态', () => {
+  describe('', () => {
     it('should initialize with default state', () => {
       const { result } = renderHook(() => useProjectStore())
       
@@ -51,7 +51,7 @@ describe('useProjectStore', () => {
     })
   })
 
-  describe('基础Setters', () => {
+  describe('Setters', () => {
     it('should set current project correctly', () => {
       const { result } = renderHook(() => useProjectStore())
       const mockProject = { 
@@ -101,11 +101,11 @@ describe('useProjectStore', () => {
     })
   })
 
-  describe('本地页面更新', () => {
+  describe('', () => {
     it('should update page locally (optimistic update)', () => {
       const { result } = renderHook(() => useProjectStore())
       
-      // 先设置项目
+      // Test verification logic
       const mockProject = {
         id: 'proj-123',
         status: 'DRAFT',
@@ -119,20 +119,20 @@ describe('useProjectStore', () => {
         result.current.setCurrentProject(mockProject as any)
       })
       
-      // 更新页面
+      // Test verification logic
       act(() => {
         result.current.updatePageLocal('page-1', { 
           outline_content: { title: 'Updated Page 1', points: ['new point'] }
         })
       })
       
-      // 验证乐观更新
+      // Test verification logic
       const updatedPage = result.current.currentProject?.pages.find(p => p.id === 'page-1')
       expect(updatedPage?.outline_content?.title).toBe('Updated Page 1')
     })
   })
 
-  describe('模板资产删除', () => {
+  describe('', () => {
     it('should bind uploaded template by page_id and clear stale match metadata', async () => {
       vi.mocked(uploadTemplateAsset).mockResolvedValue({
         data: {
@@ -220,18 +220,18 @@ describe('useProjectStore', () => {
     })
   })
 
-  describe('清除状态', () => {
+  describe('', () => {
     it('should clear project by setting null', () => {
       const { result } = renderHook(() => useProjectStore())
       
-      // 先设置项目
+      // Test verification logic
       act(() => {
         result.current.setCurrentProject({ id: '123', pages: [] } as any)
       })
       
       expect(result.current.currentProject).not.toBeNull()
       
-      // 清除
+      // Test verification logic
       act(() => {
         result.current.setCurrentProject(null)
       })
@@ -241,7 +241,7 @@ describe('useProjectStore', () => {
   })
 })
 
-describe('useProjectStore 流式大纲项目隔离', () => {
+describe('useProjectStore ', () => {
   const projectA = { id: 'proj-a', status: 'DRAFT', pages: [], created_at: '2026-01-01T00:00:00' }
   const projectB = { id: 'proj-b', status: 'DRAFT', pages: [], created_at: '2026-01-01T00:00:00' }
 
@@ -255,7 +255,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     })
   })
 
-  it('离开项目后，该项目的流式失败不设置错误、不抛出并返回 active=false', async () => {
+  it(' active=false', async () => {
     const { result } = renderHook(() => useProjectStore())
     let rejectStream!: (err: Error) => void
     vi.mocked(generateOutlineStream).mockImplementationOnce(
@@ -267,7 +267,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     let pending!: Promise<{ complete: boolean; active: boolean } | undefined>
     act(() => { pending = result.current.generateOutlineStream() })
 
-    // 流未结束时切到另一个项目
+    // Test verification logic
     act(() => { result.current.setCurrentProject(projectB as any) })
 
     await act(async () => {
@@ -281,7 +281,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     expect(result.current.currentProject?.id).toBe('proj-b')
   })
 
-  it('流进行中切到其他项目时，页面与完成回调不写入当前项目', async () => {
+  it('', async () => {
     const { result } = renderHook(() => useProjectStore())
     let emitPage!: (page: any) => void
     let emitDone!: (data: any) => void
@@ -298,25 +298,25 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     let pending!: Promise<{ complete: boolean; active: boolean } | undefined>
     act(() => { pending = result.current.generateOutlineStream() })
 
-    // 流未结束时切到另一个项目
+    // Test verification logic
     act(() => { result.current.setCurrentProject(projectB as any) })
 
     await act(async () => {
-      // 页面事件与完成事件现在才到达，且当前项目是 B
+      // Test verification logic
       emitPage({ index: 0, title: 'Source page', points: ['p'] })
       emitDone({ total: 1, complete: true, pages: [{ id: 'real-1', order_index: 0, outline_content: { title: 'Source page', points: ['p'] } }] })
       resolveStream()
       await expect(pending).resolves.toEqual({ complete: true, active: false })
     })
 
-    // B 的页面保持不变，错误状态保持为空
+    // Test verification logic
     expect(result.current.currentProject?.id).toBe('proj-b')
     expect(result.current.currentProject?.pages).toHaveLength(0)
     expect(result.current.error).toBeNull()
     expect(result.current.isOutlineStreaming).toBe(false)
   })
 
-  it('SSE error 事件在切走项目后到达时不设置错误、不抛出', async () => {
+  it('SSE error ', async () => {
     const { result } = renderHook(() => useProjectStore())
     let emitError!: (message: string) => void
     let resolveStream!: () => void
@@ -331,7 +331,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     let pending!: Promise<{ complete: boolean; active: boolean } | undefined>
     act(() => { pending = result.current.generateOutlineStream() })
 
-    // 流未结束时切到另一个项目
+    // Test verification logic
     act(() => { result.current.setCurrentProject(projectB as any) })
 
     await act(async () => {
@@ -345,7 +345,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     expect(result.current.currentProject?.pages).toHaveLength(0)
   })
 
-  it('两个项目可同时流式生成，A 结束后 B 仍保持 streaming', async () => {
+  it('A  B  streaming', async () => {
     const { result } = renderHook(() => useProjectStore())
     const resolvers: Array<() => void> = []
     vi.mocked(generateOutlineStream).mockImplementation(
@@ -364,18 +364,18 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     expect([...result.current.outlineStreamingProjectIds].sort()).toEqual(['proj-a', 'proj-b'])
     expect(result.current.isOutlineStreaming).toBe(true)
 
-    // A 先完成：只清理 A，B 仍在流式
+    // Test verification logic
     await act(async () => { resolvers[0](); await pendingA })
     expect(result.current.outlineStreamingProjectIds).toEqual(['proj-b'])
     expect(result.current.isOutlineStreaming).toBe(true)
 
-    // B 完成：全部清理
+    // Test verification logic
     await act(async () => { resolvers[1](); await pendingB })
     expect(result.current.outlineStreamingProjectIds).toEqual([])
     expect(result.current.isOutlineStreaming).toBe(false)
   })
 
-  it('停留在发起项目时，流式失败仍设置错误并抛出', async () => {
+  it('', async () => {
     const { result } = renderHook(() => useProjectStore())
     let rejectStream!: (err: Error) => void
     vi.mocked(generateOutlineStream).mockImplementationOnce(
@@ -396,7 +396,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     expect(result.current.isOutlineStreaming).toBe(false)
   })
 
-  it('同项目已有流式任务时，重复调用直接返回', async () => {
+  it('', async () => {
     const { result } = renderHook(() => useProjectStore())
     let resolveStream!: () => void
     vi.mocked(generateOutlineStream).mockImplementationOnce(
@@ -410,7 +410,7 @@ describe('useProjectStore 流式大纲项目隔离', () => {
     expect(second).toBeUndefined()
     expect(vi.mocked(generateOutlineStream)).toHaveBeenCalledTimes(1)
 
-    // 收尾后状态复位
+    // Test verification logic
     resolveStream()
     await act(async () => { await first })
     expect(result.current.isOutlineStreaming).toBe(false)

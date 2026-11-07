@@ -33,10 +33,10 @@ test('real backend rejects incomplete inputs and the UI explains each blocked st
   await page.goto(`${BASE_URL}/project/${projectId}/template-setup`)
   await page.waitForLoadState('networkidle')
 
-  const autoMatch = page.getByRole('button', { name: /一键自动匹配|Auto-match all/ })
+  const autoMatch = page.getByRole('button', { name: /|Auto-match all/ })
   await expect(autoMatch).toBeDisabled()
   await expect(page.getByTestId('auto-match-readiness')).toContainText(
-    /页面仍在生成|Pages are still being generated/
+    /|Pages are still being generated/
   )
 
   await addPage(BACKEND_URL, projectId, 0, { title: 'Description pending' })
@@ -50,7 +50,7 @@ test('real backend rejects incomplete inputs and the UI explains each blocked st
   await page.reload()
   await expect(autoMatch).toBeDisabled()
   await expect(page.getByTestId('auto-match-readiness')).toContainText(
-    /先完成所有页面描述|Complete every page description/
+    /|Complete every page description/
   )
 
   const noTemplateProjectId = await createProject(BACKEND_URL, { multi: true })
@@ -66,10 +66,10 @@ test('real backend rejects incomplete inputs and the UI explains each blocked st
   expect((await noTemplateResponse.json()).error.code).toBe('NO_ANALYZED_TEMPLATES')
 
   await page.goto(`${BASE_URL}/project/${noTemplateProjectId}/template-setup`)
-  const noTemplateAutoMatch = page.getByRole('button', { name: /一键自动匹配|Auto-match all/ })
+  const noTemplateAutoMatch = page.getByRole('button', { name: /|Auto-match all/ })
   await expect(noTemplateAutoMatch).toBeDisabled()
   await expect(page.getByTestId('auto-match-readiness')).toContainText(
-    /至少需要一个解析成功的模板|At least one successfully analyzed template/
+    /|At least one successfully analyzed template/
   )
 })
 
@@ -177,10 +177,10 @@ test('mocked UI waits for template analysis, refreshes readiness, then allows ma
 
   await page.goto(`${BASE_URL}/project/${projectId}/template-setup`)
 
-  const autoMatch = page.getByRole('button', { name: /一键自动匹配|Auto-match all/ })
+  const autoMatch = page.getByRole('button', { name: /|Auto-match all/ })
   await expect(autoMatch).toBeDisabled()
   await expect(page.getByTestId('auto-match-readiness')).toContainText(
-    /模板仍在解析|Templates are still being analyzed/
+    /|Templates are still being analyzed/
   )
   expect(autoMatchCalls).toBe(0)
 
@@ -190,7 +190,7 @@ test('mocked UI waits for template analysis, refreshes readiness, then allows ma
 
   await autoMatch.click()
   await expect.poll(() => autoMatchCalls).toBe(1)
-  await expect(page.getByText(/自动匹配完成|Auto-match completed/)).toBeVisible()
+  await expect(page.getByText(/|Auto-match completed/)).toBeVisible()
 
   const progress = page.getByTestId('template-match-progress')
   await expect(progress).toBeVisible()

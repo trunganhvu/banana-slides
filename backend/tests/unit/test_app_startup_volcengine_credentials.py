@@ -73,7 +73,7 @@ def test_startup_loader_restores_volcengine_credentials(monkeypatch):
     assert flask_app.config['AI_PROVIDER_FORMAT'] == 'volcengine'
     assert flask_app.config['VOLCENGINE_API_BASE'] == 'https://ark.cn-beijing.volces.com/api/plan/v3'
     assert flask_app.config['VOLCENGINE_API_KEY'] == 'db-saved-volcengine-key'
-    # 与保存时一致: 非活动 provider 的配置不得被 DB 值污染
+    # Test verification logic
     assert 'OPENAI_API_BASE' not in flask_app.config
     assert 'OPENAI_API_KEY' not in flask_app.config
     assert 'GOOGLE_API_BASE' not in flask_app.config
@@ -108,17 +108,17 @@ def test_startup_loader_does_not_pollute_volcengine_keys_for_other_formats(monke
         ),
     )
 
-    # 全局 provider 是 gemini 时, 启动同步不得把 gemini 的 base/key 写进 VOLCENGINE_*,
-    # 否则 per-model volcengine 调用会命中 Google 端点并使用错误的 key
+    # Test verification logic
+    # Test verification logic
     assert 'VOLCENGINE_API_BASE' not in flask_app.config
     assert 'VOLCENGINE_API_KEY' not in flask_app.config
-    # gemini 是活动 provider, 应正常同步
+    # Test verification logic
     assert flask_app.config['GOOGLE_API_BASE'] == 'https://generativelanguage.googleapis.com'
     assert flask_app.config['GOOGLE_API_KEY'] == 'db-saved-gemini-key'
 
 
 def test_startup_loader_does_not_pollute_openai_keys_for_volcengine_format(monkeypatch):
-    """Volcengine 全局设置不得污染 per-model openai/gemini 的 app.config 值."""
+    """ Test docstring """
     flask_app = _load_settings_into_flask_app(
         monkeypatch,
         _fake_settings(

@@ -26,42 +26,42 @@ import type { DescriptionContent, Material, Page, TemplateAsset } from '@/types'
 const drawerI18n = {
   zh: {
     props: {
-      title: '页面属性',
-      close: '收起属性面板',
-      open: '展开页面属性',
-      resize: '拖动调整面板宽度',
-      saving: '保存中',
-      saved: '已保存',
-      section: { content: '内容', template: '模板', meta: '信息' },
-      pageTitle: '标题',
-      pageTitlePlaceholder: '输入页面标题',
-      part: '所属章节',
-      partPlaceholder: '未分组',
-      description: '页面描述',
-      descriptionPlaceholder: '输入页面描述, 可包含页面文字、素材、排版设计等信息，支持粘贴图片',
-      notInImagePrompt: '不影响图片生成',
-      narration: '旁白讲稿',
-      narrationHint: '导出讲解视频时朗读，留空则由导出流程自动生成',
-      narrationPlaceholder: '还没有讲稿，可在此撰写',
-      templateChange: '更换',
-      templateLabel: '模板图片',
-      templateStyle: '模板提示词',
-      templateStylePlaceholder: '用文字描述这一页想要的版式与风格',
-      templateNone: '跟随项目模板',
-      templateAuto: 'AI 自动匹配',
-      templateManual: '手动指定',
-      templateBatch: '批量应用',
-      templateSetup: '批量配置模板',
-      pageIndex: '页码',
-      pageIndexValue: '第 {{index}} / {{total}} 页',
-      versions: '图片版本',
-      versionsValue: '{{count}} 个',
-      updatedAt: '更新时间',
-      createdAt: '创建时间',
-      emptyTitle: '没有选中的页面',
-      emptyHint: '在左侧选择一页后即可查看并修改它的属性',
-      templateSaveFailed: '模板保存失败',
-      templateChanged: '已更换这一页的模板',
+      title: "Page Properties",
+      close: "Collapse properties panel",
+      open: "Show page properties",
+      resize: "Drag to resize the panel",
+      saving: "Saving",
+      saved: "Saved",
+      section: { content: "Content", template: "Mẫu phong cách", meta: "Info" },
+      pageTitle: "Tiêu đề",
+      pageTitlePlaceholder: "Enter page title",
+      part: "Section",
+      partPlaceholder: "Ungrouped",
+      description: "Description",
+      descriptionPlaceholder: "Enter page description — page text, materials, layout notes; you can paste images",
+      notInImagePrompt: "Không dùng khi tạo ảnh",
+      narration: "Narration script",
+      narrationHint: "Read aloud when exporting a narration video; leave empty and the export generates one",
+      narrationPlaceholder: "No script yet — write one here",
+      templateChange: "Change",
+      templateLabel: "Template image",
+      templateStyle: "Template prompt",
+      templateStylePlaceholder: "Describe the layout and style you want for this page",
+      templateNone: "Inherits project template",
+      templateAuto: "AI matched",
+      templateManual: "Manually set",
+      templateBatch: "Batch applied",
+      templateSetup: "Bulk template setup",
+      pageIndex: "Position",
+      pageIndexValue: "Page {{index}} of {{total}}",
+      versions: "Image versions",
+      versionsValue: '{{count}} ',
+      updatedAt: "Updated",
+      createdAt: "Created",
+      emptyTitle: "No page selected",
+      emptyHint: "Pick a slide on the left to view and edit its properties",
+      templateSaveFailed: "Could not save the template",
+      templateChanged: "Template changed for this page",
     },
   },
   en: {
@@ -142,13 +142,23 @@ export const getDescriptionText = (description?: DescriptionContent | null): str
  * has to guard again.
  */
 export const getExtraFields = (description?: DescriptionContent | null): Record<string, string> => {
+  const LEGACY_MAP: Record<string, string> = {
+    '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+    '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+    '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+    '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
+    '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
+    '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
+    '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
+  };
+  const normKey = (k: string) => LEGACY_MAP[k] || k;
   const toText = (value: unknown) => (typeof value === 'string' ? value : String(value ?? ''));
   const normalize = (fields: Record<string, unknown>): Record<string, string> =>
-    Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, toText(value)]));
+    Object.fromEntries(Object.entries(fields).map(([key, value]) => [normKey(key), toText(value)]));
 
   if (!description) return {};
   if (description.extra_fields) return normalize(description.extra_fields);
-  if (description.layout_suggestion) return { 排版建议: toText(description.layout_suggestion) };
+  if (description.layout_suggestion) return { 'Gợi ý bố cục': toText(description.layout_suggestion) };
   return {};
 };
 
@@ -340,7 +350,7 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
   ]);
 
   const busy = isSaving || isSavingTemplate;
-  // Surface "已保存" for a moment once the queue drains.
+  // Component logic
   useEffect(() => {
     if (busy) {
       wasSavingRef.current = true;
@@ -426,7 +436,7 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
   }, []);
 
   // Settings order first, then fields already on the page that settings dropped.
-  const allFieldNames = [...new Set([...extraFieldNames, ...Object.keys(serverExtraFields)])];
+  const allFieldNames = [...new Set([...extraFieldNames.map(normKey), ...Object.keys(serverExtraFields).map(normKey)])];
 
   // ---- per-page template ----
   const templateAsset = page?.template_asset_id
@@ -577,10 +587,10 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
         style={{ width: isOpen ? width : 0 }}
         className={cn(
           'flex min-h-0 flex-shrink-0 flex-col overflow-hidden border-gray-200 bg-white dark:border-border-primary dark:bg-background-secondary',
-          // md+ 桌面布局中抽屉是文档流内的普通兄弟节点，不需要 z-40；否则会盖住顶栏下拉层
+          // Component logic
           'fixed inset-y-0 right-0 z-40 max-w-[88vw] shadow-2xl md:relative md:z-auto md:max-w-none md:shadow-none',
           !isDragging && 'transition-[width] duration-300 ease-out',
-          // 收起时不能留下 1px 边框，否则预览区右侧会有一条竖线
+          // Component logic
           isOpen ? 'md:border-l' : 'pointer-events-none'
         )}
       >

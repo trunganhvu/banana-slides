@@ -6,18 +6,43 @@ import { Button, Footer } from '@/components/shared';
 import { useT } from '@/hooks/useT';
 import logoUrl from '@/assets/logo.png';
 
-// 组件内翻译
+// Component translations
 const landingI18n = {
   zh: {
     landing: {
-      nav: { enter: "进入应用" },
+      nav: { enter: "Vào ứng dụng" },
       hero: {
-        badge: "新一代 AI 演示文稿生成器",
-        title_start: "让创意",
-        title_highlight: "瞬间落地",
-        title_end: "无需繁琐排版",
-        subtitle: "专注于您的内容与想法，剩下的交给 Banana Slides。从大纲到精美幻灯片，只需几分钟。",
-        cta_primary: "免费开始使用"
+        badge: "Thế hệ trình tạo bài thuyết trình AI mới",
+        title_start: "Biến ý tưởng",
+        title_highlight: "thành hiện thực ngay tức thì",
+        title_end: "không cần chỉnh bố cục phức tạp",
+        subtitle: "Tập trung vào nội dung và ý tưởng của bạn, phần còn lại hãy để Banana Slides lo. Từ dàn ý đến slide tuyệt đẹp chỉ trong vài phút.",
+        cta_primary: "Bắt đầu miễn phí"
+      },
+      features: {
+        title: "Tạo bài thuyết trình nhanh chóng và thanh lịch",
+        subtitle: "Được thiết kế cho diễn giả, nhà quản lý sản phẩm và nhà sáng tạo nội dung",
+        f1_title: "Tạo một chạm",
+        f1_desc: "Chỉ cần một câu chủ đề hoặc dàn ý đơn giản, AI sẽ hoàn thành bài thuyết trình hoàn chỉnh.",
+        f2_title: "Chỉnh sửa tự nhiên",
+        f2_desc: "Tương tác với AI như trò chuyện để sửa đổi văn bản, phong cách hoặc thay thế hình ảnh.",
+        f3_title: "Chỉnh sửa vùng cục bộ",
+        f3_desc: "Khoanh vùng bất kỳ khu vực nào trên slide để vẽ lại, tinh chỉnh hoặc thêm chi tiết.",
+        f4_title: "Xuất đa định dạng",
+        f4_desc: "Hỗ trợ xuất sang PPTX có thể chỉnh sửa, PDF độ nét cao và hình ảnh chất lượng gốc."
+      },
+      stats: {
+        users: "Người dùng tích cực",
+        slides: "Slide đã tạo",
+        rating: "Đánh giá tích cực"
+      },
+      cta: {
+        title: "Sẵn sàng nâng tầm bài thuyết trình của bạn?",
+        subtitle: "Trải nghiệm sức mạnh tạo slide bằng AI ngay hôm nay.",
+        button: "Bắt đầu tạo ngay"
+      },
+      footer: {
+        rights: "Đã đăng ký bản quyền."
       }
     }
   },
@@ -86,13 +111,13 @@ export const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-background-primary relative overflow-hidden flex flex-col font-sans">
-      {/* 动态背景 */}
+      {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-banana-100/40 to-transparent dark:from-banana-900/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 animate-float-slow"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-orange-100/40 to-transparent dark:from-orange-900/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 animate-float-delayed"></div>
       </div>
 
-      {/* 导航栏 */}
+      {/* Navigation bar */}
       <nav className="relative z-50 w-full px-6 py-6 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <img src={logoUrl} alt="Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain rounded-lg shadow-sm" />
@@ -102,10 +127,10 @@ export const Landing: React.FC = () => {
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
+            onClick={() => i18n.changeLanguage(i18n.language?.startsWith('en') ? 'vi' : 'en')}
             className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
           >
-            {i18n.language?.startsWith('zh') ? 'EN' : '中'}
+            {i18n.language?.startsWith('en') ? 'VI' : 'EN'}
           </button>
           <Button 
             variant="primary" 
@@ -118,7 +143,7 @@ export const Landing: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero 区域 */}
+      {/* Hero section */}
       <main className="flex-1 relative z-10 flex flex-col justify-center max-w-7xl mx-auto px-6 py-12 lg:py-20 text-center">
         <div className="space-y-8 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 text-sm font-medium mx-auto backdrop-blur-sm shadow-sm">
@@ -165,9 +190,9 @@ export const Landing: React.FC = () => {
             </a>
           </div>
 
-          {/* 案例展示区域 (Carousel) */}
+          {/* Case presentation (Carousel) */}
           <div className="relative mt-20 mx-auto max-w-5xl rounded-2xl overflow-hidden shadow-2xl border border-gray-200/50 dark:border-white/10 bg-white dark:bg-gray-900 animate-float-slow group">
-            {/* 顶部标题栏模拟 */}
+            {/* Top header mockup */}
             <div className="h-8 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center px-4 gap-2">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
@@ -191,7 +216,7 @@ export const Landing: React.FC = () => {
                 />
               ))}
               
-              {/* 左右切换按钮 */}
+              {/* Previous/Next buttons */}
               <button 
                 className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg backdrop-blur-sm"
                 onClick={() => setCurrentShowcase((prev) => (prev === 0 ? showcaseKeys.length - 1 : prev - 1))}
@@ -205,7 +230,7 @@ export const Landing: React.FC = () => {
                 <ChevronRight size={24} />
               </button>
 
-              {/* 底部指示器 */}
+              {/* Bottom indicators */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                 {showcaseKeys.map((_, idx) => (
                   <button
@@ -224,7 +249,7 @@ export const Landing: React.FC = () => {
         </div>
       </main>
 
-      {/* 特性区域 */}
+      {/* Features section */}
       <div className="relative z-10 bg-white dark:bg-black/20">
         {features.map((feature, idx) => (
           <section 
@@ -237,7 +262,7 @@ export const Landing: React.FC = () => {
               <div className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-24 ${
                 idx % 2 === 1 ? 'lg:flex-row-reverse' : ''
               }`}>
-                {/* 文本区域 */}
+                {/* Text area */}
                 <div className="flex-1 space-y-6">
                   <div className={`inline-flex p-3 rounded-2xl ${feature.bg} shadow-sm`}>
                     {feature.icon}
@@ -249,7 +274,7 @@ export const Landing: React.FC = () => {
                     {t(`help.features.${feature.key}.description`)}
                   </p>
                   
-                  {/* 详情列表 */}
+                  {/* Details list */}
                   <ul className="space-y-4 pt-4">
                     {(t(`help.features.${feature.key}.details`, { returnObjects: true }) as string[])?.map((detail: string, i: number) => (
                       <li key={i} className="flex items-start gap-3">
@@ -260,18 +285,18 @@ export const Landing: React.FC = () => {
                   </ul>
                 </div>
 
-                {/* 视觉区域 */}
+                {/* Visual area */}
                 <div className="flex-1 w-full max-w-lg lg:max-w-none">
                   <div className={`aspect-square rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-white/10 ${feature.bg} bg-opacity-30 dark:bg-opacity-10 backdrop-blur-sm flex items-center justify-center relative group hover:scale-[1.02] transition-transform duration-500`}>
-                    {/* 装饰背景 */}
+                    {/* Decorative background */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 dark:to-transparent" />
                     
-                    {/* 中心图标/内容 */}
+                    {/* Center icon/content */}
                     <div className="relative z-10 transform transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
                       {React.cloneElement(feature.icon as React.ReactElement, { size: 120, strokeWidth: 1.5 })}
                     </div>
 
-                    {/* 装饰元素 */}
+                    {/* Decorative elements */}
                     <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-current opacity-10 rounded-full blur-2xl animate-pulse" style={{ color: feature.icon.props.className.includes('yellow') ? '#EAB308' : feature.icon.props.className.includes('blue') ? '#3B82F6' : feature.icon.props.className.includes('green') ? '#22C55E' : '#A855F7' }} />
                   </div>
                 </div>

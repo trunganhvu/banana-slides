@@ -117,7 +117,7 @@ def create_app():
         handlers=[logging.StreamHandler(sys.stdout)],
     )
     
-    # 设置第三方库的日志级别，避免过多的DEBUG日志
+    # Backend logic
     logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
     logging.getLogger('httpcore').setLevel(logging.WARNING)
     logging.getLogger('httpx').setLevel(logging.WARNING)
@@ -235,8 +235,8 @@ def create_app():
     @app.route('/api/output-language', methods=['GET'])
     def get_output_language():
         """
-        获取用户的输出语言偏好（从数据库 Settings 读取）
-        返回: zh, ja, en, auto
+         ( Settings ) 
+        : zh, ja, en, auto
         """
         from models import Settings
         try:
@@ -244,7 +244,7 @@ def create_app():
             return {'data': {'language': settings.output_language or Config.OUTPUT_LANGUAGE}}
         except SQLAlchemyError as db_error:
             logging.warning(f"Failed to load output language from settings: {db_error}")
-            return {'data': {'language': Config.OUTPUT_LANGUAGE}}  # 默认中文
+            return {'data': {'language': Config.OUTPUT_LANGUAGE}}  # Backend logic
 
     # Root endpoint
     @app.route('/')
@@ -277,9 +277,9 @@ def _load_settings_to_config(app):
         # Load API configuration
         # Note: We load even if value is None/empty to allow clearing settings
         # But we only log if there's an actual value
-        # 与保存时 _sync_settings_to_config 保持一致: 只把 DB 中的统一 key/base 同步到
-        # 当前 provider, 避免污染其他 provider 的 per-model 配置（如 volcengine 设置
-        # 下 per-model openai 调用不得命中 plan/v3 端点）
+        # Backend logic
+        # Backend logic
+        # Backend logic
         active_format = (settings.ai_provider_format or Config.AI_PROVIDER_FORMAT or '').lower()
         active_api_keys = {
             'gemini': ('GOOGLE_API_KEY', 'GOOGLE_API_BASE'),
@@ -330,8 +330,8 @@ def _load_settings_to_config(app):
             app.config['IMAGE_MODEL'] = settings.image_model
             logging.info(f"Loaded IMAGE_MODEL from settings: {settings.image_model}")
 
-        # Load OpenAI image API protocol (与保存时 settings_controller 的同步保持一致,
-        # 否则重启后回落 'auto', gpt-image-2-high 等带后缀模型会误走 chat 路径)
+        # Backend logic
+        # Backend logic
         if settings.openai_image_api_protocol:
             app.config['OPENAI_IMAGE_API_PROTOCOL'] = settings.openai_image_api_protocol
             logging.info(f"Loaded OPENAI_IMAGE_API_PROTOCOL from settings: {settings.openai_image_api_protocol}")
@@ -433,16 +433,16 @@ def _compute_worktree_port(base_port: int) -> int:
 
 
 def _reconcile_orphaned_tasks_on_startup() -> None:
-    """清理上一个进程遗留的后台任务。
+    """. 
 
-    后台任务只存在于进程内，重启后数据库里的 PENDING/PROCESSING 记录
-    永远不会再推进，前端却会一直显示"进行中"。这里在服务真正启动前
-    统一标记为中断（只在启动入口调用，不在 create_app/import 时调用，
-    避免测试、脚本或第二个实例误判其它进程正在跑的任务）。
+    ,  PENDING/PROCESSING 
+    sẽ không bao giờ tiến triển thêm, nhưng frontend vẫn hiển thị mãi"đang thực hiện". Tại đây trước khi dịch vụ thực sự khởi động
+     (,  create_app/import , 
+    , ) . 
     """
     try:
         from services.task_watchdog import reconcile_orphaned_tasks
-        # 需要应用上下文才能查询数据库
+        # Backend logic
         with app.app_context():
             reconciled = reconcile_orphaned_tasks()
         if reconciled:
@@ -456,12 +456,12 @@ def _reconcile_orphaned_tasks_on_startup() -> None:
 
 
 def _port_available(port: int) -> bool:
-    """检查端口是否可绑定。
+    """. 
 
-    如果端口已被占用（例如另一个实例正在跑），启动会在 app.run 处失败；
-    此时不应该执行任务对账，否则会把那个实例正在跑的任务误判为中断。
-    探测选项与 werkzeug 服务器保持一致（SO_REUSEADDR），
-    否则 TIME_WAIT 会被误判为"端口被占用"，导致刚重启时跳过对账。
+     () ,  app.run ; 
+    , . 
+     werkzeug  (SO_REUSEADDR) , 
+    nếu không TIME_WAIT sẽ bị nhận nhầm là"Cổng đã bị chiếm dụng", dẫn đến bỏ qua đối soát ngay khi vừa khởi động lại. 
     """
     import socket
 
@@ -480,10 +480,10 @@ _instance_lock_handle = None
 
 
 def _acquire_instance_lock(target_app=None) -> bool:
-    """独占当前数据根，防止第二个实例把第一个实例的任务判为中断。
+    """, . 
 
-    返回 True 表示本进程拿到了锁（可以执行启动对账）。锁文件随进程存活，
-    无法创建/加锁时返回 True（退回原来的行为，不影响启动）。
+     True  () . , 
+    / True (, ) . 
     """
     global _instance_lock_handle
     if _instance_lock_handle is not None:
@@ -519,17 +519,17 @@ def _acquire_instance_lock(target_app=None) -> bool:
         handle.truncate()
         handle.write(f"{os.getpid()}\n")
         handle.flush()
-    except OSError:  # pragma: no cover - 写 pid 失败不影响锁
+    except OSError:  # Backend logic
         pass
 
-    _instance_lock_handle = handle  # 保持打开：锁随进程存在
+    _instance_lock_handle = handle  # Backend logic
     return True
 
 
 if __name__ == '__main__':
     # Run development server
     if os.getenv("IN_DOCKER", "0") == "1":
-        port = 5000  # Docker 容器内部固定使用 5000 端口
+        port = 5000  # Backend logic
     elif os.getenv('BACKEND_PORT'):
         port = int(os.getenv('BACKEND_PORT'))
     else:

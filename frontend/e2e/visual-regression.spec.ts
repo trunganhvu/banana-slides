@@ -95,8 +95,8 @@ test.describe('Visual Regression Tests', () => {
     await page.goto('http://localhost:3011')
     
     // Trigger a loading state (e.g., click create button)
-    // Ensure "一句话生成" tab is selected (it's selected by default)
-    const createButton = page.locator('button:has-text("一句话生成")')
+    // Test verification logic
+    const createButton = page.locator('button:has-text("")')
     if (await createButton.count() > 0) {
       await createButton.click().catch(() => {
         // If click fails, the tab might already be selected, which is fine
@@ -112,4 +112,3 @@ test.describe('Visual Regression Tests', () => {
     }
   })
 })
-

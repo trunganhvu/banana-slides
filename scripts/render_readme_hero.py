@@ -81,7 +81,7 @@ def template(action_urls):
             '<a href="https://deepwiki.com/Anionex/banana-slides">'+local('deepwiki','Ask DeepWiki',123,22)+'</a>']
     recommendations=(
         '<a href="https://trendshift.io/repositories/22056">'+themed(lambda theme:'./assets/badge-trendshift-dark.svg' if theme=='dark' else 'https://trendshift.io/api/badge/repositories/22056','Anionex%2Fbanana-slides | Trendshift',244,54)+'</a>\n  &nbsp;\n  '+
-        '<a href="https://hellogithub.com/repository/Anionex/banana-slides">'+themed(lambda theme:'https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&claim_uid=CtDTm2jbUHhVGBr&theme='+('dark' if theme=='dark' else 'neutral'),'Featured｜HelloGitHub',244,54)+'</a>')
+        '<a href="https://hellogithub.com/repository/Anionex/banana-slides">'+themed(lambda theme:'https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&claim_uid=CtDTm2jbUHhVGBr&theme='+('dark' if theme=='dark' else 'neutral'),'FeaturedHelloGitHub',244,54)+'</a>')
     # UI blocks are owned by the existing language renderer, not a second copy of button markup.
     return ('<div align="center">\n\n'
             '<a name="readme-top"></a>\n\n'

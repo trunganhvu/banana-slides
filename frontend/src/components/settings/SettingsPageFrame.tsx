@@ -43,7 +43,7 @@ export const SettingsPageFrame: React.FC<{
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Card className="p-6 md:p-8">
           <div className="space-y-8">
-            {/* 顶部标题 */}
+            {/* UI element */}
             <div className="flex items-center justify-between pb-6 border-b border-gray-200 dark:border-border-primary">
               <div className="flex items-center">
                 <Button

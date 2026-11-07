@@ -640,7 +640,7 @@ A self-contained HTML file with inline CSS. Premium brand feel: warm gradient, c
   </div>
   <div class="progress-area">
     <div class="progress-bar"><div class="progress-fill"></div></div>
-    <div class="status-text" id="status">正在启动...</div>
+    <div class="status-text" id="status">...</div>
   </div>
 </body>
 </html>
@@ -748,9 +748,9 @@ function createTray() {
   tray.setToolTip('Banana Slides');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: '显示主窗口', click: () => { mainWindow.show(); mainWindow.focus(); } },
+    { label: '', click: () => { mainWindow.show(); mainWindow.focus(); } },
     { type: 'separator' },
-    { label: '退出', click: () => { isQuitting = true; app.quit(); } },
+    { label: '', click: () => { isQuitting = true; app.quit(); } },
   ]);
   tray.setContextMenu(contextMenu);
 
@@ -766,74 +766,74 @@ function createAppMenu() {
     ...(isMac ? [{
       label: app.name,
       submenu: [
-        { label: '关于 Banana Slides', role: 'about' },
+        { label: ' Banana Slides', role: 'about' },
         { type: 'separator' },
-        { label: '隐藏', role: 'hide' },
-        { label: '隐藏其他', role: 'hideOthers' },
-        { label: '全部显示', role: 'unhide' },
+        { label: '', role: 'hide' },
+        { label: '', role: 'hideOthers' },
+        { label: '', role: 'unhide' },
         { type: 'separator' },
-        { label: '退出', role: 'quit' },
+        { label: '', role: 'quit' },
       ],
     }] : []),
     {
-      label: '文件',
+      label: '',
       submenu: [
         ...(!isMac ? [
           { type: 'separator' },
-          { label: '退出', role: 'quit' },
+          { label: '', role: 'quit' },
         ] : [
-          { label: '关闭窗口', role: 'close' },
+          { label: '', role: 'close' },
         ]),
       ],
     },
     {
-      label: '编辑',
+      label: '',
       submenu: [
-        { label: '撤销', role: 'undo' },
-        { label: '重做', role: 'redo' },
+        { label: '', role: 'undo' },
+        { label: '', role: 'redo' },
         { type: 'separator' },
-        { label: '剪切', role: 'cut' },
-        { label: '复制', role: 'copy' },
-        { label: '粘贴', role: 'paste' },
-        { label: '全选', role: 'selectAll' },
+        { label: '', role: 'cut' },
+        { label: '', role: 'copy' },
+        { label: '', role: 'paste' },
+        { label: '', role: 'selectAll' },
       ],
     },
     {
-      label: '视图',
+      label: '',
       submenu: [
-        { label: '重新加载', role: 'reload' },
-        { label: '强制重新加载', role: 'forceReload' },
-        { label: '开发者工具', role: 'toggleDevTools' },
+        { label: '', role: 'reload' },
+        { label: '', role: 'forceReload' },
+        { label: '', role: 'toggleDevTools' },
         { type: 'separator' },
-        { label: '全屏', role: 'togglefullscreen' },
+        { label: '', role: 'togglefullscreen' },
       ],
     },
     {
-      label: '窗口',
+      label: '',
       submenu: [
-        { label: '最小化', role: 'minimize' },
+        { label: '', role: 'minimize' },
         ...(isMac ? [
           { type: 'separator' },
-          { label: '前置全部窗口', role: 'front' },
+          { label: '', role: 'front' },
         ] : [
-          { label: '关闭', role: 'close' },
+          { label: '', role: 'close' },
         ]),
       ],
     },
     {
-      label: '帮助',
+      label: '',
       submenu: [
         {
-          label: '检查更新...',
+          label: '...',
           click: async () => {
             const update = await autoUpdater.checkForUpdates();
             if (update) {
               const result = await dialog.showMessageBox(mainWindow, {
                 type: 'info',
-                title: '发现新版本',
-                message: `新版本 v${update.version} 可用`,
+                title: '',
+                message: ` v${update.version} `,
                 detail: update.notes.substring(0, 300),
-                buttons: ['前往下载', '稍后'],
+                buttons: ['', ''],
               });
               if (result.response === 0) {
                 shell.openExternal(update.url);
@@ -841,19 +841,19 @@ function createAppMenu() {
             } else {
               dialog.showMessageBox(mainWindow, {
                 type: 'info',
-                title: '检查更新',
-                message: '当前已是最新版本',
+                title: '',
+                message: '',
               });
             }
           },
         },
         { type: 'separator' },
         {
-          label: '关于',
+          label: '',
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: '关于 Banana Slides',
+              title: ' Banana Slides',
               message: `Banana Slides v${app.getVersion()}`,
               detail: 'AI-Native Presentation Generator',
             });
@@ -902,7 +902,7 @@ async function bootstrap() {
   } catch (err) {
     log.error('[main] Startup failed:', err);
     if (splashWindow) splashWindow.close();
-    dialog.showErrorBox('启动失败', `后端服务启动失败：${err.message}`);
+    dialog.showErrorBox('', `${err.message}`);
     app.quit();
   }
 }
@@ -1078,7 +1078,7 @@ export function UpdateChecker() {
     >
       <div className="flex items-center gap-3 text-sm text-amber-900">
         <span className="font-medium">
-          新版本 v{update.version} 可用
+           v{update.version} 
         </span>
         <button
           onClick={() => (window as any).electronAPI.openExternal(update.url)}
@@ -1087,7 +1087,7 @@ export function UpdateChecker() {
                      transition-colors"
           style={{ WebkitAppRegion: 'no-drag' as any }}
         >
-          前往下载
+          
         </button>
         <button
           onClick={() => setDismissed(true)}

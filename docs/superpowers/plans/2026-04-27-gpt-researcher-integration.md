@@ -685,7 +685,7 @@ In `frontend/src/api/endpoints.ts`, after the existing generate endpoints, add:
 
 ```typescript
 /**
- * 启动网络搜索
+ * 
  */
 export const startResearch = async (
   projectId: string,
@@ -834,8 +834,8 @@ In the `homeI18n` object in `Home.tsx`, add to the `zh` section:
 
 ```typescript
 webResearch: {
-  label: '联网搜索',
-  tooltip: '生成前先搜索网络资料，提升内容质量',
+  label: '',
+  tooltip: '',
 },
 ```
 
@@ -925,10 +925,10 @@ git commit -m "feat(research): add web research toggle to Home page"
 In the Settings i18n object, add to `zh`:
 
 ```typescript
-webResearchConfig: '网络搜索',
+webResearchConfig: '',
 tavilyApiKey: 'Tavily API Key',
-tavilyApiKeyPlaceholder: '留空则使用 DuckDuckGo（免费）',
-tavilyApiKeyDesc: '可选。Tavily 提供更高质量的搜索结果。',
+tavilyApiKeyPlaceholder: ' DuckDuckGo',
+tavilyApiKeyDesc: 'Tavily ',
 ```
 
 And to `en`:
@@ -1010,16 +1010,16 @@ test.describe('Web Research Feature', () => {
       await page.goto('/');
       
       // On idea tab (default), toggle should be visible
-      const toggle = page.locator('label:has-text("联网搜索"), label:has-text("Web Research")');
+      const toggle = page.locator('label:has-text(""), label:has-text("Web Research")');
       await expect(toggle).toBeVisible();
 
       // Switch to outline tab — toggle should disappear
-      const outlineTab = page.locator('button:has-text("大纲"), button:has-text("Outline")').first();
+      const outlineTab = page.locator('button:has-text(""), button:has-text("Outline")').first();
       await outlineTab.click();
       await expect(toggle).not.toBeVisible();
 
       // Switch back to idea tab — toggle should reappear
-      const ideaTab = page.locator('button:has-text("想法"), button:has-text("Idea")').first();
+      const ideaTab = page.locator('button:has-text(""), button:has-text("Idea")').first();
       await ideaTab.click();
       await expect(toggle).toBeVisible();
     });
@@ -1027,13 +1027,13 @@ test.describe('Web Research Feature', () => {
     test('web research toggle can be checked and unchecked', async ({ page }) => {
       await page.goto('/');
       
-      const checkbox = page.locator('label:has-text("联网搜索") input[type="checkbox"], label:has-text("Web Research") input[type="checkbox"]');
+      const checkbox = page.locator('label:has-text("") input[type="checkbox"], label:has-text("Web Research") input[type="checkbox"]');
       
       // Initially unchecked
       await expect(checkbox).not.toBeChecked();
       
       // Click to enable
-      const label = page.locator('label:has-text("联网搜索"), label:has-text("Web Research")');
+      const label = page.locator('label:has-text(""), label:has-text("Web Research")');
       await label.click();
       await expect(checkbox).toBeChecked();
       
@@ -1128,7 +1128,7 @@ test.describe('Web Research Feature', () => {
       await page.goto('/');
 
       // Enable web research
-      const label = page.locator('label:has-text("联网搜索"), label:has-text("Web Research")');
+      const label = page.locator('label:has-text(""), label:has-text("Web Research")');
       await label.click();
 
       // Type idea
@@ -1136,7 +1136,7 @@ test.describe('Web Research Feature', () => {
       await textarea.fill('AI trends in 2026');
 
       // Click generate
-      const generateBtn = page.locator('button:has-text("下一步"), button:has-text("Next")').first();
+      const generateBtn = page.locator('button:has-text(""), button:has-text("Next")').first();
       await generateBtn.click();
 
       // Wait for navigation or timeout
@@ -1198,7 +1198,7 @@ test.describe('Web Research Feature', () => {
       const textarea = page.locator('textarea').first();
       await textarea.fill('AI trends in 2026');
 
-      const generateBtn = page.locator('button:has-text("下一步"), button:has-text("Next")').first();
+      const generateBtn = page.locator('button:has-text(""), button:has-text("Next")').first();
       await generateBtn.click();
 
       await page.waitForTimeout(3000);
@@ -1212,7 +1212,7 @@ test.describe('Web Research Feature', () => {
       await page.goto('/settings');
 
       // Look for the Web Research section
-      const section = page.locator('text=Web Research, text=网络搜索').first();
+      const section = page.locator('text=Web Research, text=').first();
       await expect(section).toBeVisible();
 
       // Look for the Tavily API Key field
@@ -1348,37 +1348,37 @@ Create `docs/zh/features/web-research.mdx`:
 
 ```mdx
 ---
-title: 联网搜索
-description: 使用 AI 搜索网络资料，提升幻灯片内容质量
+title: 
+description:  AI 
 ---
 
-# 联网搜索
+# Config
 
-Banana Slides 集成了 [GPT-Researcher](https://github.com/assafelovic/gpt-researcher)，可以在生成幻灯片前自动搜索网络资料，让 AI 基于最新信息生成更准确、更丰富的内容。
+Banana Slides  [GPT-Researcher](https://github.com/assafelovic/gpt-researcher) AI 
 
-## 使用方法
+# Config
 
-1. 在首页输入你的想法
-2. 开启输入框工具栏中的「联网搜索」开关
-3. 点击「下一步」，系统会先搜索网络资料（约 1-2 分钟）
-4. 搜索完成后自动继续生成大纲
+1. 
+2. 
+3.  1-2 
+4. 
 
-搜索报告会自动保存为项目的参考文件，后续所有 AI 生成步骤都会参考这份报告。
+ AI 
 
-## 搜索引擎配置
+# Config
 
-默认使用 DuckDuckGo（免费，无需配置）。如需更高质量的搜索结果，可以在设置页面配置 Tavily API Key：
+ DuckDuckGo Tavily API Key
 
-1. 前往 [Tavily](https://tavily.com/) 注册并获取 API Key
-2. 在 Banana Slides 设置页面的「网络搜索」部分填入 API Key
-3. 系统会自动切换到 Tavily 搜索引擎
+1.  [Tavily](https://tavily.com/)  API Key
+2.  Banana Slides  API Key
+3.  Tavily 
 
-## 注意事项
+# Config
 
-- 联网搜索仅在「想法」模式下可用（大纲/描述模式不支持）
-- 搜索过程需要调用 LLM 来分析和综合搜索结果，会使用你当前配置的文本模型
-- 搜索失败不会阻止幻灯片生成，你可以选择跳过搜索继续生成
-- 每个项目只保留最新一份搜索报告
+- /
+-  LLM 
+- 
+- 
 ```
 
 - [ ] **Step 2: Run translate-docs skill to sync English version**

@@ -56,9 +56,9 @@ def _resolve_exports_root(project_id):
 @export_bp.route('/<project_id>/exports', methods=['GET'])
 def list_exports(project_id):
     """
-    GET /api/projects/{project_id}/exports - 列出项目已导出的文件
+    GET /api/projects/{project_id}/exports - 
 
-    返回 exports 目录下的文件列表（名称、大小、修改时间、下载链接）。
+     exports  (, , , ) . 
     """
     try:
         project = db.session.get(Project, project_id)
@@ -77,7 +77,7 @@ def list_exports(project_id):
             name = filepath.name
             if not filepath.is_file():
                 continue
-            # 跳过临时目录和隐藏文件
+            # Backend logic
             if name.startswith('.') or name.startswith('_'):
                 continue
 
@@ -96,7 +96,7 @@ def list_exports(project_id):
                 "download_url": f"/files/{project_id}/exports/{name}",
             })
 
-        # 按修改时间倒序
+        # Backend logic
         files.sort(key=lambda f: f['modified_at'], reverse=True)
 
         return success_response(data={"files": files})
@@ -108,7 +108,7 @@ def list_exports(project_id):
 @export_bp.route('/<project_id>/exports/<filename>', methods=['DELETE'])
 def delete_export(project_id, filename):
     """
-    DELETE /api/projects/{project_id}/exports/{filename} - 删除项目已导出的文件
+    DELETE /api/projects/{project_id}/exports/{filename} - 
     """
     try:
         project = db.session.get(Project, project_id)
@@ -370,24 +370,24 @@ def export_images(project_id):
 @export_bp.route('/<project_id>/export/editable-pptx', methods=['POST'])
 def export_editable_pptx(project_id):
     """
-    POST /api/projects/{project_id}/export/editable-pptx - 导出可编辑PPTX（异步）
+    POST /api/projects/{project_id}/export/editable-pptx - PPTX () 
     
-    使用递归分析方法（支持任意尺寸、递归子图分析）
+     (, ) 
     
-    这个端点创建一个异步任务来执行以下操作：
-    1. 递归分析图片（支持任意尺寸和分辨率）
-    2. 转换为PDF并上传MinerU识别
-    3. 提取元素bbox和生成clean background（inpainting）
-    4. 递归处理图片/图表中的子元素
-    5. 创建可编辑PPTX
+    : 
+    1.  () 
+    2. PDFMinerU
+    3. bboxclean background (inpainting) 
+    4. /
+    5. PPTX
     
     Request body (JSON):
         {
             "filename": "optional_custom_name.pptx",
-            "page_ids": ["id1", "id2"],  // 可选，要导出的页面ID列表（不提供则导出所有）
-            "client_task_id": "uuid",     // 可选，用于安全重试创建请求
-            "max_depth": 1,      // 可选，递归深度（默认1=不递归，2=递归一层）
-            "max_workers": 4     // 可选，并发数（默认4）
+            "page_ids": ["id1", "id2"], // tùy chọn, Các trang cần xuấtIDdanh sách (Nếu không cung cấp sẽ xuất tất cả) 
+            "client_task_id": "uuid", // tùy chọn, dùng để thử lại an toàn yêu cầu khởi tạo
+            "max_depth": 1, // tùy chọn, Độ sâu đệ quy (mặc định1=không đệ quy, 2=đệ quy một tầng) 
+            "max_workers": 4 // tùy chọn, Số luồng đồng thời (mặc định4) 
         }
     
     Returns:
@@ -403,7 +403,7 @@ def export_editable_pptx(project_id):
             "message": "Export task created"
         }
     
-    轮询 /api/projects/{project_id}/tasks/{task_id} 获取进度和下载链接
+     /api/projects/{project_id}/tasks/{task_id} 
     """
     try:
         project = Project.query.get(project_id)
@@ -459,13 +459,13 @@ def export_editable_pptx(project_id):
         if not filename.endswith('.pptx'):
             filename += '.pptx'
         
-        # 递归分析参数
-        # max_depth 语义：1=只处理表层不递归，2=递归一层（处理图片/图表中的子元素）
-        max_depth = data.get('max_depth', 1)  # 默认不递归，与测试脚本一致
+        # Backend logic
+        # Backend logic
+        max_depth = data.get('max_depth', 1)  # Backend logic
         max_workers = data.get('max_workers', 4)
         
         # Validate parameters
-        # max_depth >= 1: 至少处理表层元素
+        # Backend logic
         if not isinstance(max_depth, int) or max_depth < 1 or max_depth > 5:
             return bad_request("max_depth must be an integer between 1 and 5")
         
@@ -496,7 +496,7 @@ def export_editable_pptx(project_id):
             # Get Flask app instance for background task
             app = current_app._get_current_object()
 
-            # 读取项目的导出设置
+            # Backend logic
             export_extractor_method = project.export_extractor_method or 'hybrid'
             export_inpaint_method = project.export_inpaint_method or 'hybrid'
             enable_icon_subject_extraction = (
@@ -509,7 +509,7 @@ def export_editable_pptx(project_id):
                 f"icon_subject_extraction={enable_icon_subject_extraction}"
             )
 
-            # 使用递归分析任务（不需要 ai_service，使用 ImageEditabilityService）
+            # Backend logic
             task_manager.submit_task(
                 task.id,
                 export_editable_pptx_with_recursive_analysis_task,
@@ -526,7 +526,7 @@ def export_editable_pptx(project_id):
             )
         except Exception as submission_error:
             logger.exception("Failed to submit editable export task %s", task.id)
-            failure_message = "可编辑导出任务未能进入后台队列"
+            failure_message = "Tác vụ xuất tệp có thể chỉnh sửa không thể đưa vào hàng đợi nền"
             task.status = 'FAILED'
             task.error_message = failure_message
             task.completed_at = datetime.utcnow()
@@ -534,7 +534,7 @@ def export_editable_pptx(project_id):
                 'total': 100,
                 'completed': 0,
                 'failed': 1,
-                'current_step': '任务提交失败',
+                'current_step': 'Gửi tác vụ thất bại',
                 'percent': 0,
                 'backend_status': 'FAILED',
                 'error_code': 'EXPORT_TASK_SUBMISSION_FAILED',
@@ -545,7 +545,7 @@ def export_editable_pptx(project_id):
                     'retryable': True,
                     'technical_message': ExportService._safe_technical_message(submission_error),
                 },
-                'help_text': '后台任务队列暂时不可用，请稍后重新导出。',
+                'help_text': 'Hàng đợi tác vụ nền tạm thời không khả dụng, Vui lòng xuất lại sau. ',
             })
             db.session.commit()
             return error_response('EXPORT_TASK_SUBMISSION_FAILED', failure_message, 503)
@@ -570,18 +570,18 @@ def export_editable_pptx(project_id):
 @export_bp.route('/<project_id>/export/video', methods=['POST'])
 def export_video(project_id):
     """
-    POST /api/projects/{project_id}/export/video - 导出讲解视频（异步）
+    POST /api/projects/{project_id}/export/video -  () 
 
-    将幻灯片图片 + TTS 旁白合成为 MP4 视频，含 Ken Burns 动效。
+     + TTS  MP4 ,  Ken Burns . 
 
     Request body (JSON):
         {
             "filename": "optional_custom_name.mp4",
-            "page_ids": ["id1", "id2"],          // 可选
-            "voice": "zh-CN-XiaoxiaoNeural",     // 可选 TTS 语音
-            "rate": "+0%",                        // 可选语速
-            "generate_narration": true,            // 是否自动生成缺失旁白（默认 true）
-            "language": "zh"                       // 可选输出语言
+            "page_ids": ["id1", "id2"], // tùy chọn
+            "voice": "zh-CN-XiaoxiaoNeural", // tùy chọn TTS giọng đọc
+            "rate": "+0%", // Tốc độ đọc tùy chọn
+            "generate_narration": true, // Có tự động tạo lời thuyết minh còn thiếu hay không (mặc định true) 
+            "language": "zh" // Ngôn ngữ đầu ra tùy chọn
         }
 
     Returns:
@@ -595,7 +595,7 @@ def export_video(project_id):
 
         data = request.get_json() or {}
 
-        # 参数 — 使用 secure_filename 防止路径遍历
+        # Backend logic
         raw_filename = data.get('filename', f'narration_{project_id}.mp4')
         filename = secure_filename(raw_filename)
         if not filename:
@@ -620,7 +620,7 @@ def export_video(project_id):
             fallback_topic=presentation_topic,
         )
 
-        # 获取页面
+        # Backend logic
         selected_page_ids = parse_page_ids_from_body(data)
 
         pages = get_filtered_pages(project_id, selected_page_ids if selected_page_ids else None)
@@ -632,12 +632,12 @@ def export_video(project_id):
         if not has_images and not include_no_image_pages:
             return bad_request("No generated images found for project. Enable 'include pages without images' to export all pages.")
 
-        # 根据语言自动选择默认语音
+        # Backend logic
         if 'voice' not in data:
             from services.tts_video_service import get_default_voice
             voice = get_default_voice(language, dict(current_app.config))
 
-        # 创建任务
+        # Backend logic
         task = Task(
             project_id=project_id,
             task_type='EXPORT_VIDEO',
@@ -648,7 +648,7 @@ def export_video(project_id):
 
         logger.info(f"Created video export task {task.id} for project {project_id}")
 
-        # 提交后台任务
+        # Backend logic
         from services.file_service import FileService
         from services.task_manager import task_manager, export_video_task
 

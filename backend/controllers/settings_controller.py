@@ -25,7 +25,7 @@ from services.update_check_service import check_for_update
 
 logger = logging.getLogger(__name__)
 ALLOWED_PROVIDER_FORMATS = {"openai", "gemini", "volcengine", "lazyllm", "codex"} | LAZYLLM_VENDORS
-# OpenAI 兼容图片模型的质量档位；xhigh / max 需要 gpt-image-2.5 及更新模型
+# Backend logic
 ALLOWED_IMAGE_QUALITIES = ("auto", "low", "medium", "high", "xhigh", "max")
 
 settings_bp = Blueprint(
@@ -60,15 +60,15 @@ def _provider_api_env_defaults():
 @contextmanager
 def temporary_settings_override(settings_override: dict):
     """
-    临时应用设置覆盖的上下文管理器
+    
 
-    使用示例:
+    :
         with temporary_settings_override({"api_key": "test-key"}):
-            # 在这里使用临时设置
+            # Backend logic
             result = some_test_function()
 
     Args:
-        settings_override: 要临时应用的设置字典
+        settings_override: 
 
     Yields:
         None
@@ -83,7 +83,7 @@ def temporary_settings_override(settings_override: dict):
         )
         provider_keys = _provider_api_config_keys(active_format)
 
-        # 应用覆盖设置
+        # Backend logic
         if settings_override.get("api_key") and provider_keys:
             key_config, _ = provider_keys
             original_values[key_config] = current_app.config.get(key_config)
@@ -188,7 +188,7 @@ def temporary_settings_override(settings_override: dict):
         yield
 
     finally:
-        # 恢复原始配置
+        # Backend logic
         for key, value in original_values.items():
             if value is not None:
                 current_app.config[key] = value
@@ -358,7 +358,7 @@ def update_settings():
             fields = data["image_prompt_extra_fields"]
             if not isinstance(fields, list):
                 return bad_request("image_prompt_extra_fields must be an array of strings")
-            # 空数组表示不传任何额外字段给图片生成
+            # Backend logic
             settings.image_prompt_extra_fields = json.dumps([f.strip() for f in fields if isinstance(f, str) and f.strip()], ensure_ascii=False)
 
         # Update reasoning mode configuration (separate for text and image)
@@ -523,13 +523,13 @@ def reset_settings():
 
 @settings_bp.route("/elevenlabs-voices", methods=["GET"], strict_slashes=False)
 def get_elevenlabs_voices():
-    """GET /api/settings/elevenlabs-voices - 用存储的 API Key 拉取可用声音列表"""
+    """ Backend docstring """
     from models import Settings
     db.session.expire_all()
     settings = Settings.get_settings()
     api_key = settings.elevenlabs_api_key
     if not api_key:
-        return error_response("ELEVENLABS_KEY_MISSING", "ElevenLabs API Key 未配置", 400)
+        return error_response("ELEVENLABS_KEY_MISSING", "ElevenLabs API Key chưa cấu hình", 400)
     try:
         from elevenlabs.client import ElevenLabs
         from elevenlabs.core import ApiError as ElevenLabsApiError
@@ -544,12 +544,12 @@ def get_elevenlabs_voices():
             if status == 'missing_permissions':
                 return error_response(
                     "ELEVENLABS_KEY_MISSING_PERMISSION",
-                    "ElevenLabs API Key 缺少 voices_read 权限。请到 ElevenLabs Dashboard 编辑该 Key 并勾选 Voices: Read，或创建 'Has access to all' 的 Key 后重新保存。",
+                    "ElevenLabs API Key thiếu voices_read quyền. Vui lòng vào ElevenLabs Dashboard chỉnh sửa Key và đánh dấu chọn Voices: Read, hoặc tạo 'Has access to all' Key rồi lưu lại. ",
                     400,
                 )
             if status == 'invalid_api_key' or e.status_code == 401:
-                return error_response("ELEVENLABS_KEY_INVALID", f"ElevenLabs API Key 无效：{msg}", 400)
-            return error_response("ELEVENLABS_VOICES_ERROR", f"ElevenLabs 错误 (HTTP {e.status_code})：{msg}", 500)
+                return error_response("ELEVENLABS_KEY_INVALID", f"ElevenLabs API Key không hợp lệ: {msg}", 400)
+            return error_response("ELEVENLABS_VOICES_ERROR", f"ElevenLabs Lỗi (HTTP {e.status_code}): {msg}", 500)
         voices = []
         for v in voices_response.voices:
             labels = getattr(v, "labels", None) or {}
@@ -575,8 +575,8 @@ def get_elevenlabs_voices():
         voices.sort(key=lambda v: v["name"])
         return success_response({"voices": voices})
     except Exception as e:
-        logger.exception("[elevenlabs-voices] 获取声音列表失败")
-        return error_response("ELEVENLABS_VOICES_ERROR", f"获取 ElevenLabs 声音列表失败: {e}", 500)
+        logger.exception("[elevenlabs-voices] Lấy danh sách giọng đọc thất bại")
+        return error_response("ELEVENLABS_VOICES_ERROR", f"Lấy ElevenLabs danh sách giọng đọc thất bại: {e}", 500)
 
 
 @settings_bp.route("/active-config", methods=["GET"], strict_slashes=False)
@@ -598,27 +598,27 @@ def get_active_config():
 @settings_bp.route("/verify", methods=["POST"], strict_slashes=False)
 def verify_api_key():
     """
-    POST /api/settings/verify - 验证模型配置是否可用
-    通过调用一个轻量测试请求（thinking_budget=0）来判断
+    POST /api/settings/verify - 
+     (thinking_budget=0) 
 
     Returns:
         {
             "data": {
                 "available": true/false,
-                "message": "提示信息"
+                "message": "Thông tin gợi ý"
             }
         }
     """
     try:
-        # 获取当前设置
+        # Backend logic
         settings = Settings.get_settings()
         if not settings:
             return success_response({
                 "available": False,
-                "message": "用户设置未找到"
+                "message": "Không tìm thấy cài đặt người dùng"
             })
 
-        # 准备设置覆盖字典
+        # Backend logic
         settings_override = {}
         if settings.api_key:
             settings_override["api_key"] = settings.api_key
@@ -629,7 +629,7 @@ def verify_api_key():
         if settings.text_model:
             settings_override["text_model"] = settings.text_model
 
-        # 使用上下文管理器临时应用用户配置进行验证
+        # Backend logic
         with temporary_settings_override(settings_override):
             from services.ai_providers import get_text_provider
 
@@ -640,48 +640,48 @@ def verify_api_key():
                 or "gemini-3-flash-preview"
             )
 
-            # 尝试创建provider并调用一个简单的测试请求
+            # Backend logic
             try:
                 provider = get_text_provider(model=verification_model)
-                # 调用一个简单的测试请求（思考budget=0，最小开销）
+                # Backend logic
                 provider.generate_text("Hello", thinking_budget=0)
 
                 logger.info("API key verification successful")
                 return success_response({
                     "available": True,
-                    "message": "API key 可用"
+                    "message": "API key khả dụng"
                 })
 
             except ValueError as ve:
-                # API key未配置
+                # Backend logic
                 logger.warning(f"API key not configured: {str(ve)}")
                 provider_format = (settings.ai_provider_format or "").lower()
                 if provider_format == "lazyllm" or provider_format in LAZYLLM_VENDORS:
                     source = (provider_format if provider_format in LAZYLLM_VENDORS
                               else current_app.config.get("TEXT_MODEL_SOURCE") or Config.TEXT_MODEL_SOURCE or "unknown").upper()
-                    message = f"LazyLLM API key 未配置，请设置 {source}_API_KEY"
+                    message = f"LazyLLM API key chưa cấu hình, Vui lòng thiết lập {source}_API_KEY"
                 else:
-                    message = "API key 未配置，请在设置中配置 API key 和 API Base URL"
+                    message = "API key chưa cấu hình, Vui lòng cấu hình trong phần Cài đặt API key và API Base URL"
                 return success_response({
                     "available": False,
                     "message": message
                 })
             except Exception as e:
-                # API调用失败（可能是key无效、余额不足等）
+                # Backend logic
                 error_msg = str(e)
                 logger.warning(f"API key verification failed: {error_msg}")
 
-                # 根据错误信息判断具体原因
+                # Backend logic
                 if "401" in error_msg or "unauthorized" in error_msg.lower() or "invalid" in error_msg.lower():
-                    message = "API key 无效或已过期，请在设置中检查 API key 配置"
+                    message = "API key không hợp lệ hoặc đã hết hạn, Vui lòng kiểm tra trong phần Cài đặt API key Cấu hình"
                 elif "429" in error_msg or "quota" in error_msg.lower() or "limit" in error_msg.lower():
-                    message = "API 调用超限或余额不足，请在设置中检查配置"
+                    message = "API vượt quá giới hạn gọi hoặc số dư không đủ, Vui lòng kiểm tra cấu hình trong phần Cài đặt"
                 elif "403" in error_msg or "forbidden" in error_msg.lower():
-                    message = "API 访问被拒绝，请在设置中检查 API key 权限"
+                    message = "API Truy cập bị từ chối, Vui lòng kiểm tra trong phần Cài đặt API key quyền"
                 elif "timeout" in error_msg.lower():
-                    message = "API 调用超时，请在设置中检查网络连接和 API Base URL"
+                    message = "API quá thời gian gọi, Vui lòng kiểm tra kết nối mạng trong Cài đặt và API Base URL"
                 else:
-                    message = f"API 调用失败，请在设置中检查配置: {error_msg}"
+                    message = f"API gọi thất bại, Vui lòng kiểm tra cấu hình trong phần Cài đặt: {error_msg}"
 
                 return success_response({
                     "available": False,
@@ -692,7 +692,7 @@ def verify_api_key():
         logger.error(f"Error verifying API key: {str(e)}")
         return error_response(
             "VERIFY_API_KEY_ERROR",
-            f"验证 API key 时出错: {str(e)}",
+            f"Xác minh API key gặp lỗi: {str(e)}",
             500,
         )
 
@@ -878,19 +878,19 @@ def _get_test_image_path() -> Path:
         if candidate.exists():
             return candidate
 
-    raise FileNotFoundError("未找到 test_img.png，请确认打包资源或项目根目录 assets 下存在该文件")
+    raise FileNotFoundError("Không tìm thấy test_img.png, Vui lòng kiểm tra tài nguyên đóng gói hoặc thư mục gốc của dự án assets có tồn tại tệp này")
 
 
 def _get_baidu_credentials():
-    """获取百度 API 凭证"""
+    """ Backend docstring """
     api_key = current_app.config.get("BAIDU_API_KEY") or Config.BAIDU_API_KEY
     if not api_key:
-        raise ValueError("未配置 BAIDU_API_KEY")
+        raise ValueError("chưa cấu hình BAIDU_API_KEY")
     return api_key
 
 
 def _create_file_parser():
-    """创建 FileParserService 实例，根据 per-model caption 配置解析正确的凭证"""
+    """ Backend docstring """
     from services.ai_providers import LAZYLLM_VENDORS
 
     caption_source = current_app.config.get("IMAGE_CAPTION_MODEL_SOURCE")
@@ -950,13 +950,13 @@ def _create_file_parser():
     )
 
 
-# 测试函数 - 每个测试一个独立函数
+# Backend logic
 def _test_baidu_ocr():
-    """测试百度 OCR 服务"""
+    """ Backend docstring """
     api_key = _get_baidu_credentials()
     provider = create_baidu_accurate_ocr_provider(api_key)
     if not provider:
-        raise ValueError("百度 OCR Provider 初始化失败")
+        raise ValueError("Baidu OCR Provider khởi tạo thất bại")
 
     test_image_path = _get_test_image_path()
     result = provider.recognize(str(test_image_path), language_type="CHN_ENG")
@@ -965,18 +965,18 @@ def _test_baidu_ocr():
     return {
         "recognized_text": recognized_text,
         "words_result_num": result.get("words_result_num", 0),
-    }, "百度 OCR 测试成功"
+    }, "Baidu OCR kiểm tra thành công"
 
 
 def _test_text_model():
-    """测试文本生成模型"""
+    """ Backend docstring """
     ai_service = AIService()
-    reply = ai_service.text_provider.generate_text("请只回复 OK。", thinking_budget=64)
-    return {"reply": reply.strip()}, "文本模型测试成功"
+    reply = ai_service.text_provider.generate_text("Vui lòng chỉ trả lời OK. ", thinking_budget=64)
+    return {"reply": reply.strip()}, "Kiểm tra mô hình văn bản thành công"
 
 
 def _test_caption_model():
-    """测试图片识别模型"""
+    """ Backend docstring """
     upload_folder = Path(current_app.config.get("UPLOAD_FOLDER", Config.UPLOAD_FOLDER))
     mineru_root = upload_folder / "mineru_files"
     mineru_root.mkdir(parents=True, exist_ok=True)
@@ -994,9 +994,9 @@ def _test_caption_model():
         caption = parser._generate_single_caption(image_url).strip()
 
         if not caption:
-            raise ValueError("图片识别模型返回空结果")
+            raise ValueError("Mô hình nhận diện ảnh trả về kết quả rỗng")
 
-        return {"caption": caption}, "图片识别模型测试成功"
+        return {"caption": caption}, "Kiểm tra mô hình nhận diện ảnh thành công"
     finally:
         if image_path.exists():
             image_path.unlink()
@@ -1008,11 +1008,11 @@ def _test_caption_model():
 
 
 def _test_baidu_inpaint():
-    """测试百度图像修复"""
+    """ Backend docstring """
     api_key = _get_baidu_credentials()
     provider = create_baidu_inpainting_provider(api_key)
     if not provider:
-        raise ValueError("百度图像修复 Provider 初始化失败")
+        raise ValueError("Phục hồi ảnh Baidu Provider khởi tạo thất bại")
 
     test_image_path = _get_test_image_path()
     with Image.open(test_image_path) as image:
@@ -1030,16 +1030,16 @@ def _test_baidu_inpaint():
         result = provider.inpaint(image, rectangles)
 
     if result is None:
-        raise ValueError("百度图像修复返回空结果")
+        raise ValueError("Phục hồi ảnh Baidu trả về kết quả rỗng")
 
-    return {"image_size": result.size}, "百度图像修复测试成功"
+    return {"image_size": result.size}, "Kiểm tra phục hồi ảnh Baidu thành công"
 
 
 def _test_image_model():
-    """测试图像生成模型"""
+    """ Backend docstring """
     ai_service = AIService()
     test_image_path = _get_test_image_path()
-    prompt = "生成一张简洁、明亮、适合演示文稿的背景图。"
+    prompt = "Tạo một bức ảnh gọn gàng, sáng, ảnh nền phù hợp cho bài thuyết trình. "
     settings = Settings.get_settings()
     image_model = (current_app.config.get("IMAGE_MODEL", "") or "").lower()
     ref_image_path = None if image_model.startswith("gpt-image-") else str(test_image_path)
@@ -1051,16 +1051,16 @@ def _test_image_model():
     )
 
     if result is None:
-        raise ValueError("图像生成模型返回空结果")
+        raise ValueError("Mô hình tạo ảnh trả về kết quả rỗng")
 
-    return {"image_size": result.size}, "图像生成模型测试成功"
+    return {"image_size": result.size}, "Kiểm tra mô hình tạo ảnh thành công"
 
 
 def _test_mineru_pdf():
-    """测试 MinerU PDF 解析"""
+    """ Backend docstring """
     mineru_token = current_app.config.get("MINERU_TOKEN", "")
     if not mineru_token:
-        raise ValueError("未配置 MINERU_TOKEN")
+        raise ValueError("chưa cấu hình MINERU_TOKEN")
 
     parser = _create_file_parser()
     tmp_file = None
@@ -1087,8 +1087,8 @@ def _test_mineru_pdf():
                 return {
                     "batch_id": batch_id,
                     "status": "processing",
-                    "message": "服务正常，文件正在处理中"
-                }, "MinerU 服务可用（处理中）"
+                    "message": "dịch vụ hoạt động bình thường, Tệp đang được xử lý"
+                }, "MinerU Dịch vụ khả dụng (Đang xử lý) "
             else:
                 raise ValueError(poll_error)
         else:
@@ -1097,13 +1097,13 @@ def _test_mineru_pdf():
                 "batch_id": batch_id,
                 "extract_id": extract_id,
                 "content_preview": content_preview,
-            }, "MinerU 解析测试成功"
+            }, "MinerU Kiểm tra phân tích thành công"
     finally:
         if tmp_file and tmp_file.exists():
             tmp_file.unlink()
 
 
-# 测试函数映射
+# Backend logic
 TEST_FUNCTIONS = {
     "baidu-ocr": _test_baidu_ocr,
     "text-model": _test_text_model,
@@ -1160,17 +1160,17 @@ def _disconnect_expired_openai_oauth() -> None:
 
 def _run_test_async(task_id: str, test_name: str, test_settings: dict, app):
     """
-    在后台异步执行测试任务
+    
 
     Args:
-        task_id: 任务ID
-        test_name: 测试名称
-        test_settings: 测试设置
-        app: Flask app 实例
+        task_id: ID
+        test_name: 
+        test_settings: 
+        app: Flask app 
     """
     with app.app_context():
         try:
-            # 更新状态为运行中
+            # Backend logic
             task = Task.query.get(task_id)
             if not task:
                 logger.error(f"Task {task_id} not found")
@@ -1179,16 +1179,16 @@ def _run_test_async(task_id: str, test_name: str, test_settings: dict, app):
             task.status = 'PROCESSING'
             db.session.commit()
 
-            # 应用测试设置并执行测试
+            # Backend logic
             with temporary_settings_override(test_settings):
-                # 查找并执行对应的测试函数
+                # Backend logic
                 test_func = TEST_FUNCTIONS.get(test_name)
                 if not test_func:
-                    raise ValueError(f"未知测试类型: {test_name}")
+                    raise ValueError(f"Loại kiểm tra không xác định: {test_name}")
 
                 result_data, message = test_func()
 
-                # 更新任务状态为完成
+                # Backend logic
                 task = Task.query.get(task_id)
                 if task:
                     task.status = 'COMPLETED'
@@ -1208,7 +1208,7 @@ def _run_test_async(task_id: str, test_name: str, test_settings: dict, app):
                 progress = {}
                 if _is_codex_oauth_unauthorized(e, test_name, test_settings):
                     _disconnect_expired_openai_oauth()
-                    error_msg = "Codex 登录已过期或无效，已断开 OpenAI 账号连接。请重新登录 OpenAI 后再测试。"
+                    error_msg = "Codex Phiên đăng nhập đã hết hạn hoặc không hợp lệ, đã ngắt kết nối OpenAI kết nối tài khoản. vui lòng đăng nhập lại OpenAI rồi kiểm tra lại. "
                     progress = {
                         "openai_oauth_disconnected": True,
                         "message": error_msg,
@@ -1226,10 +1226,10 @@ def _run_test_async(task_id: str, test_name: str, test_settings: dict, app):
 @settings_bp.route("/tests/<test_name>", methods=["POST"], strict_slashes=False)
 def run_settings_test(test_name: str):
     """
-    POST /api/settings/tests/<test_name> - 启动异步服务测试
+    POST /api/settings/tests/<test_name> - 
 
     Request Body (optional):
-        可选的设置覆盖参数，用于测试未保存的配置
+        , 
         {
             "api_key": "test-key",
             "api_base_url": "https://test.api.com",
@@ -1246,10 +1246,10 @@ def run_settings_test(test_name: str):
         }
     """
     try:
-        # 从数据库加载已保存的全局设置作为基础
+        # Backend logic
         global_settings = Settings.get_settings()
 
-        # 构建基础测试设置（使用数据库中已保存的值）
+        # Backend logic
         test_settings = {}
         if global_settings.api_key:
             test_settings["api_key"] = global_settings.api_key
@@ -1285,7 +1285,7 @@ def run_settings_test(test_name: str):
             or current_app.config.get('IMAGE_QUALITY')
             or 'auto'
         )
-        # 推理模式设置
+        # Backend logic
         test_settings["enable_text_reasoning"] = global_settings.enable_text_reasoning
         test_settings["text_max_output_tokens"] = global_settings.text_max_output_tokens or Config.TEXT_MAX_OUTPUT_TOKENS
         test_settings["text_thinking_budget"] = global_settings.text_thinking_budget
@@ -1293,15 +1293,15 @@ def run_settings_test(test_name: str):
         test_settings["image_thinking_budget"] = global_settings.image_thinking_budget
         test_settings["openai_image_api_protocol"] = global_settings.openai_image_api_protocol or current_app.config.get('OPENAI_IMAGE_API_PROTOCOL') or 'auto'
 
-        # 应用前端发送的覆盖参数（如果有的话，用于测试未保存的配置）
+        # Backend logic
         override_settings = request.get_json() or {}
         if override_settings:
             logger.info(f"Applying test setting overrides: {list(override_settings.keys())}")
             test_settings.update(override_settings)
 
-        # 创建任务记录（使用特殊的 project_id='settings-test'）
+        # Backend logic
         task = Task(
-            project_id='settings-test',  # 特殊标记，表示这是设置测试任务
+            project_id='settings-test',  # Backend logic
             task_type=f'TEST_{test_name.upper().replace("-", "_")}',
             status='PENDING'
         )
@@ -1310,7 +1310,7 @@ def run_settings_test(test_name: str):
 
         task_id = task.id
 
-        # 使用 TaskManager 提交后台任务
+        # Backend logic
         task_manager.submit_task(
             task_id,
             _run_test_async,
@@ -1324,13 +1324,13 @@ def run_settings_test(test_name: str):
         return success_response({
             'task_id': task_id,
             'status': 'PENDING'
-        }, '测试任务已启动')
+        }, 'Tác vụ kiểm tra đã được khởi chạy')
 
     except Exception as e:
         logger.error(f"Failed to start test: {str(e)}", exc_info=True)
         return error_response(
             "SETTINGS_TEST_ERROR",
-            f"启动测试失败: {str(e)}",
+            f"Khởi chạy kiểm tra thất bại: {str(e)}",
             500
         )
 
@@ -1338,14 +1338,14 @@ def run_settings_test(test_name: str):
 @settings_bp.route("/tests/<task_id>/status", methods=["GET"], strict_slashes=False)
 def get_test_status(task_id: str):
     """
-    GET /api/settings/tests/<task_id>/status - 查询测试任务状态
+    GET /api/settings/tests/<task_id>/status - 
 
     Returns:
         {
             "data": {
                 "status": "PENDING|PROCESSING|COMPLETED|FAILED",
-                "result": {...},  # 仅当 status=COMPLETED 时存在
-                "error": "...",   # 仅当 status=FAILED 时存在
+                "result": {...},  # Backend logic
+                "error": "...",   # Backend logic
                 "message": "..."
             }
         }
@@ -1353,13 +1353,13 @@ def get_test_status(task_id: str):
     try:
         task = Task.query.get(task_id)
         if not task:
-            return error_response("TASK_NOT_FOUND", "测试任务不存在", 404)
+            return error_response("TASK_NOT_FOUND", "Tác vụ kiểm tra không tồn tại", 404)
 
-        # 与项目任务接口一致：进程重启/任务卡死时不要让前端一直显示"进行中"
+        # Backend logic
         from services.task_watchdog import reconcile_task_for_response
         reconcile_task_for_response(task)
 
-        # 构建响应数据
+        # Backend logic
         response_data = {
             'status': task.status,
             'task_type': task.task_type,
@@ -1367,13 +1367,13 @@ def get_test_status(task_id: str):
             'completed_at': task.completed_at.isoformat() if task.completed_at else None,
         }
 
-        # 如果任务完成，包含结果和消息
+        # Backend logic
         if task.status == 'COMPLETED':
             progress = task.get_progress()
             response_data['result'] = progress.get('result', {})
-            response_data['message'] = progress.get('message', '测试完成')
+            response_data['message'] = progress.get('message', 'Kiểm tra hoàn tất')
 
-        # 如果任务失败，包含错误信息
+        # Backend logic
         elif task.status == 'FAILED':
             progress = task.get_progress()
             from services.task_watchdog import localize_watchdog_payload
@@ -1392,6 +1392,6 @@ def get_test_status(task_id: str):
         logger.error(f"Failed to get test status: {str(e)}", exc_info=True)
         return error_response(
             "GET_TEST_STATUS_ERROR",
-            f"获取测试状态失败: {str(e)}",
+            f"Lấy trạng thái kiểm tra thất bại: {str(e)}",
             500
         )

@@ -1085,7 +1085,7 @@ class OpenAIImageProvider(ImageProvider):
         Note: enable_thinking and thinking_budget are ignored (OpenAI format doesn't support thinking mode)
         
         The provider will:
-        1. Try to use extra_body parameters (API易/AvalAI style) for resolution control
+        1. Try to use extra_body parameters (API/AvalAI style) for resolution control
         2. Use system message for aspect_ratio as fallback
         
         Args:

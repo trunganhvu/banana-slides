@@ -1,5 +1,5 @@
 /**
- * DescriptionCard 组件测试 - 验证图片粘贴功能
+ * DescriptionCard  - 
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -100,50 +100,50 @@ describe('DescriptionCard', () => {
     expect(screen.getByText('Test description content')).toBeInTheDocument()
   })
 
-  describe('字段契约 v2', () => {
+  describe(' v2', () => {
     const withFields = (extra_fields: Record<string, string>) => ({
       ...defaultProps,
-      page: { ...mockPage, description_content: { text: '正文', extra_fields } } as Page,
+      page: { ...mockPage, description_content: { text: '', extra_fields } } as Page,
     })
 
     it('renders the new orthogonal fields', () => {
-      render(<DescriptionCard {...withFields({ '配图与素材': '折线图', '版式与重点': '左文右图' })}
-        extraFieldNames={['配图与素材', '版式与重点', '演讲者备注']} />)
+      render(<DescriptionCard {...withFields({ 'Hình ảnh & Tư liệu': '', 'Bố cục & Trọng tâm': '' })}
+        extraFieldNames={['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình']} />)
 
-      expect(screen.getByText('配图与素材')).toBeInTheDocument()
-      expect(screen.getByText('折线图')).toBeInTheDocument()
-      expect(screen.getByText('版式与重点')).toBeInTheDocument()
-      expect(screen.getByText('左文右图')).toBeInTheDocument()
+      expect(screen.getByText('Hình ảnh & Tư liệu')).toBeInTheDocument()
+      expect(screen.getByText('')).toBeInTheDocument()
+      expect(screen.getByText('Bố cục & Trọng tâm')).toBeInTheDocument()
+      expect(screen.getByText('')).toBeInTheDocument()
     })
 
-    // 存量数据不迁移：旧字段名必须照常展示，否则用户会以为内容丢了
-    it.each(['视觉元素', '视觉焦点', '排版布局', '排版建议'])(
+    // Test verification logic
+    it.each(['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Bố cục & Trọng tâm', 'Gợi ý bố cục'])(
       'still renders legacy field %s stored on existing pages',
       (legacyName) => {
-        render(<DescriptionCard {...withFields({ [legacyName]: '存量内容' })}
-          extraFieldNames={['配图与素材', '版式与重点', '演讲者备注']} />)
+        render(<DescriptionCard {...withFields({ [legacyName]: '' })}
+          extraFieldNames={['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình']} />)
 
         expect(screen.getByText(legacyName)).toBeInTheDocument()
-        expect(screen.getByText('存量内容')).toBeInTheDocument()
+        expect(screen.getByText('')).toBeInTheDocument()
       }
     )
 
     it('marks fields excluded from the image prompt', () => {
-      render(<DescriptionCard {...withFields({ '配图与素材': '折线图', '演讲者备注': '口头补充' })}
-        extraFieldNames={['配图与素材', '演讲者备注']}
-        imagePromptFields={['配图与素材', '版式与重点']} />)
+      render(<DescriptionCard {...withFields({ 'Hình ảnh & Tư liệu': '', 'Ghi chú thuyết trình': '' })}
+        extraFieldNames={['Hình ảnh & Tư liệu', 'Ghi chú thuyết trình']}
+        imagePromptFields={['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm']} />)
 
-      // 演讲者备注不进生图，UI 需要标出来
+      // Test verification logic
       expect(screen.getByText('descriptionCard.notInImagePrompt')).toBeInTheDocument()
     })
 
     it('keeps legacy fields editable in the edit dialog', () => {
-      render(<DescriptionCard {...withFields({ '排版布局': '居中大标题' })}
-        extraFieldNames={['配图与素材', '版式与重点', '演讲者备注']} />)
+      render(<DescriptionCard {...withFields({ 'Bố cục & Trọng tâm': '' })}
+        extraFieldNames={['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình']} />)
 
       fireEvent.click(screen.getByText('common.edit'))
 
-      expect(screen.getByDisplayValue('居中大标题')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('')).toBeInTheDocument()
     })
   })
 

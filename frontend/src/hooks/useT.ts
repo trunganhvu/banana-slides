@@ -1,88 +1,67 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-type NestedRecord = Record<string, unknown>;
+type NestedRecord = { [key: string]: string | NestedRecord };
+type Translations<T extends NestedRecord> = { vi?: T; zh?: T; en: T };
 
-type Translations = {
-  zh: NestedRecord;
-  en: NestedRecord;
-};
-
-/**
- * 获取嵌套对象的值，支持点号路径
- * 例如：getNestedValue(obj, 'home.title') 获取 obj.home.title
- */
-function getNestedValue(obj: NestedRecord, path: string): string | undefined {
-  const keys = path.split('.');
-  let current: unknown = obj;
-  
-  for (const key of keys) {
-    if (current && typeof current === 'object' && key in current) {
-      current = (current as NestedRecord)[key];
-    } else {
-      return undefined;
+function getByPath(obj: unknown, path: string): unknown {
+  return path.split('.').reduce((acc: unknown, key) => {
+    if (acc && typeof acc === 'object' && key in (acc as Record<string, unknown>)) {
+      return (acc as Record<string, unknown>)[key];
     }
-  }
-  
-  return typeof current === 'string' ? current : undefined;
+    return undefined;
+  }, obj);
+}
+
+function interpolate(str: string, params?: Record<string, unknown>): string {
+  if (!params) return str;
+  return str.replace(/\{\{(\w+)\}\}/g, (_, k) =>
+    params[k] !== undefined ? String(params[k]) : `{{${k}}}`
+  );
 }
 
 /**
- * 组件级 i18n hook - 智能 fallback（方案 B）
- * 
- * 优先从组件内翻译查找，找不到自动 fallback 到全局翻译。
- * 这样只需要一个 t()，调用方式完全不变！
- * 
- * 使用方式：
- * ```tsx
- * const homeI18n = {
- *   zh: {
- *     home: {
- *       title: '蕉幻',
- *       messages: { success: '成功' }
- *     }
- *   },
- *   en: {
- *     home: {
- *       title: 'Banana Slides',
- *       messages: { success: 'Success' }
- *     }
- *   }
+ * Component-colocated translation hook
+ *
+ * Usage:
+ * ```ts
+ * const i18n = {
+ *   vi: { title: 'Chào {{name}}', sub: { a: '1' } },
+ *   en: { title: 'Hello {{name}}', sub: { a: '1' } },
  * };
- * 
- * const t = useT(homeI18n);
- * 
- * t('home.title')     // 从组件内翻译获取: "蕉幻"
- * t('common.save')    // 组件内没有，自动 fallback 到全局: "保存"
+ * const t = useT(i18n);
+ * t('title', { name: 'World' }); // Supports interpolation
+ * t('sub.a');                     // Supports nested keys
+ * t('common.save');               // Automatically falls back to global common/nav/theme
  * ```
- * 
- * 这样翻译和组件放在一起，AI 一眼就能看到所有上下文！
+ *
+ * When no parameter is passed, equivalent to react-i18next's useTranslation().t
  */
-export function useT<T extends Translations>(translations: T) {
+export function useT<T extends NestedRecord>(translations?: Translations<T>) {
   const { t: globalT, i18n } = useTranslation();
-  const lang = i18n.language?.startsWith('zh') ? 'zh' : 'en';
-  const dict = translations[lang] || translations['zh'];
+  const isEn = i18n.language?.startsWith('en');
 
-  // 兼容 react-i18next 的多种调用方式：
-  // t('key') / t('key', '默认值') / t('key', { param: value })
-  return (key: string, defaultOrParams?: string | Record<string, string | number>): string => {
-    // 解析第二个参数
-    const params = typeof defaultOrParams === 'object' ? defaultOrParams : undefined;
-    
-    // 优先从组件内翻译查找
-    const localValue = getNestedValue(dict, key);
-    
-    if (localValue !== undefined) {
-      // 组件内找到了，处理插值
-      let text = localValue;
-      if (params) {
-        Object.entries(params).forEach(([k, v]) => {
-          text = text.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
-        });
+  const t = useCallback(
+    (key: string, params?: Record<string, unknown>): string => {
+      if (translations) {
+        const dict = isEn ? translations.en : (translations.vi ?? translations.zh ?? translations.en);
+        const val = getByPath(dict, key);
+        if (typeof val === 'string') {
+          return interpolate(val, params);
+        }
+        // Fallback to English when key is missing in Vietnamese
+        if (!isEn) {
+          const fallback = getByPath(translations.en, key);
+          if (typeof fallback === 'string') {
+            return interpolate(fallback, params);
+          }
+        }
       }
-      return text;
-    }
-    
-    // 组件内没找到，fallback 到全局翻译（保持原始参数传递）
-    return globalT(key, defaultOrParams as any);
-  };
+      // Fallback to global (common.*, nav.*, theme.*)
+      return globalT(key, params) as string;
+    },
+    [translations, isEn, globalT]
+  );
+
+  return t;
 }

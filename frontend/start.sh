@@ -1,30 +1,30 @@
 #!/bin/bash
 
 echo "===================================="
-echo "蕉幻 (Banana Slides) 前端启动脚本"
+echo " (Banana Slides) "
 echo "===================================="
 echo ""
 
-echo "[1/3] 检查依赖..."
+echo "[1/3] ..."
 if [ ! -d "node_modules" ]; then
-    echo "未检测到依赖，正在安装..."
+    echo ", ..."
     npm install
     if [ $? -ne 0 ]; then
-        echo "依赖安装失败，请手动运行: npm install"
+        echo ", : npm install"
         exit 1
     fi
 else
-    echo "依赖已存在"
+    echo ""
 fi
 
 echo ""
-echo "[2/3] 检查环境变量..."
+echo "[2/3] ..."
 echo ""
-echo "[3/3] 启动开发服务器..."
-echo "前端将运行在 http://localhost:3011"
-echo "请确保后端服务已启动在 http://localhost:5011"
+echo "[3/3] ..."
+echo " http://localhost:3011"
+echo " http://localhost:5011"
 echo ""
-echo "按 Ctrl+C 可以停止服务器"
+echo " Ctrl+C "
 echo ""
 
 npm run dev

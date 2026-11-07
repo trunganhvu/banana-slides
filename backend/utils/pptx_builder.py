@@ -91,7 +91,7 @@ class PPTXBuilder:
     MIN_FONT_SIZE = 6   # Minimum readable size
     MAX_FONT_SIZE = 200  # Maximum reasonable size
     
-    # 项目内置字体（Noto Sans CJK SC，支持中日韩文字）
+    # Backend logic
     FONT_PATH = os.path.join(os.path.dirname(__file__), "..", "fonts", "NotoSansSC-Regular.ttf")
     
     # Font cache: {size_pt: ImageFont}
@@ -295,14 +295,14 @@ class PPTXBuilder:
         # Try precise measurement first (check if font file exists)
         use_precise = os.path.exists(self.FONT_PATH)
 
-        # 退化 bbox（宽度不足 1pt）时整数除法会除零；按 1pt 计算，
-        # 让后续的高度判断把字号压到最小值（并给出溢出告警）。
+        # Backend logic
+        # Backend logic
         usable_width_for_wrap = max(1, int(usable_width_pt))
         measurement_state = {'precise': use_precise}
         lines = text.split('\n')
 
         def required_lines(font_size: float) -> int:
-            """该字号下文本换行后需要的总行数。"""
+            """ Backend docstring """
             total_required_lines = 0
             for line in lines:
                 if not line:
@@ -328,10 +328,10 @@ class PPTXBuilder:
         def fits(font_size: float) -> bool:
             return required_lines(font_size) * font_size * line_height_ratio <= usable_height_pt
 
-        # 二分查找：找最大的能放下的字号。
-        # 原来的做法是从 MAX_FONT_SIZE 逐 pt 往下试，每个文本元素要测 180+ 次字宽
-        # （CJK 字体每次约 0.4ms），单元素约 80ms，密集页面会卡到分钟级。
-        # "放得下"对字号单调，因此二分只需 ~8 次测量。
+        # Backend logic
+        # Backend logic
+        # Backend logic
+        # Backend logic
         best_size = self.MIN_FONT_SIZE
         low = int(self.MIN_FONT_SIZE)
         high = int(self.MAX_FONT_SIZE)
@@ -467,7 +467,7 @@ class PPTXBuilder:
         # Calculate font size
         font_size = self.calculate_font_size(bbox, actual_text, text_level, dpi)
         
-        # Determine effective alignment - text_style优先，否则使用参数
+        # Backend logic
         effective_align = align
         if text_style and hasattr(text_style, 'text_alignment') and text_style.text_alignment:
             effective_align = text_style.text_alignment

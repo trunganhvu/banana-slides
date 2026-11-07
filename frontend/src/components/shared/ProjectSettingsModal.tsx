@@ -6,43 +6,43 @@ import { Settings } from '@/pages/Settings';
 import type { ExportExtractorMethod, ExportInpaintMethod } from '@/types';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 
-// ProjectSettings 组件自包含翻译
+// Component logic
 const projectSettingsI18n = {
   zh: {
     projectSettings: {
-      title: "设置", projectConfig: "项目设置", exportConfig: "导出设置", globalConfig: "全局设置",
-      projectConfigTitle: "项目级配置", projectConfigDesc: "这些设置仅应用于当前项目，不影响其他项目",
-      globalConfigTitle: "全局设置", globalConfigDesc: "这些设置应用于所有项目",
-      aspectRatio: "画面比例", aspectRatioDesc: "设置生成幻灯片图片的画面比例",
-      aspectRatioLocked: "已生成图片的项目无法调整画面比例",
-      aspectRatioHelp: "部分模型仅支持特定的画面比例（如 16:9、4:3、1:1）。如果图片生成报错，可尝试切换画面比例后重试。",
-      extraRequirements: "额外要求", extraRequirementsDesc: "在生成每个页面时，AI 会参考这些额外要求",
-      extraRequirementsPlaceholder: "例如：使用紧凑的布局，顶部展示一级大纲标题，加入更丰富的PPT插图...",
-      saveExtraRequirements: "保存额外要求",
-      styleDescription: "风格描述", styleDescriptionDesc: "描述您期望的 PPT 整体风格，AI 将根据描述生成相应风格的页面",
-      styleDescriptionPlaceholder: "例如：简约商务风格，使用深蓝色和白色配色，字体清晰大方，布局整洁...",
-      saveStyleDescription: "保存风格描述",
-      styleTip: "风格描述会在生成图片时自动添加到提示词中。如果同时上传了模板图片，风格描述会作为补充说明。",
-      editablePptxExport: "可编辑 PPTX 导出设置", editablePptxExportDesc: "配置「导出可编辑 PPTX」功能的处理方式。这些设置影响导出质量和API调用成本。",
-      extractorMethod: "组件提取方法", extractorMethodDesc: "选择如何从PPT图片中提取文字、表格等可编辑组件",
-      extractorHybrid: "混合提取（推荐）", extractorHybridDesc: "MinerU版面分析 + 百度高精度OCR，文字识别更精确",
-      extractorMineru: "MinerU提取", extractorMineruDesc: "仅使用MinerU进行版面分析和文字识别",
-      backgroundMethod: "背景图获取方法", backgroundMethodDesc: "选择如何生成干净的背景图（移除原图中的文字后用于PPT背景）",
-      backgroundHybrid: "混合方式获取（推荐）", backgroundHybridDesc: "百度精确去除文字 + 生成式模型提升画质",
-      backgroundGenerative: "生成式获取", backgroundGenerativeDesc: "使用生成式大模型（如Gemini）直接生成背景，背景质量高但有遗留元素的可能",
-      backgroundBaidu: "百度抹除服务获取", backgroundBaiduDesc: "使用百度图像修复API，速度快但画质一般",
-      usesAiModel: "使用文生图模型",
-      costTip: "标有「使用文生图模型」的选项会调用AI图片生成API（如Gemini），每页会产生额外的API调用费用。如果需要控制成本，可选择「百度修复」方式。",
-      iconSubjectExtraction: "图标透明背景",
-      iconSubjectExtractionDesc: "开启后，导出时对识别为图标的图片调用本地 RMBG-2.0 模型抠图，获取透明背景 PNG 后再贴入 PPT，避免图标自带的原 PPT 背景在新底色上突兀显示。仅对识别为图标的元素生效，照片/插图保持原矩形裁剪。",
-      iconSubjectExtractionTip: "基于 RMBG-2.0 ONNX 模型本地推理，首次使用会自动下载约 512MB 模型；单张图标处理失败时会自动回退到原矩形裁剪，不影响导出。",
-      errorHandling: "错误处理策略", errorHandlingDesc: "配置导出过程中遇到错误时的处理方式",
-      allowPartialResult: "允许返回半成品", allowPartialResultDesc: "开启后，导出过程中遇到错误（如样式提取失败、文本渲染失败等）时会跳过错误继续导出，最终可能得到不完整的结果。关闭时，任何错误都会立即停止导出并提示具体原因。",
-      allowPartialResultWarning: "开启此选项可能导致导出的 PPTX 文件中部分文字样式丢失、元素位置错误或内容缺失。建议仅在需要快速获取结果且可以接受质量损失时开启。",
-      saveExportSettings: "保存导出设置",
-      tip: "提示"
+      title: "Cài đặt", projectConfig: "Cài đặt dự án", exportConfig: "Cài đặt xuất", globalConfig: "Cài đặt chung",
+      projectConfigTitle: "Cấu hình cấp dự án", projectConfigDesc: "Các cài đặt này chỉ áp dụng cho dự án hiện tại",
+      globalConfigTitle: "Cài đặt chung", globalConfigDesc: "Các cài đặt này áp dụng cho tất cả các dự án",
+      aspectRatio: "Tỷ lệ khung hình", aspectRatioDesc: "Đặt tỷ lệ khung hình cho các hình ảnh trang trình chiếu được tạo",
+      aspectRatioLocked: "Không thể thay đổi tỷ lệ khung hình sau khi hình ảnh đã được tạo",
+      aspectRatioHelp: "Một số mô hình chỉ hỗ trợ các tỷ lệ khung hình cụ thể (ví dụ: 16:9, 4:3, 1:1). Nếu tạo ảnh thất bại, hãy thử chuyển sang tỷ lệ khung hình khác.",
+      extraRequirements: "Yêu cầu bổ sung", extraRequirementsDesc: "AI sẽ tham khảo các yêu cầu bổ sung này khi tạo từng trang",
+      extraRequirementsPlaceholder: "Ví dụ: Sử dụng bố cục gọn gàng, hiển thị tiêu đề dàn ý cấp 1 ở trên cùng, thêm hình minh họa PPT phong phú hơn...",
+      saveExtraRequirements: "Lưu yêu cầu bổ sung",
+      styleDescription: "Mô tả phong cách", styleDescriptionDesc: "Mô tả phong cách tổng thể PPT bạn mong muốn, AI sẽ tạo các trang theo phong cách đó",
+      styleDescriptionPlaceholder: "Ví dụ: Phong cách kinh doanh đơn giản, sử dụng màu xanh navy và trắng, phông chữ rõ ràng, bố cục gọn gàng...",
+      saveStyleDescription: "Lưu mô tả phong cách",
+      styleTip: "Mô tả phong cách sẽ tự động được thêm vào prompt khi tạo hình ảnh. Nếu ảnh mẫu cũng được tải lên, mô tả phong cách sẽ đóng vai trò như ghi chú bổ sung.",
+      editablePptxExport: "Cài đặt xuất PPTX có thể chỉnh sửa", editablePptxExportDesc: "Cấu hình cách hoạt động của tính năng 'Xuất PPTX có thể chỉnh sửa'. Các cài đặt này ảnh hưởng đến chất lượng xuất và chi phí gọi API.",
+      extractorMethod: "Phương pháp trích xuất thành phần", extractorMethodDesc: "Chọn cách trích xuất các thành phần có thể chỉnh sửa như văn bản và bảng từ hình ảnh PPT",
+      extractorHybrid: "Trích xuất kết hợp (Khuyên dùng)", extractorHybridDesc: "Phân tích bố cục MinerU + OCR độ chính xác cao Baidu để nhận dạng văn bản chính xác hơn",
+      extractorMineru: "Trích xuất MinerU", extractorMineruDesc: "Chỉ sử dụng MinerU để phân tích bố cục và nhận dạng văn bản",
+      backgroundMethod: "Phương pháp ảnh nền", backgroundMethodDesc: "Chọn cách tạo ảnh nền sạch (xóa văn bản khỏi ảnh gốc làm nền PPT)",
+      backgroundHybrid: "Phương pháp kết hợp (Khuyên dùng)", backgroundHybridDesc: "Xóa chữ chính xác Baidu + nâng cao chất lượng bằng mô hình tạo ảnh",
+      backgroundGenerative: "Phương pháp tạo ảnh AI", backgroundGenerativeDesc: "Sử dụng mô hình tạo ảnh (như Gemini) để tạo trực tiếp hình nền, chất lượng cao nhưng có thể còn chi tiết thừa",
+      backgroundBaidu: "Phục hồi Baidu", backgroundBaiduDesc: "Sử dụng API phục hồi ảnh của Baidu, nhanh nhưng chất lượng trung bình",
+      usesAiModel: "Sử dụng mô hình ảnh AI",
+      costTip: "Các tùy chọn có đánh dấu 'Sử dụng mô hình ảnh AI' sẽ gọi API tạo ảnh AI (như Gemini), phát sinh thêm chi phí API theo từng trang. Để tối ưu chi phí, hãy chọn 'Phục hồi Baidu'.",
+      iconSubjectExtraction: "Nền trong suốt cho biểu tượng",
+      iconSubjectExtractionDesc: "Khi bật, các hình ảnh được phát hiện là biểu tượng trong quá trình xuất sẽ được xử lý qua mô hình RMBG-2.0 cục bộ để tạo PNG nền trong suốt trước khi đưa vào PPT, tránh việc nền gốc của biểu tượng xung đột với nền trang chiếu mới. Chỉ áp dụng cho các phần tử phân loại là biểu tượng; ảnh chụp và hình minh họa vẫn giữ nguyên cắt hình chữ nhật gốc.",
+      iconSubjectExtractionTip: "Được hỗ trợ bởi suy luận RMBG-2.0 ONNX cục bộ. Mô hình ~512MB được tải xuống tự động trong lần sử dụng đầu tiên. Nếu trích xuất thất bại đối với một biểu tượng riêng lẻ, hệ thống sẽ tự động dùng lại ảnh chữ nhật gốc mà không ảnh hưởng đến việc xuất.",
+      errorHandling: "Chiến lược xử lý lỗi", errorHandlingDesc: "Cấu hình cách xử lý các lỗi xảy ra trong quá trình xuất",
+      allowPartialResult: "Cho phép kết quả một phần", allowPartialResultDesc: "Khi bật, quá trình xuất sẽ bỏ qua các lỗi (như trích xuất kiểu hoặc kết xuất văn bản thất bại) và tiếp tục, có thể tạo ra kết quả chưa hoàn chỉnh. Khi tắt, mọi lỗi sẽ dừng quá trình xuất ngay lập tức kèm theo lý do cụ thể.",
+      allowPartialResultWarning: "Bật tùy chọn này có thể khiến tệp PPTX bị thiếu kiểu văn bản, định vị sai phần tử hoặc thiếu nội dung. Chỉ nên bật khi bạn cần kết quả nhanh và chấp nhận suy giảm chất lượng.",
+      saveExportSettings: "Lưu cài đặt xuất",
+      tip: "Mẹo"
     },
-    shared: { saving: "保存中..." }
+    shared: { saving: "Đang lưu..." }
   },
   en: {
     projectSettings: {
@@ -59,7 +59,7 @@ const projectSettingsI18n = {
       styleDescriptionPlaceholder: "e.g., Simple business style, use navy blue and white colors, clear fonts, clean layout...",
       saveStyleDescription: "Save Style Description",
       styleTip: "Style description will be automatically added to the prompt when generating images. If a template image is also uploaded, the style description will serve as supplementary notes.",
-      editablePptxExport: "Editable PPTX Export Settings", editablePptxExportDesc: "Configure how \"Export Editable PPTX\" works. These settings affect export quality and API call costs.",
+      editablePptxExport: "Editable PPTX Export Settings", editablePptxExportDesc: "Configure how 'Export Editable PPTX' works. These settings affect export quality and API call costs.",
       extractorMethod: "Component Extraction Method", extractorMethodDesc: "Choose how to extract editable components like text and tables from PPT images",
       extractorHybrid: "Hybrid Extraction (Recommended)", extractorHybridDesc: "MinerU layout analysis + Baidu high-precision OCR for more accurate text recognition",
       extractorMineru: "MinerU Extraction", extractorMineruDesc: "Use only MinerU for layout analysis and text recognition",
@@ -68,7 +68,7 @@ const projectSettingsI18n = {
       backgroundGenerative: "Generative Method", backgroundGenerativeDesc: "Use generative model (like Gemini) to directly generate background, high quality but may have residual elements",
       backgroundBaidu: "Baidu Inpainting", backgroundBaiduDesc: "Use Baidu image repair API, fast but average quality",
       usesAiModel: "Uses AI Image Model",
-      costTip: "Options marked \"Uses AI Image Model\" will call AI image generation API (like Gemini), incurring extra API costs per page. To control costs, choose \"Baidu Inpainting\".",
+      costTip: "Options marked 'Uses AI Image Model' will call AI image generation API (like Gemini), incurring extra API costs per page. To control costs, choose 'Baidu Inpainting'.",
       iconSubjectExtraction: "Icon Transparent Background",
       iconSubjectExtractionDesc: "When enabled, images detected as icons during export are processed via the local RMBG-2.0 model to produce transparent-background PNGs before being placed in the PPT, avoiding the icon's original background clashing with the new slide background. Only applies to elements classified as icons; photos and illustrations keep the original rectangular crop.",
       iconSubjectExtractionTip: "Powered by local RMBG-2.0 ONNX inference. The ~512MB model is downloaded automatically on first use. If extraction fails for an individual icon, it falls back silently to the original rectangular crop without affecting export.",
@@ -220,7 +220,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   </p>
                 </div>
 
-                {/* 画面比例 */}
+                {/* UI element */}
                 <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -319,7 +319,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   <div className="pl-4 border-l-4 border-blue-300 dark:border-blue-600">
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary flex items-start gap-1.5">
                       <Lightbulb size={14} className="flex-shrink-0 mt-0.5" />
-                      <span><strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.styleTip')}</span>
+                      <span><strong>{t('projectSettings.tip')}: </strong>{t('projectSettings.styleTip')}</span>
                     </p>
                   </div>
                 </div>
@@ -410,7 +410,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   <div className="pl-4 border-l-4 border-yellow-300 dark:border-yellow-600 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
-                      <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.costTip')}
+                      <strong>{t('projectSettings.tip')}: </strong>{t('projectSettings.costTip')}
                     </p>
                   </div>
                 </div>
@@ -436,7 +436,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   <div className="pl-4 border-l-4 border-yellow-300 dark:border-yellow-600 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
-                      <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.iconSubjectExtractionTip')}
+                      <strong>{t('projectSettings.tip')}: </strong>{t('projectSettings.iconSubjectExtractionTip')}
                     </p>
                   </div>
                 </div>
@@ -465,7 +465,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   <div className="pl-4 border-l-4 border-red-300 dark:border-red-600 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-red-700 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
-                      <strong>{t('common.warning')}：</strong>{t('projectSettings.allowPartialResultWarning')}
+                      <strong>{t('common.warning')}: </strong>{t('projectSettings.allowPartialResultWarning')}
                     </p>
                   </div>
                 </div>

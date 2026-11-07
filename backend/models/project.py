@@ -15,29 +15,29 @@ class Project(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     project_title = db.Column(db.String(255), nullable=True)
     idea_prompt = db.Column(db.Text, nullable=True)
-    outline_text = db.Column(db.Text, nullable=True)  # 用户输入的大纲文本（用于outline类型）
-    description_text = db.Column(db.Text, nullable=True)  # 用户输入的描述文本（用于description类型）
-    extra_requirements = db.Column(db.Text, nullable=True)  # 额外要求，应用到每个页面的AI提示词
-    outline_requirements = db.Column(db.Text, nullable=True)  # 大纲生成要求
-    description_requirements = db.Column(db.Text, nullable=True)  # 页面描述生成要求
+    outline_text = db.Column(db.Text, nullable=True)  # Backend logic
+    description_text = db.Column(db.Text, nullable=True)  # Backend logic
+    extra_requirements = db.Column(db.Text, nullable=True)  # Backend logic
+    outline_requirements = db.Column(db.Text, nullable=True)  # Backend logic
+    description_requirements = db.Column(db.Text, nullable=True)  # Backend logic
     creation_type = db.Column(db.String(20), nullable=False, default='idea')  # idea|outline|descriptions
     template_image_path = db.Column(db.String(500), nullable=True)
-    template_style = db.Column(db.Text, nullable=True)  # 风格描述文本（无模板图模式）
+    template_style = db.Column(db.Text, nullable=True)  # Backend logic
     template_mode = db.Column(
         db.String(10), nullable=False, server_default='single', default='single'
-    )  # 'single' | 'multi'，仅 UI 渲染分支，不影响页级字段读写
-    # 导出设置
-    export_extractor_method = db.Column(db.String(50), nullable=True, default='hybrid')  # 组件提取方法: mineru, hybrid
-    export_inpaint_method = db.Column(db.String(50), nullable=True, default='hybrid')  # 背景图获取方法: generative, baidu, hybrid
-    export_allow_partial = db.Column(db.Boolean, nullable=True, default=False)  # 是否允许返回半成品（导出出错时继续而非停止）
-    enable_icon_subject_extraction = db.Column(db.Boolean, nullable=True, default=True)  # 是否对小尺寸图标走百度智能抠图
+    )  # Backend logic
+    # Backend logic
+    export_extractor_method = db.Column(db.String(50), nullable=True, default='hybrid')  # Backend logic
+    export_inpaint_method = db.Column(db.String(50), nullable=True, default='hybrid')  # Backend logic
+    export_allow_partial = db.Column(db.Boolean, nullable=True, default=False)  # Backend logic
+    enable_icon_subject_extraction = db.Column(db.Boolean, nullable=True, default=True)  # Backend logic
     image_aspect_ratio = db.Column(db.String(10), nullable=False, server_default='16:9', default='16:9')
     status = db.Column(db.String(50), nullable=False, default='DRAFT')
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    # 使用 'select' 策略支持 eager loading，同时保持灵活性
+    # Backend logic
     pages = db.relationship('Page', back_populates='project', lazy='select', 
                            cascade='all, delete-orphan', order_by='Page.order_index')
     tasks = db.relationship('Task', back_populates='project', lazy='select',
@@ -87,7 +87,7 @@ class Project(db.Model):
         }
         
         if include_pages:
-            # pages 现在是列表，不需要 order_by（已在 relationship 中定义）
+            # Backend logic
             data['pages'] = [page.to_dict() for page in self.pages]
         
         return data

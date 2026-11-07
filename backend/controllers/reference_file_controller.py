@@ -229,8 +229,8 @@ def upload_reference_file():
         
         logger.info(f"File uploaded: {original_filename} (ID: {reference_file.id})")
         
-        # Lazy parsing: 不立即解析，等待用户选择确定后再解析
-        # 解析将在用户选择文件并确认时触发
+        # Backend logic
+        # Backend logic
         
         return success_response({'file': reference_file.to_dict()})
         
@@ -252,7 +252,7 @@ def get_reference_file(file_id):
         if not reference_file:
             return not_found('Reference file')
         
-        # 单个文件查询时包含内容和失败计数（会在 to_dict 中根据状态判断是否计算）
+        # Backend logic
         return success_response({'file': reference_file.to_dict(include_content=True, include_failed_count=True)})
         
     except Exception as e:
@@ -324,7 +324,7 @@ def list_project_reference_files(project_id):
             
             reference_files = ReferenceFile.query.filter_by(project_id=project_id).all()
         
-        # 列表查询时不包含 markdown_content 和失败计数，加快响应速度
+        # Backend logic
         return success_response({
             'files': [f.to_dict(include_content=False) for f in reference_files]
         })
@@ -347,30 +347,30 @@ def trigger_file_parse(file_id):
         if not reference_file:
             return not_found('Reference file')
         
-        # 如果正在解析，直接返回
+        # Backend logic
         if reference_file.parse_status == 'parsing':
             return success_response({
                 'file': reference_file.to_dict(),
                 'message': 'File is already being parsed'
             })
         
-        # 如果解析完成或失败，可以重新解析
+        # Backend logic
         if reference_file.parse_status in ['completed', 'failed']:
             reference_file.parse_status = 'pending'
             reference_file.error_message = None
-            # 清空之前的解析结果，以便重新解析
+            # Backend logic
             reference_file.markdown_content = None
             reference_file.mineru_batch_id = None
             db.session.commit()
         
-        # 获取文件路径
+        # Backend logic
         upload_folder = current_app.config['UPLOAD_FOLDER']
         file_path = Path(upload_folder) / reference_file.file_path
         
         if not file_path.exists():
             return error_response('FILE_NOT_FOUND', f'File not found: {file_path}', 404)
         
-        # 启动异步解析
+        # Backend logic
         thread = threading.Thread(
             target=_parse_file_async,
             args=(reference_file.id, str(file_path), reference_file.filename, current_app._get_current_object())

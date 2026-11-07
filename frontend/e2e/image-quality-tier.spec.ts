@@ -152,7 +152,7 @@ test.describe('Image quality tier setting', () => {
       await page.waitForLoadState('networkidle');
 
       await page.getByTestId('openai-image-quality-select').selectOption('max');
-      await page.getByRole('button', { name: /保存|Save/i }).click();
+      await page.getByRole('button', { name: /|Save/i }).click();
 
       await expect
         .poll(() => savedPayload && (savedPayload as Record<string, unknown>).image_quality)
@@ -188,8 +188,8 @@ test.describe('Image quality tier setting', () => {
       await expect(qualitySelect).toBeVisible();
 
       await qualitySelect.selectOption('xhigh');
-      await page.getByRole('button', { name: /保存|Save/i }).click();
-      await expect(page.getByText(/保存成功|Saved successfully|设置已保存|Settings saved/i).first()).toBeVisible();
+      await page.getByRole('button', { name: /|Save/i }).click();
+      await expect(page.getByText(/|Saved successfully||Settings saved/i).first()).toBeVisible();
 
       await page.reload();
       await page.waitForLoadState('networkidle');
@@ -197,8 +197,8 @@ test.describe('Image quality tier setting', () => {
 
       // Put it back so the shared local database stays predictable.
       await page.getByTestId('openai-image-quality-select').selectOption('auto');
-      await page.getByRole('button', { name: /保存|Save/i }).click();
-      await expect(page.getByText(/保存成功|Saved successfully|设置已保存|Settings saved/i).first()).toBeVisible();
+      await page.getByRole('button', { name: /|Save/i }).click();
+      await expect(page.getByText(/|Saved successfully||Settings saved/i).first()).toBeVisible();
     });
 
     test('returns image_quality in GET /api/settings', async ({ request }) => {

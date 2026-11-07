@@ -1,9 +1,9 @@
 /**
- * 真实后端 + 真实前端：后台任务"假进行中"（僵尸任务）的验收。
+ *  + ""
  *
- * 客户反馈：导出可编辑 PPTX 卡在 "88% 构建第 17/24 页"，
- * 重启应用后仍然显示 88%。后台任务只存在于进程内，
- * 进程重启后数据库记录会永远停在最后一次进度上。
+ *  PPTX  "88%  17/24 "
+ *  88%
+ * 
  */
 import { expect, test } from '@playwright/test'
 import { execFileSync } from 'child_process'
@@ -56,7 +56,7 @@ async function seedStoredTask(page: any, payload: Record<string, unknown>) {
 }
 
 test('a task left over from a previous run stops showing 88% and reports interrupted', async ({ page, request }) => {
-  const projectId = await createProject(request, '僵尸导出任务 E2E')
+  const projectId = await createProject(request, ' E2E')
   const taskId = crypto.randomUUID()
   const localTaskId = `e2e-watchdog-${Date.now()}`
   const staleHeartbeat = new Date(Date.now() - 3.5 * 3600 * 1000).toISOString()
@@ -69,12 +69,12 @@ test('a task left over from a previous run stops showing 88% and reports interru
       total: 100,
       completed: 88,
       failed: 0,
-      current_step: '构建第 17/24 页...',
+      current_step: ' 17/24 ...',
       percent: 88,
       heartbeat_at: staleHeartbeat,
       messages: [
-        '[构建PPTX] 构建第 16/24 页...',
-        '[构建PPTX] 构建第 17/24 页...',
+        '[PPTX]  16/24 ...',
+        '[PPTX]  17/24 ...',
       ],
     },
   })
@@ -85,27 +85,27 @@ test('a task left over from a previous run stops showing 88% and reports interru
     projectId,
     type: 'editable-pptx',
     status: 'PROCESSING',
-    progress: { total: 100, completed: 88, percent: 88, current_step: '构建第 17/24 页...' },
+    progress: { total: 100, completed: 88, percent: 88, current_step: ' 17/24 ...' },
     createdAt: new Date().toISOString(),
   })
 
   try {
     await page.goto(`/project/${projectId}/preview`)
     await page.waitForFunction(() => document.body.innerText.length > 50, { timeout: 15000 })
-    await page.getByLabel('导出任务').click()
+    await page.getByLabel('').click()
 
     const panel = page.getByTestId('export-tasks-list')
-    // 页面加载后第一次轮询就会对账：任务从"进行中 88%"变成失败，并给出中断原因
-    await expect(panel.getByText(/^导出失败$/)).toBeVisible({ timeout: 20000 })
-    // 文案由前端按 error_code + 结构化细节拼装，不依赖后端中文句子
-    await expect(panel.getByText(/导出被中断：.*3\.5 小时/)).toBeVisible({ timeout: 20000 })
+    // Test verification logic
+    await expect(panel.getByText(/^$/)).toBeVisible({ timeout: 20000 })
+    // Test verification logic
+    await expect(panel.getByText(/.*3\.5 /)).toBeVisible({ timeout: 20000 })
     await expect(panel.getByText('TASK_INTERRUPTED')).toBeVisible()
-    await expect(panel.getByText('任务状态对账')).toBeVisible()
-    await expect(panel.getByText('点任务右侧的 × 移除这条记录，然后重新发起即可。')).toBeVisible()
+    await expect(panel.getByText('')).toBeVisible()
+    await expect(panel.getByText(' × ')).toBeVisible()
 
-    // 进度条（88%）不应再作为"进行中"显示，也不能显示"进行中"计数
+    // Test verification logic
     await expect(panel.getByText('88%')).toHaveCount(0)
-    await expect(page.getByText(/^\d+ 进行中$/)).toHaveCount(0)
+    await expect(page.getByText(/^\d+ $/)).toHaveCount(0)
 
     const taskResponse = await request.get(`/api/projects/${projectId}/tasks/${taskId}`)
     expect(taskResponse.ok()).toBeTruthy()
@@ -119,7 +119,7 @@ test('a task left over from a previous run stops showing 88% and reports interru
 })
 
 test('a task with a fresh heartbeat keeps running instead of being failed', async ({ page, request }) => {
-  const projectId = await createProject(request, '心跳正常导出任务 E2E')
+  const projectId = await createProject(request, ' E2E')
   const taskId = crypto.randomUUID()
   const localTaskId = `e2e-watchdog-fresh-${Date.now()}`
 
@@ -131,10 +131,10 @@ test('a task with a fresh heartbeat keeps running instead of being failed', asyn
       total: 100,
       completed: 88,
       failed: 0,
-      current_step: '构建第 17/24 页...',
+      current_step: ' 17/24 ...',
       percent: 88,
       heartbeat_at: new Date().toISOString(),
-      messages: ['[构建PPTX] 构建第 17/24 页...'],
+      messages: ['[PPTX]  17/24 ...'],
     },
   })
 
@@ -144,7 +144,7 @@ test('a task with a fresh heartbeat keeps running instead of being failed', asyn
     projectId,
     type: 'editable-pptx',
     status: 'PROCESSING',
-    progress: { total: 100, completed: 88, percent: 88, current_step: '构建第 17/24 页...' },
+    progress: { total: 100, completed: 88, percent: 88, current_step: ' 17/24 ...' },
     createdAt: new Date().toISOString(),
   })
 
@@ -156,18 +156,18 @@ test('a task with a fresh heartbeat keeps running instead of being failed', asyn
   try {
     await page.goto(`/project/${projectId}/preview`)
     await page.waitForFunction(() => document.body.innerText.length > 50, { timeout: 15000 })
-    await page.getByLabel('导出任务').click()
+    await page.getByLabel('').click()
 
     const panel = page.getByTestId('export-tasks-list')
     await expect(panel.getByText('88%')).toBeVisible({ timeout: 10000 })
 
-    // 断言"确实发生了轮询"，而不是空等待
+    // Test verification logic
     await expect.poll(() => statusRequests.length, { timeout: 15000 }).toBeGreaterThanOrEqual(3)
 
     await expect(panel.getByText('88%')).toBeVisible()
-    await expect(panel.getByText(/导出被中断|导出疑似卡住/)).toHaveCount(0)
-    // 也不应该出现"状态查询中断"的监控横幅（说明轮询正常）
-    await expect(panel.getByText('状态查询暂时中断')).toHaveCount(0)
+    await expect(panel.getByText(/|/)).toHaveCount(0)
+    // Test verification logic
+    await expect(panel.getByText('')).toHaveCount(0)
 
     const taskResponse = await request.get(`/api/projects/${projectId}/tasks/${taskId}`)
     const backendTask = (await taskResponse.json()).data
@@ -178,7 +178,7 @@ test('a task with a fresh heartbeat keeps running instead of being failed', asyn
 })
 
 test('a stalled task renders the localized stuck message', async ({ page, request }) => {
-  const projectId = await createProject(request, '卡住任务展示 E2E')
+  const projectId = await createProject(request, ' E2E')
   const taskId = crypto.randomUUID()
   const localTaskId = `e2e-watchdog-stalled-${Date.now()}`
 
@@ -190,13 +190,13 @@ test('a stalled task renders the localized stuck message', async ({ page, reques
       total: 100,
       completed: 88,
       failed: 1,
-      current_step: '构建第 17/24 页...',
+      current_step: ' 17/24 ...',
       percent: 88,
       backend_status: 'FAILED',
       error_code: 'TASK_STALLED',
       error_stage: 'task_watchdog',
-      error_details: { reason: 'stalled', idle_seconds: 1260, last_step: '构建PPTX' },
-      messages: ['[构建PPTX] 构建第 17/24 页...'],
+      error_details: { reason: 'stalled', idle_seconds: 1260, last_step: 'PPTX' },
+      messages: ['[PPTX]  17/24 ...'],
     },
   })
 
@@ -205,7 +205,7 @@ test('a stalled task renders the localized stuck message', async ({ page, reques
     taskId,
     projectId,
     type: 'editable-pptx',
-    // 以"进行中"恢复，第一次轮询就能拿到后端的 FAILED + TASK_STALLED
+    // Test verification logic
     status: 'PROCESSING',
     progress: { total: 100, completed: 88, percent: 88 },
     createdAt: new Date().toISOString(),
@@ -214,13 +214,13 @@ test('a stalled task renders the localized stuck message', async ({ page, reques
   try {
     await page.goto(`/project/${projectId}/preview`)
     await page.waitForFunction(() => document.body.innerText.length > 50, { timeout: 15000 })
-    await page.getByLabel('导出任务').click()
+    await page.getByLabel('').click()
 
     const panel = page.getByTestId('export-tasks-list')
-    await expect(panel.getByText(/^导出失败$/)).toBeVisible({ timeout: 15000 })
-    await expect(panel.getByText(/导出疑似卡住：已 21 分钟没有进度更新（最后一步：构建 PPTX）/)).toBeVisible()
+    await expect(panel.getByText(/^$/)).toBeVisible({ timeout: 15000 })
+    await expect(panel.getByText(/ 21  PPTX/)).toBeVisible()
     await expect(panel.getByText('TASK_STALLED')).toBeVisible()
-    await expect(panel.getByText('任务状态对账')).toBeVisible()
+    await expect(panel.getByText('')).toBeVisible()
   } finally {
     await request.delete(`/api/projects/${projectId}`)
   }

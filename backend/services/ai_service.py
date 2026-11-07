@@ -40,11 +40,11 @@ logger = logging.getLogger(__name__)
 
 
 # Matches H1 headings that carry explicit part/section semantics, e.g.
-# "Part 1: ...", "Section A", "第一章", "第2部分", "第三节". Used to tell a real
+# Backend logic
 # opening chapter apart from a deck-level document title that has no such marker.
 _PART_HEADER_RE = re.compile(
-    r'^\s*(part|section|chapter|module|unit)\b'
-    r'|第\s*[0-9零一二三四五六七八九十百千]+\s*[章部节篇]',
+    r'^\s*(part|section|chapter|module|unit|chuong|phan)\b'
+    r'|\s*(part|chapter|chuong|phan)\s*[0-9]+',
     re.IGNORECASE,
 )
 
@@ -71,17 +71,17 @@ def _describe_json_response_text(text: str) -> str:
 
 
 class ProjectContext:
-    """项目上下文数据类，统一管理 AI 需要的所有项目信息"""
+    """ Backend docstring """
     
     def __init__(self, project_or_dict, reference_files_content: Optional[List[Dict[str, str]]] = None):
         """
         Args:
-            project_or_dict: 项目对象（Project model）或项目字典（project.to_dict()）
-            reference_files_content: 参考文件内容列表
+            project_or_dict:  (Project model)  (project.to_dict()) 
+            reference_files_content: 
         """
-        # 支持直接传入 Project 对象，避免 to_dict() 调用，提升性能
+        # Backend logic
         if hasattr(project_or_dict, 'idea_prompt'):
-            # 是 Project 对象
+            # Backend logic
             self.idea_prompt = project_or_dict.idea_prompt
             self.outline_text = project_or_dict.outline_text
             self.description_text = project_or_dict.description_text
@@ -89,7 +89,7 @@ class ProjectContext:
             self.outline_requirements = project_or_dict.outline_requirements
             self.description_requirements = project_or_dict.description_requirements
         else:
-            # 是字典
+            # Backend logic
             self.idea_prompt = project_or_dict.get('idea_prompt')
             self.outline_text = project_or_dict.get('outline_text')
             self.description_text = project_or_dict.get('description_text')
@@ -100,7 +100,7 @@ class ProjectContext:
         self.reference_files_content = reference_files_content or []
 
     def to_dict(self) -> Dict:
-        """转换为字典，方便传递"""
+        """ Backend docstring """
         return {
             'idea_prompt': self.idea_prompt,
             'outline_text': self.outline_text,
@@ -125,7 +125,7 @@ class AIService:
         """
         config = get_config()
 
-        # 优先使用 Flask app.config（可由 Settings 覆盖），否则回退到 Config 默认值
+        # Backend logic
         try:
             from flask import current_app, has_app_context
         except ImportError:
@@ -135,7 +135,7 @@ class AIService:
         if has_app_context() and current_app and hasattr(current_app, "config"):
             self.text_model = current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
             self.image_model = current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
-            # 分离的文本和图像推理配置
+            # Backend logic
             self.enable_text_reasoning = current_app.config.get("ENABLE_TEXT_REASONING", False)
             self.text_thinking_budget = current_app.config.get("TEXT_THINKING_BUDGET", 1024)
             self.enable_image_reasoning = current_app.config.get("ENABLE_IMAGE_REASONING", False)
@@ -161,41 +161,41 @@ class AIService:
     
     def _get_text_thinking_budget(self) -> int:
         """
-        获取文本生成的思考负载
+        
         
         Returns:
-            如果启用文本推理则返回配置的 budget，否则返回 0
+             budget,  0
         """
         return self.text_thinking_budget if self.enable_text_reasoning else 0
     
     def _get_image_thinking_budget(self) -> int:
         """
-        获取图像生成的思考负载
+        
         
         Returns:
-            如果启用图像推理则返回配置的 budget，否则返回 0
+             budget,  0
         """
         return self.image_thinking_budget if self.enable_image_reasoning else 0
     
     @staticmethod
     def extract_image_urls_from_markdown(text: str) -> List[str]:
         """
-        从 markdown 文本中提取图片 URL
+         markdown  URL
         
         Args:
-            text: Markdown 文本，可能包含 ![](url) 格式的图片
+            text: Markdown ,  ![](url) 
             
         Returns:
-            图片 URL 列表（包括 http/https URL 和 /files/ 开头的本地路径）
+             URL  ( http/https URL  /files/ ) 
         """
         if not text:
             return []
         
-        # 匹配 markdown 图片语法: ![](url) 或 ![alt](url)
+        # Backend logic
         pattern = r'!\[.*?\]\((.*?)\)'
         matches = re.findall(pattern, text)
         
-        # 过滤掉空字符串，支持 http/https URL 和 /files/ 开头的本地路径（包括 mineru、materials 等）
+        # Backend logic
         urls = []
         for url in matches:
             url = url.strip()
@@ -207,28 +207,28 @@ class AIService:
     @staticmethod
     def remove_markdown_images(text: str) -> str:
         """
-        从文本中移除 Markdown 图片链接，只保留 alt text（描述文字）
+         Markdown ,  alt text () 
         
         Args:
-            text: 包含 Markdown 图片语法的文本
+            text:  Markdown 
             
         Returns:
-            移除图片链接后的文本，保留描述文字
+            , 
         """
         if not text:
             return text
         
-        # 将 ![描述文字](url) 替换为 描述文字
-        # 如果没有描述文字（空的 alt text），则完全删除该图片链接
+        # Backend logic
+        # Backend logic
         def replace_image(match):
             alt_text = match.group(1).strip()
-            # 如果有描述文字，保留它；否则删除整个链接
+            # Backend logic
             return alt_text if alt_text else ''
         
         pattern = r'!\[(.*?)\]\([^\)]+\)'
         cleaned_text = re.sub(pattern, replace_image, text)
         
-        # 清理可能产生的多余空行
+        # Backend logic
         cleaned_text = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned_text)
         
         return cleaned_text
@@ -240,29 +240,29 @@ class AIService:
     )
     def generate_json(self, prompt: str, thinking_budget: int = 1000) -> Union[Dict, List]:
         """
-        生成并解析JSON，如果解析失败则重新生成
+        JSON, 
         
         Args:
-            prompt: 生成提示词
-            thinking_budget: 思考预算（会根据 enable_text_reasoning 配置自动调整）
+            prompt: 
+            thinking_budget:  ( enable_text_reasoning ) 
             
         Returns:
-            解析后的JSON对象（字典或列表）
+            JSON () 
             
         Raises:
-            json.JSONDecodeError: JSON解析失败（重试3次后仍失败）
+            json.JSONDecodeError: JSON (3) 
         """
-        # 调用AI生成文本（根据 enable_text_reasoning 配置调整 thinking_budget）
+        # Backend logic
         actual_budget = self._get_text_thinking_budget()
         response_text = self.text_provider.generate_text(prompt, thinking_budget=actual_budget)
         
-        # 清理响应文本：移除markdown代码块标记和多余空白
+        # Backend logic
         cleaned_text = response_text.strip().strip("```json").strip("```").strip()
         
         try:
             return json.loads(cleaned_text)
         except json.JSONDecodeError as e:
-            logger.warning(f"JSON解析失败，将重新生成。原始文本: {cleaned_text[:200]}... 错误: {str(e)}")
+            logger.warning(f"JSONphân tích thất bại, sẽ tạo lại. Văn bản gốc: {cleaned_text[:200]}... Lỗi: {str(e)}")
             raise
     
     @retry(
@@ -272,21 +272,21 @@ class AIService:
     )
     def generate_json_with_image(self, prompt: str, image_path: str, thinking_budget: int = 1000) -> Union[Dict, List]:
         """
-        带图片输入的JSON生成，如果解析失败则重新生成（最多重试3次）
+        JSON,  (3) 
         
         Args:
-            prompt: 生成提示词
-            image_path: 图片文件路径
-            thinking_budget: 思考预算（会根据 enable_text_reasoning 配置自动调整）
+            prompt: 
+            image_path: 
+            thinking_budget:  ( enable_text_reasoning ) 
             
         Returns:
-            解析后的JSON对象（字典或列表）
+            JSON () 
             
         Raises:
-            json.JSONDecodeError: JSON解析失败（重试3次后仍失败）
-            ValueError: caption_provider 不支持图片输入
+            json.JSONDecodeError: JSON (3) 
+            ValueError: caption_provider 
         """
-        # 使用 caption_provider（支持图片输入的多模态模型）
+        # Backend logic
         actual_budget = self._get_text_thinking_budget()
         provider = self.caption_provider
         if hasattr(provider, 'generate_with_image'):
@@ -302,21 +302,21 @@ class AIService:
                 thinking_budget=actual_budget
             )
         else:
-            raise ValueError("caption_provider 不支持图片输入")
+            raise ValueError("caption_provider không hỗ trợ đầu vào hình ảnh")
 
-        # 清理响应文本：移除markdown代码块标记和多余空白
+        # Backend logic
         cleaned_text = (response_text or "").strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
 
         if not cleaned_text:
-            logger.warning("视觉模型返回空响应（带图片），将重试")
-            raise ValueError("视觉模型返回空响应")
+            logger.warning("Mô hình thị giác trả về phản hồi rỗng (kèm hình ảnh) , sẽ thử lại")
+            raise ValueError("Mô hình thị giác trả về phản hồi rỗng")
 
         try:
             return json.loads(cleaned_text)
         except json.JSONDecodeError as e:
             logger.warning(
-                "JSON解析失败（带图片），将重新生成。provider=%s image=%s response_kind=%s response_len=%s "
-                "原始文本: %s... 错误: %s",
+                "JSONphân tích thất bại (kèm hình ảnh) , sẽ tạo lại. provider=%s image=%s response_kind=%s response_len=%s "
+                "Văn bản gốc: %s... Lỗi: %s",
                 provider.__class__.__name__,
                 os.path.basename(image_path),
                 _describe_json_response_text(cleaned_text),
@@ -329,13 +329,13 @@ class AIService:
     @staticmethod
     def _convert_mineru_path_to_local(mineru_path: str) -> Optional[str]:
         """
-        将 /files/mineru/{extract_id}/{rel_path} 格式的路径转换为本地文件系统路径（支持前缀匹配）
+         /files/mineru/{extract_id}/{rel_path}  () 
         
         Args:
-            mineru_path: MinerU URL 路径，格式为 /files/mineru/{extract_id}/{rel_path}
+            mineru_path: MinerU URL ,  /files/mineru/{extract_id}/{rel_path}
             
         Returns:
-            本地文件系统路径，如果转换失败则返回 None
+            ,  None
         """
         from utils.path_utils import find_mineru_file_with_prefix
         
@@ -345,22 +345,22 @@ class AIService:
     @staticmethod
     def download_image_from_url(url: str) -> Optional[Image.Image]:
         """
-        从 URL 下载图片并返回 PIL Image 对象
+         URL  PIL Image 
         
         Args:
-            url: 图片 URL
+            url:  URL
             
         Returns:
-            PIL Image 对象，如果下载失败则返回 None
+            PIL Image ,  None
         """
         try:
             logger.debug(f"Downloading image from URL: {url}")
             response = requests.get(url, timeout=30, stream=True)
             response.raise_for_status()
             
-            # 从响应内容创建 PIL Image
+            # Backend logic
             image = Image.open(response.raw)
-            # 确保图片被加载
+            # Backend logic
             image.load()
             logger.debug(f"Successfully downloaded image: {image.size}, {image.mode}")
             return image
@@ -374,7 +374,7 @@ class AIService:
         Based on demo.py gen_outline()
         
         Args:
-            project_context: 项目上下文对象，包含所有原始信息
+            project_context: , 
             
         Returns:
             List of outline items (may contain parts with pages or direct pages)
@@ -410,7 +410,7 @@ class AIService:
                 heading = stripped[2:].strip()
                 # A bare H1 before the first page is the deck-level document title,
                 # not a part — ignore it so it doesn't pollute the cover's part. But
-                # keep a real opening chapter (e.g. "第一章") when a deck starts
+                # Backend logic
                 # directly with a section and has no separate cover.
                 if not seen_page and not _is_part_header(heading):
                     continue
@@ -527,7 +527,7 @@ class AIService:
                 heading = stripped[2:].strip()
                 # A bare H1 before the first page is the deck-level document title,
                 # not a part — ignore it so it doesn't pollute the cover's part. But
-                # keep a real opening chapter (e.g. "第一章") when a deck starts
+                # Backend logic
                 # directly with a section and has no separate cover.
                 if not seen_page and not _is_part_header(heading):
                     return None
@@ -545,10 +545,10 @@ class AIService:
             if current_page is None:
                 return None
 
-            marker = stripped.strip('*_').strip().lower().replace('：', ':')
+            marker = stripped.strip('*_').strip().lower().replace(': ', ':')
             if (
                 marker == '<!-- outline_points -->'
-                or marker in ('大纲要点:', 'outline points:')
+                or marker in ('ý chính dàn ý:', 'dàn ý:', 'đại cương:', 'outline points:', '\u5927\u7eb2\u8981\u70b9:', '\u5927\u7eb2\u8981\u70b9\uff1a')
             ):
                 current_mode = 'points'
                 current_field = None
@@ -556,7 +556,7 @@ class AIService:
 
             if (
                 marker == '<!-- page_description -->'
-                or marker in ('页面描述:', 'page description:')
+                or marker in ('mô tả trang:', 'nội dung trang:', 'page description:', '\u9875\u9762\u63cf\u8ff0:', '\u9875\u9762\u63cf\u8ff0\uff1a')
             ):
                 current_mode = 'description'
                 current_field = None
@@ -566,7 +566,8 @@ class AIService:
                 if field_pattern:
                     field_match = field_pattern.match(stripped)
                     if field_match:
-                        current_field = field_match.group(1)
+                        from models import Settings
+                        current_field = Settings.LEGACY_FIELD_EQUIV.get(field_match.group(1), field_match.group(1))
                         value = field_match.group(2).strip()
                         if value:
                             current_page['extra_fields'][current_field] = value
@@ -620,7 +621,7 @@ class AIService:
         This method analyzes the text and splits it into pages without modifying the original text
         
         Args:
-            project_context: 项目上下文对象，包含所有原始信息
+            project_context: , 
         
         Returns:
             List of outline items (may contain parts with pages or direct pages)
@@ -722,64 +723,66 @@ class AIService:
     @staticmethod
     def _parse_extra_fields(text: str, field_names: list) -> tuple:
         """
-        从描述文本中解析额外字段，返回 (cleaned_text, extra_fields_dict)。
+        ,  (cleaned_text, extra_fields_dict). 
 
-        遍历 field_names，按出现顺序依次提取每个字段的内容。
-        两个相邻字段之间的文本属于前一个字段。
-        字段行可以位于文本开头或任意行首——开头的字段若不被识别，
-        会残留在正文里被逐字渲染到幻灯片上。
+         field_names, . 
+        . 
+        ——, 
+        . 
         """
         if not field_names:
             return text, {}
 
         extra_fields = {}
-        # 找到所有字段在文本中的起始位置
+        # Backend logic
         positions = []
         for name in field_names:
-            match = re.search(rf'(?:^|\n){re.escape(name)}[：:]\s*', text)
+            match = re.search(rf'(?:^|\n){re.escape(name)}[: :]\s*', text)
             if match:
                 positions.append((match.start(), match.end(), name))
 
         if not positions:
             return text, {}
 
-        # 按位置排序
+        # Backend logic
         positions.sort(key=lambda x: x[0])
 
-        # 提取每个字段的值
+        # Backend logic
         for i, (start, end, name) in enumerate(positions):
             if i + 1 < len(positions):
                 value = text[end:positions[i + 1][0]].strip()
             else:
                 value = text[end:].strip()
-            # 清理 HTML 注释标记
+            # Backend logic
             value = re.sub(r'<!--.*?-->', '', value).strip()
             if value:
-                extra_fields[name] = value
+                from models import Settings
+                norm_name = Settings.LEGACY_FIELD_EQUIV.get(name, name)
+                extra_fields[norm_name] = value
 
-        # 清理后的描述文本（截取到第一个字段之前）
+        # Backend logic
         cleaned_text = text[:positions[0][0]].strip()
 
         return cleaned_text, extra_fields
 
     @staticmethod
     def _get_extra_field_names() -> list:
-        """从 Settings 读取配置的额外字段名列表。"""
+        """ Backend docstring """
         try:
             from models import Settings
             settings = Settings.get_settings()
             return settings.get_description_extra_fields()
         except Exception:
             logger.warning("Failed to get extra field names from settings", exc_info=True)
-            return ['配图与素材', '版式与重点', '演讲者备注']
+            return ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình']
 
     @classmethod
     def _get_parseable_field_names(cls) -> list:
-        """解析用字段名 = 当前配置字段 + 旧字段名。
+        """ =  + . 
 
-        指令只用配置字段（不能让模型输出已停用的字段名），但解析要宽容：
-        模型若沿用参考资料里的旧字段名，必须切进 extra_fields，
-        否则字段行会留在页面文字里被逐字渲染到幻灯片上。
+         () , : 
+        ,  extra_fields, 
+        . 
         """
         from models import Settings
         return list(dict.fromkeys(
@@ -794,7 +797,7 @@ class AIService:
         Based on demo.py gen_desc() logic
 
         Args:
-            project_context: 项目上下文对象，包含所有原始信息
+            project_context: , 
             outline: Complete outline
             page_outline: Outline for this specific page
             page_index: Page number (1-indexed)
@@ -817,7 +820,7 @@ class AIService:
             extra_fields=extra_field_names,
         )
 
-        # 根据 enable_text_reasoning 配置调整 thinking_budget
+        # Backend logic
         actual_budget = self._get_text_thinking_budget()
         response_text = self.text_provider.generate_text(desc_prompt, thinking_budget=actual_budget)
 
@@ -902,7 +905,8 @@ class AIService:
             if field_pattern:
                 field_match = field_pattern.match(stripped)
                 if field_match:
-                    field_name = field_match.group(1)
+                    from models import Settings
+                    field_name = Settings.LEGACY_FIELD_EQUIV.get(field_match.group(1), field_match.group(1))
                     current_field = field_name
                     value = field_match.group(2).strip()
                     if value:
@@ -957,7 +961,7 @@ class AIService:
         if not field_names:
             return None
         escaped = '|'.join(re.escape(name) for name in field_names)
-        return re.compile(rf'^({escaped})[：:]\s*(.*)')
+        return re.compile(rf'^({escaped})[: :]\s*(.*)')
     
     def generate_outline_text(self, outline: List[Dict]) -> str:
         """
@@ -985,9 +989,9 @@ class AIService:
         Generate image generation prompt for a page
 
         Args:
-            has_template: 是否有模板图片(False=无模板图模式)
-            page_style_text: 页级文字风格(per-page-template 决策 7);
-                非空时拼入风格段,优先级高于项目级 template_style
+            has_template: (False=)
+            page_style_text: (per-page-template  7);
+                , template_style
         """
         outline_text = self.generate_outline_text(outline)
         if 'part' in page:
@@ -1083,7 +1087,7 @@ class AIService:
             ref_image_path: Path to reference image (optional). If None, will generate based on prompt only.
             aspect_ratio: Image aspect ratio
             resolution: Image resolution (note: OpenAI format only supports 1K)
-            additional_ref_images: 额外的参考图片列表，可以是本地路径、URL 或 PIL Image 对象
+            additional_ref_images: , , URL  PIL Image 
         
         Returns:
             PIL Image object or None if failed
@@ -1097,12 +1101,12 @@ class AIService:
                 logger.debug(f"Additional reference images: {len(additional_ref_images)}")
             logger.debug(f"Config - aspect_ratio: {aspect_ratio}, resolution: {resolution}")
 
-            # 构建参考图片列表
+            # Backend logic
             ref_images = []
-            # 只关闭此方法打开的图片，不关闭调用方传入的 PIL Image 对象
+            # Backend logic
             owned_images = []
 
-            # 添加主参考图片（如果提供了路径）
+            # Backend logic
             if ref_image_path:
                 if not os.path.exists(ref_image_path):
                     raise FileNotFoundError(f"Reference image not found: {ref_image_path}")
@@ -1110,21 +1114,21 @@ class AIService:
                 ref_images.append(main_ref_image)
                 owned_images.append(main_ref_image)
 
-            # 添加额外的参考图片
+            # Backend logic
             if additional_ref_images:
                 for ref_img in additional_ref_images:
                     if isinstance(ref_img, Image.Image):
-                        # 已经是 PIL Image 对象，由调用方负责关闭
+                        # Backend logic
                         ref_images.append(ref_img)
                     elif isinstance(ref_img, str):
-                        # 可能是本地路径或 URL
+                        # Backend logic
                         if os.path.exists(ref_img):
-                            # 本地路径
+                            # Backend logic
                             opened = Image.open(ref_img)
                             ref_images.append(opened)
                             owned_images.append(opened)
                         elif ref_img.startswith('http://') or ref_img.startswith('https://'):
-                            # URL，需要下载
+                            # Backend logic
                             downloaded_img = self.download_image_from_url(ref_img)
                             if downloaded_img:
                                 ref_images.append(downloaded_img)
@@ -1132,7 +1136,7 @@ class AIService:
                             else:
                                 logger.warning(f"Failed to download image from URL: {ref_img}, skipping...")
                         elif ref_img.startswith('/files/mineru/'):
-                            # MinerU 本地文件路径，需要转换为文件系统路径（支持前缀匹配）
+                            # Backend logic
                             local_path = self._convert_mineru_path_to_local(ref_img)
                             if local_path and os.path.exists(local_path):
                                 opened = Image.open(local_path)
@@ -1142,7 +1146,7 @@ class AIService:
                             else:
                                 logger.warning(f"MinerU image file not found (with prefix matching): {ref_img}, skipping...")
                         elif ref_img.startswith('/files/'):
-                            # 通用 /files/ 路径（materials、项目文件等），转换为文件系统路径
+                            # Backend logic
                             upload_folder = get_config().UPLOAD_FOLDER
                             upload_folder_real = os.path.realpath(upload_folder)
                             relative_path = ref_img[len('/files/'):].lstrip('/\\')
@@ -1169,8 +1173,8 @@ class AIService:
             logger.debug(f"Enable image reasoning/thinking: {self.enable_image_reasoning}, budget: {self._get_image_thinking_budget()}")
 
             try:
-                # 使用 image_provider 生成图片
-                # 根据 enable_image_reasoning 配置控制图像生成的思考模式
+                # Backend logic
+                # Backend logic
                 return self.image_provider.generate_image(
                     prompt=prompt,
                     ref_images=ref_images if ref_images else None,
@@ -1205,7 +1209,7 @@ class AIService:
             aspect_ratio: Image aspect ratio
             resolution: Image resolution
             original_description: Original page description to include in prompt
-            additional_ref_images: 额外的参考图片列表，可以是本地路径、URL 或 PIL Image 对象
+            additional_ref_images: , , URL  PIL Image 
         
         Returns:
             PIL Image object or None if failed
@@ -1219,10 +1223,10 @@ class AIService:
     
     def parse_description_to_outline(self, project_context: ProjectContext, language='zh') -> List[Dict]:
         """
-        从描述文本解析出大纲结构
+        
         
         Args:
-            project_context: 项目上下文对象，包含所有原始信息
+            project_context: , 
         
         Returns:
             List of outline items (may contain parts with pages or direct pages)
@@ -1235,11 +1239,11 @@ class AIService:
                                                outline: List[Dict],
                                                language='zh') -> List[str]:
         """
-        从描述文本切分出每页描述
+        
         
         Args:
-            project_context: 项目上下文对象，包含所有原始信息
-            outline: 已解析出的大纲结构
+            project_context: , 
+            outline: 
         
         Returns:
             List of page descriptions (strings), one for each page in the outline
@@ -1247,7 +1251,7 @@ class AIService:
         split_prompt = get_description_split_prompt(project_context, outline, language)
         descriptions = self.generate_json(split_prompt, thinking_budget=1000)
         
-        # 确保返回的是字符串列表
+        # Backend logic
         if isinstance(descriptions, list):
             return [str(desc) for desc in descriptions]
         else:
@@ -1258,16 +1262,16 @@ class AIService:
                       previous_requirements: Optional[List[str]] = None,
                       language='zh') -> List[Dict]:
         """
-        根据用户要求修改已有大纲
+        
         
         Args:
-            current_outline: 当前的大纲结构
-            user_requirement: 用户的新要求
-            project_context: 项目上下文对象，包含所有原始信息
-            previous_requirements: 之前的修改要求列表（可选）
+            current_outline: 
+            user_requirement: 
+            project_context: , 
+            previous_requirements:  () 
         
         Returns:
-            修改后的大纲结构
+            
         """
         refinement_prompt = get_outline_refinement_prompt(
             current_outline=current_outline,
@@ -1285,18 +1289,18 @@ class AIService:
                            previous_requirements: Optional[List[str]] = None,
                            language='zh') -> List[Dict]:
         """
-        根据用户要求修改已有页面描述
+        
 
         Args:
-            current_descriptions: 当前的页面描述列表，每个元素包含 {index, title, description_content}
-            user_requirement: 用户的新要求
-            project_context: 项目上下文对象，包含所有原始信息
-            outline: 完整的大纲结构（可选）
-            previous_requirements: 之前的修改要求列表（可选）
+            current_descriptions: ,  {index, title, description_content}
+            user_requirement: 
+            project_context: , 
+            outline:  () 
+            previous_requirements:  () 
 
         Returns:
-            修改后的页面描述列表，每个元素为 {'text': ..., 'extra_fields': {...}}。
-            额外字段必须切分出来，否则字段行会被当作页面文字渲染到幻灯片上。
+            Danh sách mô tả trang sau khi chỉnh sửa, mỗi phần tử là {'text': ..., 'extra_fields': {...}}. 
+            , . 
         """
         refinement_prompt = get_descriptions_refinement_prompt(
             current_descriptions=current_descriptions,
@@ -1314,15 +1318,15 @@ class AIService:
         field_names = self._get_parseable_field_names()
         results = []
         for desc in descriptions:
-            # 模型偶尔会返回对象而非字符串；直接 str() 会把 Python dict/list
-            # 字面量渲染到幻灯片上，先按「字段：值」逐行摊平再解析
+            # Backend logic
+            # Backend logic
             if isinstance(desc, dict):
                 lines = []
                 for k, v in desc.items():
                     if not v:
                         continue
                     value = '\n'.join(str(i) for i in v) if isinstance(v, list) else str(v)
-                    lines.append(f'{k}：{value}')
+                    lines.append(f'{k}: {value}')
                 desc_text = '\n'.join(lines)
             else:
                 desc_text = str(desc)
@@ -1335,11 +1339,11 @@ class AIService:
 
     def extract_page_content(self, markdown_text: str, language: str = 'zh') -> Dict:
         """
-        从 fileparser 解析出的 markdown 文本中提取页面结构化内容
+         fileparser  markdown 
 
         Args:
-            markdown_text: 单页 PDF 解析出的 markdown 文本
-            language: 输出语言
+            markdown_text:  PDF  markdown 
+            language: 
 
         Returns:
             Dict with keys: title, points, description
@@ -1375,20 +1379,20 @@ class AIService:
                 thinking_budget=actual_budget
             )
         else:
-            raise ValueError("caption_provider 不支持图片输入")
+            raise ValueError("caption_provider không hỗ trợ đầu vào hình ảnh")
 
         return response_text.strip()
 
     def generate_layout_caption(self, image_path: str) -> str:
-        """使用 caption model 描述 PPT 页面的排版布局"""
+        """ Backend docstring """
         return self._generate_text_from_image(get_layout_caption_prompt(), image_path)
 
     def extract_style_description(self, image_path: str) -> str:
-        """从图片中提取风格描述"""
+        """ Backend docstring """
         return self._generate_text_from_image(get_style_extraction_prompt(), image_path)
 
     def generate_style_from_content(self, content: str, language: str = 'zh') -> str:
-        """根据内容/大纲生成 PPT 视觉风格描述"""
+        """ Backend docstring """
         if not content or not content.strip():
             raise ValueError("Content cannot be empty for style generation")
         prompt = get_style_from_content_prompt(content=content, language=language)
@@ -1520,7 +1524,7 @@ class AIService:
         extra_fields = desc.get('extra_fields') or {}
         layout_hint = ' / '.join(
             f'{k}: {v}' for k, v in extra_fields.items()
-            if v and k != '演讲者备注'
+            if v and k != 'Ghi chú thuyết trình'
         )[:300] if isinstance(extra_fields, dict) else ''
         body_len = len(joined)
         if body_len < 200:

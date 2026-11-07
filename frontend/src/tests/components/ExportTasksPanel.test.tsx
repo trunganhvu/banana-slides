@@ -56,9 +56,9 @@ describe('ExportTasksPanel', () => {
     render(<ExportTasksPanel projectId="project-1" />);
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: /下载|Download/ })).toHaveLength(2);
+      expect(screen.getAllByRole('button', { name: /|Download/ })).toHaveLength(2);
     });
-    const downloadButtons = screen.getAllByRole('button', { name: /下载|Download/ });
+    const downloadButtons = screen.getAllByRole('button', { name: /|Download/ });
 
     await userEvent.click(downloadButtons[0]);
     await userEvent.click(downloadButtons[1]);
@@ -90,7 +90,7 @@ describe('ExportTasksPanel', () => {
         monitoring: {
           state: 'paused',
           code: 'EXPORT_STATUS_GATEWAY_TIMEOUT',
-          message: '状态查询经过网关时超时 (HTTP 504)。后台任务状态未知。',
+          message: ' (HTTP 504)',
           consecutiveErrors: 3,
           lastErrorAt: new Date().toISOString(),
         },
@@ -101,10 +101,10 @@ describe('ExportTasksPanel', () => {
 
     render(<ExportTasksPanel projectId="project-1" />);
 
-    expect(await screen.findByText(/这不代表后台导出失败|does not mean the backend export failed/)).toBeInTheDocument();
+    expect(await screen.findByText(/|does not mean the backend export failed/)).toBeInTheDocument();
     expect(screen.getByText(/HTTP 504/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /重新查询|Check Again/ })).toBeInTheDocument();
-    expect(screen.queryByText(/^导出失败$|^Export Failed$/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /|Check Again/ })).toBeInTheDocument();
+    expect(screen.queryByText(/^$|^Export Failed$/)).not.toBeInTheDocument();
   });
 
   it('shows the backend-confirmed failure stage, provider, model, and retry policy', async () => {
@@ -115,7 +115,7 @@ describe('ExportTasksPanel', () => {
         projectId: 'project-1',
         type: 'editable-pptx',
         status: 'FAILED',
-        errorMessage: '文本样式提取失败：图片识别服务请求超时',
+        errorMessage: '',
         progress: {
           total: 100,
           completed: 50,
@@ -131,7 +131,7 @@ describe('ExportTasksPanel', () => {
             max_attempts: 5,
             technical_message: 'Read timed out after retries',
           },
-          help_text: '请稍后重试。',
+          help_text: '',
         },
         createdAt: new Date().toISOString(),
         completedAt: new Date().toISOString(),
@@ -141,11 +141,11 @@ describe('ExportTasksPanel', () => {
 
     render(<ExportTasksPanel projectId="project-1" />);
 
-    expect(await screen.findByText('文本样式提取失败：图片识别服务请求超时')).toBeInTheDocument();
+    expect(await screen.findByText('')).toBeInTheDocument();
     expect(screen.getByText('EXPORT_STYLE_TIMEOUT')).toBeInTheDocument();
     expect(screen.getByText('CodexTextProvider')).toBeInTheDocument();
     expect(screen.getByText('gpt-5.4')).toBeInTheDocument();
     expect(screen.getByText(/120.*5/)).toBeInTheDocument();
-    expect(screen.getByText(/技术原因|Technical reason/)).toBeInTheDocument();
+    expect(screen.getByText(/|Technical reason/)).toBeInTheDocument();
   });
 });

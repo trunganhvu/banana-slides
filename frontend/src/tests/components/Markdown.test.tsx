@@ -1,5 +1,5 @@
 /**
- * Markdown 组件测试 - 验证 LaTeX 公式渲染
+ * Markdown  -  LaTeX 
  */
 
 import { describe, it, expect } from 'vitest'

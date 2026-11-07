@@ -5,10 +5,10 @@ import { Card } from '@/components/shared';
 import { getProjectTitle, getFirstPageImage, formatDate, getStatusText, getStatusColor } from '@/utils/projectUtils';
 import type { Project } from '@/types';
 
-// ProjectCard 组件自包含翻译
+// Component logic
 const projectCardI18n = {
   zh: {
-    projectCard: { pages: "{{count}} 页", page: "第 {{num}} 页" }
+    projectCard: { pages: "{{count}} pages", page: "Trang {{num}}" }
   },
   en: {
     projectCard: { pages: "{{count}} pages", page: "Page {{num}}" }
@@ -45,7 +45,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   isBatchMode,
 }) => {
   const t = useT(projectCardI18n);
-  // 检测屏幕尺寸，只在非手机端加载图片（必须在早期返回之前声明hooks）
+  // Component logic
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
   
   useEffect(() => {
@@ -80,7 +80,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       onClick={() => onSelect(project)}
     >
       <div className="flex items-start gap-3 md:gap-4">
-        {/* 复选框 */}
+        {/* UI element */}
         <div className="pt-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
@@ -90,7 +90,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         </div>
         
-        {/* 中间：项目信息 */}
+        {/* UI element */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 md:gap-3 mb-2 flex-wrap">
             {isEditing ? (
@@ -133,7 +133,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </div>
         
-        {/* 右侧：图片预览 */}
+        {/* UI element */}
         <div className="hidden sm:block w-40 h-24 md:w-64 md:h-36 rounded-lg overflow-hidden bg-gray-100 dark:bg-background-secondary border border-gray-200 dark:border-border-primary flex-shrink-0">
           {firstPageImage ? (
             <img
@@ -148,7 +148,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </div>
         
-        {/* 右侧：操作按钮 */}
+        {/* UI element */}
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={(e) => onDelete(e, project)}

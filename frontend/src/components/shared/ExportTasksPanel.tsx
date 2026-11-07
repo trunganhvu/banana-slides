@@ -9,43 +9,43 @@ import { cn } from '@/utils';
 import * as api from '@/api/endpoints';
 import { triggerDownload } from '@/api/client';
 
-// Export 组件自包含翻译
+// Component logic
 const exportI18n = {
   zh: {
     export: {
-      tasks: "导出任务", inProgress: "{{count}} 进行中", clearHistory: "清除",
-      exportPptx: "PPTX", exportPdf: "PDF", exportEditablePptx: "可编辑 PPTX", exportImages: "图片", exportVideo: "讲解视频",
-      allPages: "全部", pageRange: "第{{start}}-{{end}}页", singlePage: "第{{num}}页", pagesCount: "{{count}}页",
-      warnings: "{{count}} 条警告", clickToView: "点击查看", warningsTitle: "导出警告",
-      warningsCount: "导出警告 ({{count}} 条)", detailInfo: "详细信息",
-      styleExtractionFailed: "样式提取失败 ({{count}} 个)", textRenderFailed: "文本渲染失败 ({{count}} 个)",
-      moreItems: "... 还有 {{count}} 条", exportFailed: "导出失败", preparing: "准备中...",
-      settingsTip: "可在「项目设置 → 导出设置」中调整配置或开启「返回半成品」选项",
-      codexReconnectTip: "如果是 Codex 登录过期或连接中断，也可以前往设置重新登录 OpenAI 账号后再试",
-      monitoringInterrupted: "状态查询暂时中断",
-      backendNotFailed: "这不代表后台导出失败",
-      retryStatus: "重新查询",
-      retryCount: "已自动重连 {{count}} 次",
-      failureStage: "失败阶段",
-      errorCode: "错误代码",
-      provider: "服务通道",
-      model: "模型",
-      retryPolicy: "单次最长 {{seconds}} 秒，最多 {{attempts}} 次",
-      technicalReason: "技术原因",
-      styleExtractionStage: "文本样式提取",
-      queueSubmissionStage: "后台任务提交",
-      textRenderStage: "内容写入",
-      taskWatchdogStage: "任务状态对账",
-      taskInterruptedHelp: "点任务右侧的 × 移除这条记录，然后重新发起即可。",
-      taskStalledHelp: "可以点右侧的 × 移除该任务后重新导出；若反复出现，请把应用日志发给开发者。",
-      exportedFiles: "已导出文件",
-      deleteExportTitle: "删除导出文件",
-      deleteExportMessage: "确定要删除「{{filename}}」吗？此操作会移除服务器上的文件。",
-      deleteExportConfirm: "删除文件",
-      deleteExportFailed: "删除导出文件失败",
-      dismissDeleteError: "关闭删除错误",
+      tasks: "Tác vụ xuất", inProgress: "{{count}} đang xử lý", clearHistory: "Xóa lịch sử",
+      exportPptx: "PPTX", exportPdf: "PDF", exportEditablePptx: "PPTX có thể chỉnh sửa", exportImages: "Hình ảnh", exportVideo: "Video thuyết minh",
+      allPages: "Tất cả", pageRange: "Trang {{start}}-{{end}}", singlePage: "Trang {{num}}", pagesCount: "{{count}} trang",
+      warnings: "{{count}} cảnh báo", clickToView: "Nhấp để xem", warningsTitle: "Cảnh báo xuất",
+      warningsCount: "Cảnh báo xuất ({{count}})", detailInfo: "Chi tiết",
+      styleExtractionFailed: "Trích xuất kiểu thất bại ({{count}})", textRenderFailed: "Kết xuất văn bản thất bại ({{count}})",
+      moreItems: "... còn {{count}} mục", exportFailed: "Xuất thất bại", preparing: "Đang chuẩn bị...",
+      settingsTip: "Có thể điều chỉnh cấu hình trong 'Cài đặt dự án → Cài đặt xuất' hoặc bật tùy chọn 'Trả về bán thành phẩm'",
+      codexReconnectTip: "Nếu phiên đăng nhập Codex hết hạn hoặc kết nối bị gián đoạn, bạn có thể vào Cài đặt để kết nối lại tài khoản OpenAI rồi thử lại.",
+      monitoringInterrupted: "Truy vấn trạng thái tạm thời bị gián đoạn",
+      backendNotFailed: "Điều này không có nghĩa là tác vụ xuất ngầm bị thất bại",
+      retryStatus: "Kiểm tra lại",
+      retryCount: "Đã tự động thử lại {{count}} lần",
+      failureStage: "Giai đoạn thất bại",
+      errorCode: "Mã lỗi",
+      provider: "Kênh dịch vụ",
+      model: "Mô hình",
+      retryPolicy: "Tối đa {{seconds}} giây mỗi lần, tối đa {{attempts}} lần thử",
+      technicalReason: "Lý do kỹ thuật",
+      styleExtractionStage: "Trích xuất kiểu văn bản",
+      queueSubmissionStage: "Gửi tác vụ ngầm",
+      textRenderStage: "Kết xuất nội dung",
+      taskWatchdogStage: "Đối soát trạng thái tác vụ",
+      taskInterruptedHelp: "Xóa mục này bằng nút ×, sau đó bắt đầu xuất lại.",
+      taskStalledHelp: "Xóa tác vụ bằng nút × và xuất lại. Nếu sự cố vẫn tiếp diễn, hãy gửi nhật ký ứng dụng cho nhà phát triển.",
+      exportedFiles: "Tệp đã xuất",
+      deleteExportTitle: "Xóa tệp đã xuất",
+      deleteExportMessage: "Xóa '{{filename}}' khỏi máy chủ?",
+      deleteExportConfirm: "Xóa tệp",
+      deleteExportFailed: "Xóa tệp đã xuất thất bại",
+      dismissDeleteError: "Bỏ qua lỗi xóa",
     },
-    shared: { historyRecords: "历史记录" }
+    shared: { historyRecords: "Lịch sử" }
   },
   en: {
     export: {
@@ -56,7 +56,7 @@ const exportI18n = {
       warningsCount: "Export Warnings ({{count}})", detailInfo: "Details",
       styleExtractionFailed: "Style extraction failed ({{count}})", textRenderFailed: "Text render failed ({{count}})",
       moreItems: "... {{count}} more", exportFailed: "Export Failed", preparing: "Preparing...",
-      settingsTip: "Adjust settings in \"Project Settings → Export Settings\" or enable \"Allow Partial Results\"",
+      settingsTip: "Adjust settings in 'Project Settings → Export Settings' or enable 'Allow Partial Results'",
       codexReconnectTip: "If Codex login expired or the connection was interrupted, reconnect your OpenAI account in Settings and try again.",
       monitoringInterrupted: "Status checks interrupted",
       backendNotFailed: "This does not mean the backend export failed",
@@ -76,7 +76,7 @@ const exportI18n = {
       taskStalledHelp: "Remove the task with the × button and export again. If it keeps happening, send the app log to the developer.",
       exportedFiles: "Exported Files",
       deleteExportTitle: "Delete Exported File",
-      deleteExportMessage: "Delete \"{{filename}}\" from the server?",
+      deleteExportMessage: "Delete '{{filename}}' from the server?",
       deleteExportConfirm: "Delete File",
       deleteExportFailed: "Failed to delete exported file",
       dismissDeleteError: "Dismiss delete error",
@@ -274,7 +274,7 @@ const TaskItem: React.FC<{
     task_watchdog: t('export.taskWatchdogStage'),
   };
   const errorStageLabel = errorStage ? (errorStageLabels[errorStage] || errorStage) : undefined;
-  // 看门狗失败的帮助文案由前端本地化，避免英文界面下混排中文
+  // Component logic
   const watchdogHelpKey = task.progress?.error_code === 'TASK_INTERRUPTED'
     ? 'export.taskInterruptedHelp'
     : task.progress?.error_code === 'TASK_STALLED'
@@ -565,7 +565,7 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
     restoreActiveTasks();
   }, []);
 
-  // 从服务端加载已导出文件列表
+  // Component logic
   useEffect(() => {
     if (!projectId) return;
     api.listExports(projectId)
@@ -613,7 +613,7 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
     );
   };
 
-  // 同时没有任务也没有文件时隐藏面板
+  // Component logic
   if (filteredTasks.length === 0 && exportedFiles.length === 0) {
     return null;
   }
@@ -679,7 +679,7 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
             </div>
           )}
 
-          {/* 服务端已导出文件 */}
+          {/* UI element */}
           {exportedFiles.length > 0 && (
             <div className="p-2 border-t border-gray-100 dark:border-border-primary">
               <div className="px-3 py-1 mb-1">

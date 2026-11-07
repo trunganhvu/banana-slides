@@ -7,18 +7,18 @@ import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/
 import { useDescriptionGeneratingState } from '@/hooks/useGeneratingState';
 import type { Page, DescriptionContent, Material } from '@/types';
 
-// DescriptionCard 组件自包含翻译
+// Component logic
 const descriptionCardI18n = {
   zh: {
     descriptionCard: {
-      page: "第 {{num}} 页", regenerate: "重新生成",
-      descriptionTitle: "编辑页面描述", description: "页面文字",
-      noDescription: "还没有生成描述",
-      uploadingImage: "正在上传图片...",
-      descriptionPlaceholder: "只写会渲染到页面上的文字（标题、要点、数据等），支持粘贴图片；配图与排版要求请写到下方对应字段",
-      coverPage: "封面",
-      coverPageTooltip: "第一页为封面页，默认保持简洁风格",
-      notInImagePrompt: "不影响图片生成"
+      page: "Trang {{num}}", regenerate: "Tạo lại",
+      descriptionTitle: "Chỉnh sửa mô tả trang", description: "Văn bản trang",
+      noDescription: "Chưa có mô tả nào được tạo",
+      uploadingImage: "Đang tải ảnh lên...",
+      descriptionPlaceholder: "Chỉ nhập văn bản hiển thị trên trang (tiêu đề, ý chính, số liệu); yêu cầu hình ảnh và bố cục vui lòng điền vào các trường bên dưới.",
+      coverPage: "Bìa",
+      coverPageTooltip: "Trang đầu tiên là trang bìa, mặc định giữ phong cách tối giản",
+      notInImagePrompt: "Không dùng khi tạo ảnh"
     }
   },
   en: {
@@ -47,7 +47,7 @@ export interface DescriptionCardProps {
   isAiRefining?: boolean;
 }
 
-// 从 description_content 提取文本内容（提取到组件外部供 memo 比较器使用）
+// Component logic
 const getDescriptionText = (descContent: DescriptionContent | undefined): string => {
   if (!descContent) return '';
   if ('text' in descContent) {
@@ -58,16 +58,16 @@ const getDescriptionText = (descContent: DescriptionContent | undefined): string
   return '';
 };
 
-// 提取 extra_fields，向后兼容 layout_suggestion
+// Component logic
 const getExtraFields = (descContent: DescriptionContent | undefined): Record<string, string> => {
   if (!descContent) return {};
   if (descContent.extra_fields) return descContent.extra_fields;
-  // 向后兼容：旧数据只有 layout_suggestion
-  if (descContent.layout_suggestion) return { '排版建议': descContent.layout_suggestion };
+  // Component logic
+  if (descContent.layout_suggestion) return { 'Gợi ý bố cục': descContent.layout_suggestion };
   return {};
 };
 
-// 用于 memo 比较的序列化 key
+// Component logic
 const getExtraFieldsKey = (descContent: DescriptionContent | undefined): string => {
   const fields = getExtraFields(descContent);
   return JSON.stringify(fields);
@@ -127,11 +127,11 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
     activeInsertAtCursor.current = (md: string) => extraFieldRefs.current[fieldName]?.insertAtCursor(md);
   }, []);
 
-  // 通过 page.status 驱动骨架屏，与图片生成的 GENERATING 状态互不干扰
+  // Component logic
   const generating = useDescriptionGeneratingState(page, isAiRefining);
 
   const handleEdit = () => {
-    // 在打开编辑对话框时，从当前的 page 获取最新值
+    // Component logic
     const currentText = getDescriptionText(page.description_content);
     const currentExtraFields = getExtraFields(page.description_content);
     setEditContent(currentText);
@@ -140,7 +140,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
   };
 
   const handleSave = () => {
-    // 保存时包含 text 和 extra_fields
+    // Component logic
     const filteredFields: Record<string, string> = {};
     for (const [key, value] of Object.entries(editExtraFields)) {
       if (value.trim()) {
@@ -156,13 +156,23 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
     setIsEditing(false);
   };
 
-  // 合并已有和配置中的字段名（按配置顺序，附加已有但不在配置中的）
-  const allFieldNames = [...new Set([...extraFieldNames, ...Object.keys(extraFields)])];
+  const LEGACY_MAP: Record<string, string> = {
+    '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+    '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+    '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+    '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
+    '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
+    '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
+    '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
+  };
+  const normKey = (k: string) => LEGACY_MAP[k] || k;
+  // Component logic
+  const allFieldNames = [...new Set([...extraFieldNames.map(normKey), ...Object.keys(extraFields).map(normKey)])];
 
   return (
     <>
       <Card className="p-0 overflow-hidden flex flex-col">
-        {/* 标题栏 */}
+        {/* UI element */}
         <div className="bg-banana-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -185,7 +195,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
           </div>
         </div>
 
-        {/* 内容 */}
+        {/* UI element */}
         <div className="p-4 flex-1 max-h-96 overflow-y-auto desc-card-scroll" data-testid="description-card-content">
           {generating ? (
             <div className="space-y-2">
@@ -200,12 +210,17 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
             <div className="text-sm text-gray-700 dark:text-foreground-secondary">
               <Markdown>{text}</Markdown>
               {allFieldNames.map(name => {
-                const value = extraFields[name];
+                const value = extraFields[name] || extraFields[Object.keys(LEGACY_MAP).find(k => LEGACY_MAP[k] === name) || ''];
                 if (!value) return null;
-                // 新字段 + 旧字段名（存量数据不迁移，仍需正常展示）
+                // Component logic
                 const FIELD_ICONS: Record<string, typeof Tag> = {
-                  '配图与素材': Image, '版式与重点': Layout, '演讲者备注': MessageSquare,
-                  '视觉元素': Image, '视觉焦点': Focus, '排版布局': Layout, '排版建议': Layout,
+                  'Hình ảnh & Tư liệu': Image,
+                  'Bố cục & Trọng tâm': Layout,
+                  'Ghi chú thuyết trình': MessageSquare,
+                  'Yếu tố thị giác': Image,
+                  'Điểm nhấn thị giác': Focus,
+                  'Bố cục trình bày': Layout,
+                  'Gợi ý bố cục': Layout,
                 };
                 const FieldIcon = FIELD_ICONS[name] || Tag;
                 const notInImagePrompt = imagePromptFields && !imagePromptFields.includes(name);
@@ -236,7 +251,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
           )}
         </div>
 
-        {/* 操作栏 */}
+        {/* UI element */}
         <div className="border-t border-gray-100 dark:border-border-primary px-4 py-3 flex justify-end gap-2 mt-auto">
           <Button
             variant="ghost"
@@ -259,7 +274,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
         </div>
       </Card>
 
-      {/* 编辑对话框 */}
+      {/* UI element */}
       <Modal
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
@@ -279,7 +294,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
             rows={6}
             placeholder={t('descriptionCard.descriptionPlaceholder')}
           />
-          {/* 额外字段编辑 */}
+          {/* UI element */}
           {allFieldNames.map(name => (
             <MarkdownTextarea
               key={name}

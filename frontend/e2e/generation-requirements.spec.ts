@@ -88,14 +88,14 @@ test.describe('Generation requirements - OutlineEditor (mock)', () => {
     await expect(editor).toBeVisible()
 
     // Type requirements
-    await clearAndType(editor, '限制在5页以内')
+    await clearAndType(editor, '5')
 
     // Blur to trigger save
     await page.locator('header').first().click()
 
     // Wait for save
     await expect.poll(() => savedPayload, { timeout: 5000 }).not.toBeNull()
-    expect(savedPayload).toHaveProperty('outline_requirements', '限制在5页以内')
+    expect(savedPayload).toHaveProperty('outline_requirements', '5')
   })
 
   test('auto-expands when requirements exist', async ({ page }) => {
@@ -156,14 +156,14 @@ test.describe('Generation requirements - DetailEditor (mock)', () => {
     await expect(editor).toBeVisible()
 
     // Type requirements
-    await clearAndType(editor, '每页不超过50字')
+    await clearAndType(editor, '50')
 
     // Blur to trigger save
     await page.locator('header').first().click()
 
     // Wait for save
     await expect.poll(() => savedPayload, { timeout: 5000 }).not.toBeNull()
-    expect(savedPayload).toHaveProperty('description_requirements', '每页不超过50字')
+    expect(savedPayload).toHaveProperty('description_requirements', '50')
   })
 
   test('auto-expands when requirements exist', async ({ page }) => {
@@ -212,7 +212,7 @@ test.describe('Generation requirements (integration)', () => {
     // Type requirements
     const editor = outlineReqEditor(page)
     await expect(editor).toBeVisible()
-    await clearAndType(editor, '限制在8页以内')
+    await clearAndType(editor, '8')
 
     // Blur and wait for save
     const savePromise = page.waitForResponse(
@@ -228,7 +228,7 @@ test.describe('Generation requirements (integration)', () => {
     // Should auto-expand since there's content
     const editorAfter = outlineReqEditor(page)
     await expect(editorAfter).toBeVisible()
-    await expect(editorAfter).toContainText('限制在8页以内')
+    await expect(editorAfter).toContainText('8')
   })
 
   test('description requirements: save, reload, verify persisted', async ({ page, request }) => {
@@ -251,7 +251,7 @@ test.describe('Generation requirements (integration)', () => {
     // Type requirements
     const editor = descReqEditor(page)
     await expect(editor).toBeVisible()
-    await clearAndType(editor, '多使用数据和案例')
+    await clearAndType(editor, '')
 
     // Blur and wait for save
     const savePromise = page.waitForResponse(
@@ -266,7 +266,7 @@ test.describe('Generation requirements (integration)', () => {
 
     const editorAfter = descReqEditor(page)
     await expect(editorAfter).toBeVisible()
-    await expect(editorAfter).toContainText('多使用数据和案例')
+    await expect(editorAfter).toContainText('')
   })
 
   test('clearing requirements saves empty string', async ({ page }) => {

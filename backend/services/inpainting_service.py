@@ -1,8 +1,8 @@
 """
-Inpainting 服务
-提供基于多种 provider 的图像区域消除和背景重新生成功能
-支持的 provider:
-- volcengine: 火山引擎 Inpainting
+Inpainting 
+ provider 
+ provider:
+- volcengine:  Inpainting
 - gemini: Google Gemini 2.5 Flash Image Preview
 """
 import logging
@@ -25,37 +25,37 @@ logger = logging.getLogger(__name__)
 
 class InpaintingService:
     """
-    Inpainting 服务类
+    Inpainting 
     
-    主要功能：
-    1. 从 bbox 生成掩码图像
-    2. 调用 inpainting provider 消除指定区域
-    3. 提供便捷的背景重生成接口
+    : 
+    1.  bbox 
+    2.  inpainting provider 
+    3. 
     
-    支持的 provider:
-    - volcengine: 火山引擎 Inpainting
+     provider:
+    - volcengine:  Inpainting
     - gemini: Google Gemini 2.5 Flash Image Preview
     """
     
     def __init__(self, provider=None, provider_type: str = "volcengine"):
         """
-        初始化 Inpainting 服务
+         Inpainting 
         
         Args:
-            provider: Inpainting 提供者实例，如果为 None 则从配置创建
-            provider_type: Provider 类型 ('volcengine' 或 'gemini')
+            provider: Inpainting ,  None 
+            provider_type: Provider loại ('volcengine' hoặc 'gemini')
         """
         if provider is None:
             config = get_config()
             
             if provider_type == "gemini":
-                # 使用 Gemini Inpainting Provider
+                # Backend logic
                 api_key = config.GOOGLE_API_KEY
                 api_base = config.GOOGLE_API_BASE
                 timeout = config.GENAI_TIMEOUT
                 
                 if not api_key:
-                    raise ValueError("Google API Key 未配置")
+                    raise ValueError("Google API Key chưa cấu hình")
                 
                 self.provider = GeminiInpaintingProvider(
                     api_key=api_key,
@@ -64,13 +64,13 @@ class InpaintingService:
                 )
                 self.provider_type = "gemini"
             else:
-                # 使用火山引擎 Inpainting Provider（默认）
+                # Backend logic
                 access_key = config.VOLCENGINE_ACCESS_KEY
                 secret_key = config.VOLCENGINE_SECRET_KEY
                 timeout = config.VOLCENGINE_INPAINTING_TIMEOUT
                 
                 if not access_key or not secret_key:
-                    raise ValueError("火山引擎 Access Key 和 Secret Key 未配置")
+                    raise ValueError("Volcengine Access Key và Secret Key chưa cấu hình")
                 
                 self.provider = VolcengineInpaintingProvider(
                     access_key=access_key,
@@ -96,30 +96,30 @@ class InpaintingService:
         crop_box: Optional[tuple] = None
     ) -> Optional[Image.Image]:
         """
-        根据边界框列表消除图像中的指定区域
+        
         
         Args:
-            image: 原始图像（PIL Image）
-            bboxes: 边界框列表，支持以下格式：
-                    - (x1, y1, x2, y2) 元组
-                    - {"x1": x1, "y1": y1, "x2": x2, "y2": y2} 字典
-                    - {"x": x, "y": y, "width": w, "height": h} 字典
-            expand_pixels: 扩展像素数，让掩码区域略微扩大（默认5像素）
-            merge_bboxes: 是否合并重叠或相邻的边界框（默认False）
-            merge_threshold: 合并阈值，边界框距离小于此值时会合并（默认10像素）
-            save_mask_path: Mask 保存路径（可选）
-            full_page_image: 完整的 PPT 页面图像（仅用于 Gemini provider）
-            crop_box: 裁剪框 (x0, y0, x1, y1)，从完整页面结果中裁剪的区域（仅用于 Gemini provider）
+            image:  (PIL Image) 
+            bboxes: , : 
+                    - (x1, y1, x2, y2) 
+                    - {"x1": x1, "y1": y1, "x2": x2, "y2": y2} dictionary
+                    - {"x": x, "y": y, "width": w, "height": h} dictionary
+            expand_pixels: ,  (5) 
+            merge_bboxes:  (False) 
+            merge_threshold: ,  (10) 
+            save_mask_path: Mask  () 
+            full_page_image:  PPT  ( Gemini provider) 
+            crop_box:  (x0, y0, x1, y1),  ( Gemini provider) 
             
         Returns:
-            处理后的图像，失败返回 None
+            ,  None
         """
         try:
-            logger.info(f"开始处理图像消除，原始 bbox 数量: {len(bboxes)}")
+            logger.info(f"Bắt đầu xử lý xóa vùng ảnh, Gốc bbox số lượng: {len(bboxes)}")
             
-            # 合并重叠的边界框（如果启用）
+            # Backend logic
             if merge_bboxes and len(bboxes) > 1:
-                # 先标准化所有 bbox 格式
+                # Backend logic
                 normalized_bboxes = []
                 for bbox in bboxes:
                     if isinstance(bbox, dict):
@@ -133,26 +133,26 @@ class InpaintingService:
                         normalized_bboxes.append(tuple(bbox))
                 
                 bboxes = merge_overlapping_bboxes(normalized_bboxes, merge_threshold)
-                logger.info(f"合并后 bbox 数量: {len(bboxes)}")
+                logger.info(f"Sau khi gộp bbox số lượng: {len(bboxes)}")
             
-            # 生成掩码图像
+            # Backend logic
             mask = create_mask_from_image_and_bboxes(
                 image,
                 bboxes,
                 expand_pixels=expand_pixels
             )
             
-            logger.info(f"掩码图像已生成，尺寸: {mask.size}")
+            logger.info(f"Đã tạo ảnh mặt nạ, kích thước: {mask.size}")
             
-            # 保存mask图像（如果指定了路径）
+            # Backend logic
             if save_mask_path:
                 try:
                     mask.save(save_mask_path)
-                    logger.info(f"📷 Mask图像已保存: {save_mask_path}")
+                    logger.info(f"📷 MaskĐã lưu ảnh: {save_mask_path}")
                 except Exception as e:
-                    logger.warning(f"⚠️ 保存mask图像失败: {e}")
+                    logger.warning(f"⚠️ Lưumaskhình ảnh thất bại: {e}")
             
-            # 调用 inpainting 服务（已内置重试逻辑）
+            # Backend logic
             result = self.provider.inpaint_image(
                 original_image=image,
                 mask_image=mask,
@@ -161,14 +161,14 @@ class InpaintingService:
             )
             
             if result is not None:
-                logger.info(f"图像消除成功，结果尺寸: {result.size}")
+                logger.info(f"Xóa vùng ảnh thành công, kích thước kết quả: {result.size}")
             else:
-                logger.error("图像消除失败")
+                logger.error("Xóa vùng ảnh thất bại")
             
             return result
             
         except Exception as e:
-            logger.error(f"消除区域失败: {str(e)}", exc_info=True)
+            logger.error(f"Xóa vùng thất bại: {str(e)}", exc_info=True)
             return None
     
     def regenerate_background(
@@ -178,45 +178,45 @@ class InpaintingService:
         expand_pixels: int = 5
     ) -> Optional[Image.Image]:
         """
-        重新生成背景（保留前景对象，消除其他区域）
+         (, ) 
         
-        这个方法使用反向掩码：保留 bbox 区域，消除其他所有区域
+        :  bbox , 
         
         Args:
-            image: 原始图像
-            foreground_bboxes: 前景对象的边界框列表（这些区域会被保留）
-            expand_pixels: 收缩像素数（负数表示扩展），让前景边缘更自然
+            image: 
+            foreground_bboxes:  () 
+            expand_pixels:  () , 
             
         Returns:
-            处理后的图像，失败返回 None
+            ,  None
         """
         try:
-            logger.info(f"开始重新生成背景，前景对象数量: {len(foreground_bboxes)}")
+            logger.info(f"Bắt đầu tạo lại ảnh nền, Số lượng đối tượng tiền cảnh: {len(foreground_bboxes)}")
             
-            # 生成反向掩码（保留前景，消除背景）
+            # Backend logic
             mask = create_inverse_mask_from_bboxes(
                 image.size,
                 foreground_bboxes,
                 expand_pixels=expand_pixels
             )
             
-            logger.info(f"反向掩码已生成，尺寸: {mask.size}")
+            logger.info(f"Đã tạo mặt nạ đảo ngược, kích thước: {mask.size}")
             
-            # 调用 inpainting 服务（已内置重试逻辑）
+            # Backend logic
             result = self.provider.inpaint_image(
                 original_image=image,
                 mask_image=mask
             )
             
             if result is not None:
-                logger.info(f"背景重生成成功，结果尺寸: {result.size}")
+                logger.info(f"Tạo lại nền thành công, kích thước kết quả: {result.size}")
             else:
-                logger.error("背景重生成失败")
+                logger.error("Tạo lại nền thất bại")
             
             return result
             
         except Exception as e:
-            logger.error(f"重新生成背景失败: {str(e)}", exc_info=True)
+            logger.error(f"Tạo lại nền thất bại: {str(e)}", exc_info=True)
             return None
     
     def create_mask_preview(
@@ -227,16 +227,16 @@ class InpaintingService:
         alpha: float = 0.5
     ) -> Image.Image:
         """
-        创建掩码预览图（用于调试和可视化）
+         () 
         
         Args:
-            image: 原始图像
-            bboxes: 边界框列表
-            expand_pixels: 扩展像素数
-            alpha: 掩码透明度
+            image: 
+            bboxes: 
+            expand_pixels: 
+            alpha: 
             
         Returns:
-            叠加了黑色半透明掩码的预览图
+            
         """
         mask = create_mask_from_image_and_bboxes(image, bboxes, expand_pixels)
         return visualize_mask_overlay(image, mask, alpha)
@@ -248,41 +248,41 @@ class InpaintingService:
         expand_pixels: int = 0
     ) -> Image.Image:
         """
-        静态方法：创建掩码图像（不需要实例化服务）
+        :  () 
         
         Args:
-            image_size: 图像尺寸 (width, height)
-            bboxes: 边界框列表
-            expand_pixels: 扩展像素数
+            image_size:  (width, height)
+            bboxes: 
+            expand_pixels: 
             
         Returns:
-            掩码图像
+            
         """
         return create_mask_from_bboxes(image_size, bboxes, expand_pixels)
 
 
-# 便捷函数
+# Backend logic
 
 _inpainting_service_instances = {}
 
 
 def get_inpainting_service(provider_type: str = None) -> InpaintingService:
     """
-    获取 InpaintingService 实例（单例模式，每种 provider 一个实例）
+     InpaintingService  (,  provider ) 
     
     Args:
-        provider_type: Provider 类型 ('volcengine', 'gemini')，
-                      如果为 None 则从配置读取
+        provider_type: Provider loại ('volcengine', 'gemini'), 
+                       None 
     
     Returns:
-        InpaintingService 实例
+        InpaintingService 
     """
-    # 从配置读取默认 provider
+    # Backend logic
     if provider_type is None:
         config = get_config()
-        provider_type = getattr(config, 'INPAINTING_PROVIDER', 'gemini')  # 默认使用 gemini
+        provider_type = getattr(config, 'INPAINTING_PROVIDER', 'gemini')  # Backend logic
     
-    # 获取或创建对应的实例
+    # Backend logic
     if provider_type not in _inpainting_service_instances:
         _inpainting_service_instances[provider_type] = InpaintingService(
             provider_type=provider_type
@@ -297,15 +297,15 @@ def remove_regions(
     **kwargs
 ) -> Optional[Image.Image]:
     """
-    便捷函数：消除图像中的指定区域
+    : 
     
     Args:
-        image: 原始图像
-        bboxes: 边界框列表
-        **kwargs: 其他参数传递给 InpaintingService.remove_regions_by_bboxes
+        image: 
+        bboxes: 
+        **kwargs:  InpaintingService.remove_regions_by_bboxes
         
     Returns:
-        处理后的图像
+        
     """
     service = get_inpainting_service()
     return service.remove_regions_by_bboxes(image, bboxes, **kwargs)
@@ -317,15 +317,15 @@ def regenerate_background(
     **kwargs
 ) -> Optional[Image.Image]:
     """
-    便捷函数：重新生成背景
+    : 
     
     Args:
-        image: 原始图像
-        foreground_bboxes: 前景对象的边界框列表
-        **kwargs: 其他参数传递给 InpaintingService.regenerate_background
+        image: 
+        foreground_bboxes: 
+        **kwargs:  InpaintingService.regenerate_background
         
     Returns:
-        处理后的图像
+        
     """
     service = get_inpainting_service()
     return service.regenerate_background(image, foreground_bboxes, **kwargs)

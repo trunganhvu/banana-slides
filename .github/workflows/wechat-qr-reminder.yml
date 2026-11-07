@@ -23,7 +23,7 @@ jobs:
         with:
           script: |
             const assignee = 'Anionex';
-            const title = '提醒：更换微信群二维码';
+            const title = 'Nhac nho: Cap nhat ma QR ho tro';
             const now = new Date();
             const shanghaiDate = new Intl.DateTimeFormat('zh-CN', {
               timeZone: 'Asia/Shanghai',
@@ -32,11 +32,11 @@ jobs:
             }).format(now);
 
             const issueBody = [
-              `@${assignee} 该更换微信群二维码了。`,
+              `@${assignee} Can cap nhat ma QR ho tro.`,
               '',
-              `提醒时间：${shanghaiDate}（北京时间）`,
+              `Thoi gian nhac nho: ${shanghaiDate}`,
               '',
-              '这个 issue 由 GitHub Actions 每周日自动创建，用于触发 GitHub 通知。处理完后可以直接关闭。',
+              'Issue nay duoc tao tu dong boi GitHub Actions. Co the dong sau khi xu ly.',
             ].join('\n');
 
             const { owner, repo } = context.repo;

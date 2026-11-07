@@ -1,18 +1,18 @@
 import React from 'react';
 
 interface ShimmerOverlayProps {
-  /** 是否显示渐变效果 */
+  /* Component logic */
   show: boolean;
-  /** 透明度，默认 0.4 */
+  /* Component logic */
   opacity?: number;
-  /** 圆角类型，默认 'card' */
+  /* Component logic */
   rounded?: 'card' | 'lg' | 'md' | 'sm' | 'none';
 }
 
 /**
- * 通用的渐变滚动覆盖层组件
- * 用于在卡片上显示"生成中"或"处理中"的视觉反馈
- * 复用了 Skeleton 组件的渐变效果样式
+ * 
+ * """"
+ *  Skeleton 
  */
 export const ShimmerOverlay: React.FC<ShimmerOverlayProps> = ({
   show,
@@ -41,4 +41,3 @@ export const ShimmerOverlay: React.FC<ShimmerOverlayProps> = ({
     </div>
   );
 };
-

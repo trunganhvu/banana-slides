@@ -5,7 +5,7 @@ import path from 'path';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5401';
 
-// 创建项目
+// Tạo dự án
 async function createProject(title) {
   const response = await fetch(`${BASE_URL}/api/projects`, {
     method: 'POST',
@@ -13,7 +13,7 @@ async function createProject(title) {
     body: JSON.stringify({
       creation_type: 'idea',
       idea_prompt: title,
-      template_style: '简约商务风格',
+      template_style: 'Phong cách doanh nghiệp tối giản',
       image_aspect_ratio: '16:9'
     })
   });
@@ -21,7 +21,7 @@ async function createProject(title) {
   return data.data.project_id;
 }
 
-// 创建临时测试文件
+// Tạo tệp kiểm thử tạm thời
 function createTempFile(filename, content) {
   const tempDir = '/tmp/test-attachments';
   if (!fs.existsSync(tempDir)) {
@@ -32,7 +32,7 @@ function createTempFile(filename, content) {
   return filepath;
 }
 
-// 上传参考文件
+// Tải lên tệp tham chiếu
 async function uploadFile(projectId, filename, content) {
   const filepath = createTempFile(filename, content);
   const formData = new FormData();
@@ -54,33 +54,33 @@ async function main() {
   console.log('Creating test projects and attachments...\n');
 
   const projects = [
-    '产品发布会演示',
-    '季度业绩报告',
-    '市场营销策略',
-    '技术架构设计',
-    '团队培训材料'
+    'Bài thuyết trình ra mắt sản phẩm',
+    'Báo cáo kết quả kinh doanh quý',
+    'Chiến lược tiếp thị thị trường',
+    'Thiết kế kiến trúc kỹ thuật',
+    'Tài liệu đào tạo đội ngũ'
   ];
 
   for (const title of projects) {
     console.log(`Creating project: ${title}`);
     const projectId = await createProject(title);
 
-    // 为每个项目上传2-3个文件
+    // Tải lên 2-3 tệp cho mỗi dự án
     const fileCount = Math.floor(Math.random() * 2) + 2;
     for (let i = 0; i < fileCount; i++) {
-      const filename = `${title.substring(0, 4)}_文档${i + 1}.txt`;
-      const content = `这是 ${title} 的参考文档 ${i + 1}\n创建时间: ${new Date().toISOString()}`;
+      const filename = `${title.substring(0, 8)}_tai_lieu_${i + 1}.txt`;
+      const content = `Đây là tài liệu tham khảo ${i + 1} cho ${title}\nThời gian tạo: ${new Date().toISOString()}`;
       await uploadFile(projectId, filename, content);
       console.log(`  - Uploaded: ${filename}`);
       await new Promise(resolve => setTimeout(resolve, 200));
     }
   }
 
-  // 上传一些全局文件（不关联项目）
+  // Tải lên một số tệp toàn cục (không gắn với dự án cụ thể)
   console.log('\nCreating global attachments...');
-  const globalFiles = ['通用模板.txt', '公司Logo说明.txt', '品牌指南.txt'];
+  const globalFiles = ['Mau_chung.txt', 'Huong_dan_Logo_cong_ty.txt', 'Cam_nang_thuong_hieu.txt'];
   for (const filename of globalFiles) {
-    await uploadFile(null, filename, `全局文件: ${filename}\n${new Date().toISOString()}`);
+    await uploadFile(null, filename, `Tệp toàn cục: ${filename}\n${new Date().toISOString()}`);
     console.log(`  - Uploaded: ${filename}`);
     await new Promise(resolve => setTimeout(resolve, 200));
   }

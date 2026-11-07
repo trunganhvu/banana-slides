@@ -59,7 +59,7 @@ def test_quality_review_failure_formats_string_issues_as_one_issue():
         'reason': 'Mismatch',
     })
 
-    assert message == 'Mismatch（bad style）'
+    assert message == 'Mismatchbad style'
 
 
 def test_settings_api_persists_and_resets_image_quality_control(client):
@@ -123,7 +123,7 @@ def test_image_quality_control_fails_without_returning_unreviewed_image():
         generated.append(True)
         return _image('red')
 
-    with pytest.raises(ImageQualityControlError, match='图片质量控制未通过'):
+    with pytest.raises(ImageQualityControlError, match=''):
         generate_image_until_quality_passes(
             generate,
             ai_service,

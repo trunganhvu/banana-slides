@@ -165,7 +165,7 @@ test.describe('Home document drop (mocked)', () => {
     expect(uploadCalled).toBe(false)
 
     // The toast should contain both unique extensions, exactly once each.
-    const toast = page.getByText(/不支持的文件类型|Unsupported file type/).first()
+    const toast = page.getByText(/|Unsupported file type/).first()
     await expect(toast).toBeVisible({ timeout: 3_000 })
     const toastText = (await toast.textContent()) ?? ''
     // Each extension appears exactly once (dedup): no `exe, exe`.

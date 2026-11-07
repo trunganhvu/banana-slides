@@ -1,87 +1,87 @@
-# 视频旁白功能 — 待修复问题 TODO
+# Tính năng thuyết minh video — Danh sách vấn đề cần khắc phục (TODO)
 
-分支：`feat/video-narration-template`
-涉及文件：`backend/services/tts_video_service.py`、`backend/services/prompts.py`
+Nhánh: `feat/video-narration-template`
+Tệp liên quan: `backend/services/tts_video_service.py`, `backend/services/prompts.py`
 
 ---
 
-## 问题 1：导出字幕有时是方块乱码，有时是正常中文 ✅ 已在分支里修
+## Vấn đề 1: Phụ đề xuất ra đôi khi bị lỗi hiển thị ô vuông, đôi khi hiển thị bình thường ✅ Đã sửa trong nhánh
 
-### 根因
+### Nguyên nhân gốc rễ
 
-ASS Dialogue 的 Text 字段里：
-- `{...}` 是 libass 的内联 override 块；
-- `\N` `\h` `\n` 等反斜杠序列是 libass 转义。
+Trong trường Text của dòng ASS Dialogue:
+- `{...}` là khối ghi đè nội tuyến (inline override block) của libass;
+- Các chuỗi dấu gạch chéo ngược như `\N`, `\h`, `\n` là chuỗi thoát (escape sequence) của libass.
 
-旁白偶尔包含 `{` / `}` / `\` 时，libass 会把那段对白当控制码处理，渲染结果在视觉上呈现为乱码/方块。同机器同字体跨次导出"时好时坏"的唯一变量就是旁白文字内容本身，所以根因不在字体，在解析。
+Khi lời thuyết minh vô tình chứa `{` / `}` / `\`, libass sẽ xử lý đoạn thoại đó như mã điều khiển, khiến kết quả kết xuất hiển thị thành ký tự lỗi hoặc ô vuông. Biến số duy nhất giữa các lần xuất trên cùng máy và cùng phông chữ là nội dung văn bản thuyết minh, do đó nguyên nhân nằm ở bước phân tích cú pháp chứ không phải phông chữ.
 
-### 修法
+### Cách khắc phục
 
-在 `tts_video_service.py` 写入 Dialogue 行前清洗文本，把这三个会被 libass 误解析的字符替换成全角等价字符：
+Làm sạch văn bản trước khi ghi dòng Dialogue trong `tts_video_service.py`, thay thế ba ký tự dễ bị libass hiểu nhầm bằng các ký tự tương đương an toàn:
 
 ```python
 def _sanitize_ass_dialogue_text(text: str) -> str:
     return (text
-        .replace('\\', '＼')
-        .replace('{', '｛')
-        .replace('}', '｝')
+        .replace('\\', '\uff3c')
+        .replace('{', '\uff5b')
+        .replace('}', '\uff5d')
         .replace('\n', ' ')
         .replace('\r', ''))
 ```
 
-并把 `generate_ass_subtitle` 中原来的 `text = entry['text'].replace('\n', ' ').replace('\r', '')` 换成调用这个函数。
+Đồng thời thay thế dòng `text = entry['text'].replace('\n', ' ').replace('\r', '')` trong `generate_ass_subtitle` bằng lời gọi hàm này.
 
-### 验收
+### Nghiệm thu
 
-- [ ] 用一段含 `{要点}` 或 `\N` 的旁白文本导出视频，字幕可正常显示且没有"乱码/方块"。
-- [ ] 之前正常的旁白回归测试，导出仍正常。
+- [ ] Xuất video với văn bản thuyết minh có chứa `{điểm chính}` hoặc `\N`, phụ đề hiển thị bình thường và không bị lỗi ô vuông.
+- [ ] Kiểm thử hồi quy với các đoạn thuyết minh bình thường trước đó, kết quả xuất vẫn hoạt động tốt.
 
 ---
 
-## 问题 2：每页旁白听起来割裂，不连贯 🔧 待改（架构改动）
+## Vấn đề 2: Thuyết minh giữa các trang nghe rời rạc, thiếu liền mạch 🔧 Cần cải tiến (Thay đổi kiến trúc)
 
-### 根因（核心）
+### Nguyên nhân cốt lõi
 
-当前 `generate_narration_video` 的 Phase A 是按页逐次调 TTS：
+Hiện tại Phase A của `generate_narration_video` gọi TTS tuần tự theo từng trang:
 
 ```python
 for i, page in enumerate(pages_data):
     duration, alignment = generate_elevenlabs_audio_sync(narration, ...)
 ```
 
-每一页都是一次独立的 TTS 调用，TTS 模型每次都"冷启动"，没有上一页的韵律上下文。所以哪怕文本写了过渡词，听感上每页开头都有轻微的"重启"语调，页与页之间必然有可听的接缝。
+Mỗi trang là một lệnh gọi TTS độc lập, mô hình TTS khởi động lại từ đầu ở mỗi trang mà không có ngữ cảnh ngữ điệu của trang trước. Vì vậy dù văn bản có từ chuyển tiếp, âm thanh đầu mỗi trang vẫn có cảm giác ngắt quãng giữa các trang.
 
-**结论**：要彻底解决，必须改成"整段一次合成 TTS"。光改 prompt（让文本更连贯）只能改善内容层，改不了声学层。所以 prompt 不动，集中改 Phase A。
+**Kết luận**: Để giải quyết triệt để, cần chuyển sang tổng hợp TTS một lần cho toàn bộ văn bản. Việc chỉ sửa prompt chỉ cải thiện tầng nội dung chứ không giải quyết được tầng âm học, do đó giữ nguyên prompt và tập trung cải tiến Phase A.
 
-### 修法（ElevenLabs 路径优先）
+### Cách khắc phục (Ưu tiên luồng ElevenLabs)
 
-把 Phase A 改成"一次合成、按时间戳切片"，Phase B 及之后的拼接逻辑基本不动：
+Chuyển Phase A sang tổng hợp một lần rồi cắt theo dấu thời gian (timestamps), giữ nguyên logic ghép nối từ Phase B trở đi:
 
-1. **拼接整段文本**：把所有有旁白的页的 `narration_text` 用一个稳定分隔符（建议 `\n\n` 之类换行）拼成一个长字符串；同时记录每页文本在长字符串里的字符区间 `[char_start_i, char_end_i)`（注意把分隔符的字符数也算进偏移）。
-2. **一次调用 ElevenLabs**：调 `client.text_to_speech.convert_with_timestamps(...)`，一次拿到整段 mp3 + 字符级 alignment（`character_start_times_seconds` / `character_end_times_seconds`）。
-3. **按字符区间映射时间区间**：每页的 `[char_start_i, char_end_i)` 在 alignment 里查到对应的 `[t_start_i, t_end_i)`（毫秒级）。
-4. **切片成单页 mp3**：用 ffmpeg `-ss t_start_i -to t_end_i -c copy`（或重编码）把整段 mp3 切成 N 个单页 mp3，写到原来 `audio_paths[i]` 的位置。`page_durations[i]` 用 `t_end_i - t_start_i`。
-5. **alignment 也按页切片传给字幕逻辑**：把整段 alignment 按 char 区间切成每页一份的子 alignment，传给现有的 `_build_timed_subtitle_entries_from_alignment`。这条字幕的对齐精度比现在按页对齐更准。
-6. **Phase B 之后逻辑保持不变**：每页的 audio_path、page_durations、alignment 仍然是 N 项数组，下游 mux/拼接代码不需要动。
+1. **Ghép toàn bộ văn bản**: Nối `narration_text` của tất cả các trang có thuyết minh bằng ký tự phân tách ổn định (khuyến nghị `\n\n`) thành một chuỗi dài; đồng thời ghi lại khoảng vị trí ký tự `[char_start_i, char_end_i)` của từng trang trong chuỗi dài (tính cả độ dài ký tự phân tách vào độ lệch).
+2. **Gọi ElevenLabs một lần**: Gọi `client.text_to_speech.convert_with_timestamps(...)` để nhận toàn bộ tệp mp3 cùng căn chỉnh cấp độ ký tự (`character_start_times_seconds` / `character_end_times_seconds`).
+3. **Ánh xạ khoảng ký tự sang khoảng thời gian**: Tra cứu `[char_start_i, char_end_i)` của mỗi trang trong dữ liệu alignment để lấy `[t_start_i, t_end_i)` tương ứng (độ chính xác mili-giây).
+4. **Cắt thành tệp mp3 cho từng trang**: Dùng ffmpeg `-ss t_start_i -to t_end_i -c copy` (hoặc mã hóa lại) để cắt tệp mp3 tổng thành N tệp mp3 đơn lẻ, ghi vào vị trí `audio_paths[i]` ban đầu. `page_durations[i]` lấy giá trị `t_end_i - t_start_i`.
+5. **Cắt dữ liệu alignment theo trang cho logic phụ đề**: Chia alignment tổng theo khoảng ký tự thành alignment con cho từng trang và truyền vào `_build_timed_subtitle_entries_from_alignment`. Độ chính xác đồng bộ phụ đề sẽ cao hơn so với căn chỉnh từng trang riêng lẻ.
+6. **Giữ nguyên logic sau Phase B**: `audio_path`, `page_durations` và `alignment` của mỗi trang vẫn là mảng N phần tử, không cần sửa đổi mã nguồn ghép kênh ở phía sau.
 
-整段合成失败时（API 报错、限额等），可以回退到当前的"按页合成"路径，保留半成品能力。
+Khi tổng hợp toàn văn thất bại (lỗi API, vượt giới hạn, v.v.), hệ thống tự động quay lại luồng tổng hợp theo từng trang hiện tại để đảm bảo khả năng chịu lỗi.
 
-### edge-tts 路径
+### Luồng edge-tts
 
-edge-tts 没有 ElevenLabs 那种端到端 alignment。两种选择：
+edge-tts không có dữ liệu alignment đầu-cuối như ElevenLabs. Có hai phương án:
 
-- **选 A（推荐先不动）**：保留按页合成，edge-tts 本身就是较弱 TTS，连贯性收益有限。
-- **选 B（如果想做）**：用 `edge_tts.Communicate` 流式接口的 `WordBoundary` 事件（含 offset/duration）做整段合成 + word-boundary 切片。
+- **Phương án A (Khuyến nghị giữ nguyên ở giai đoạn đầu)**: Giữ cách tổng hợp theo từng trang vì bản thân edge-tts là công cụ TTS cơ bản.
+- **Phương án B (Mở rộng sau)**: Sử dụng sự kiện `WordBoundary` (chứa offset/duration) trong giao diện luồng `edge_tts.Communicate` để tổng hợp toàn văn và cắt theo ranh giới từ.
 
-### 验收
+### Nghiệm thu
 
-- [ ] 三页以上的旁白视频，盲听时听不出明显接缝（除非用了过渡词主动暗示）。
-- [ ] 字幕与语音对齐误差 < 200ms。
-- [ ] ElevenLabs 调用次数从"页数 N"降到"1"；整体导出耗时与失败率可接受。
-- [ ] 整段合成失败时能优雅回退到按页合成，导出不直接挂掉。
-- [ ] 现有的 `_build_timed_subtitle_entries_from_alignment` 字幕路径仍能用，且时间戳更准。
+- [ ] Video thuyết minh từ ba trang trở lên khi nghe thử có ngữ điệu tự nhiên, liền mạch giữa các trang.
+- [ ] Sai số đồng bộ giữa phụ đề và giọng đọc < 200ms.
+- [ ] Số lần gọi ElevenLabs giảm từ N trang xuống 1 lần; thời gian xuất tổng thể và tỷ lệ lỗi ở mức chấp nhận được.
+- [ ] Khi tổng hợp toàn văn thất bại, hệ thống chuyển mượt mà về chế độ tổng hợp từng trang mà không làm gián đoạn quá trình xuất.
+- [ ] Luồng tạo phụ đề `_build_timed_subtitle_entries_from_alignment` hiện tại vẫn hoạt động bình thường với dấu thời gian chính xác hơn.
 
-### 不要做的事
+### Những điều không nên làm
 
-- 不要为了"伪连贯"在每页接缝处加音频淡入淡出 / 静音垫片 —— 那只是掩盖问题，没解决根因。
-- 不要去改 prompt 或字体相关代码 —— 上一轮已经验证过，prompt 只能改善文本层连贯，字体跟"时好时坏"无关。
+- Không thêm hiệu ứng âm lượng mờ dần (fade in/out) hoặc đệm khoảng lặng ở điểm nối giữa các trang chỉ để che giấu vết cắt âm thanh.
+- Không sửa đổi mã nguồn liên quan đến prompt hoặc phông chữ cho vấn đề này.

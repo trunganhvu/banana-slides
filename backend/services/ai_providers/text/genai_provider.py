@@ -18,15 +18,15 @@ logger = logging.getLogger(__name__)
 
 
 def _log_retry(retry_state):
-    """记录重试信息"""
+    """ Backend docstring """
     logger.warning(
-        f"GenAI 请求失败，正在重试 ({retry_state.attempt_number}/{get_config().GENAI_MAX_RETRIES + 1})，"
-        f"错误: {retry_state.outcome.exception() if retry_state.outcome else 'unknown'}"
+        f"GenAI Yêu cầu thất bại, Đang thử lại ({retry_state.attempt_number}/{get_config().GENAI_MAX_RETRIES + 1}), "
+        f"Lỗi: {retry_state.outcome.exception() if retry_state.outcome else 'unknown'}"
     )
 
 
 def _validate_response(response):
-    """验证响应是否有效，无效则抛出异常触发重试"""
+    """ Backend docstring """
     if response.text is None:
         if hasattr(response, 'candidates') and response.candidates:
             candidate = response.candidates[0]
@@ -79,7 +79,7 @@ class GenAITextProvider(TextProvider):
         Returns:
             Generated text
         """
-        # 构建配置，只有在 thinking_budget > 0 时才启用推理模式
+        # Backend logic
         config_params = {'max_output_tokens': get_text_output_limit()}
         if thinking_budget > 0:
             config_params['thinking_config'] = types.ThinkingConfig(thinking_budget=thinking_budget)
@@ -111,13 +111,13 @@ class GenAITextProvider(TextProvider):
         """
         from PIL import Image
         
-        # 加载图片
+        # Backend logic
         img = Image.open(image_path)
         
-        # 构建多模态内容
+        # Backend logic
         contents = [img, prompt]
         
-        # 构建配置，只有在 thinking_budget > 0 时才启用推理模式
+        # Backend logic
         config_params = {'max_output_tokens': get_text_output_limit()}
         if thinking_budget > 0:
             config_params['thinking_config'] = types.ThinkingConfig(thinking_budget=thinking_budget)

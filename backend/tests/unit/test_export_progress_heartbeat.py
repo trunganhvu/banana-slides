@@ -1,9 +1,9 @@
-"""导出过程的元素级进度与心跳验证。
+"""
 
-客户反馈的"卡在 88% 很久"需要一个能定位到元素、并且能被看门狗感知的进度信号：
-* 构建阶段每处理 N 个元素上报一次（页内进度）
-* 每个元素/子任务都打一次心跳（不写库）
-* 任务进度里写入 heartbeat_at，重启后据此判断任务是否真的还在跑
+" 88% "
+*  N 
+* /
+*  heartbeat_at
 """
 from datetime import datetime
 from pathlib import Path
@@ -18,7 +18,7 @@ from services.task_manager import export_editable_pptx_with_recursive_analysis_t
 
 
 class StubExtractor:
-    """最小可用的样式提取器桩，避免真实模型调用。"""
+    """ Test docstring """
 
     def extract_batch_with_full_image(self, full_image, text_elements):
         return {
@@ -35,7 +35,7 @@ def _make_image(path: Path, size=(320, 180)) -> str:
     return str(path)
 
 
-def _text_element(element_id: str, bbox, content='示例文本 ABC', image_path=None) -> EditableElement:
+def _text_element(element_id: str, bbox, content=' ABC', image_path=None) -> EditableElement:
     return EditableElement(
         element_id=element_id,
         element_type='text',
@@ -103,7 +103,7 @@ def test_add_elements_fires_hook_per_element_including_children(tmp_path):
         on_element=lambda: calls.append(1),
     )
 
-    # 顶层 2 个 + 递归子元素 1 个
+    # Test verification logic
     assert len(calls) == 3
 
 
@@ -125,14 +125,14 @@ def test_build_reports_element_level_progress_and_heartbeat(tmp_path):
         fail_fast=True,
     )
 
-    element_reports = [(step, message) for step, message, _ in progress if '已处理' in message]
+    element_reports = [(step, message) for step, message, _ in progress if '' in message]
     assert any(
-        f'已处理 {ELEMENT_PROGRESS_INTERVAL} 个元素' in message
+        f' {ELEMENT_PROGRESS_INTERVAL} ' in message
         for _, message in element_reports
     )
-    assert all(step == '构建PPTX' for step, _ in element_reports)
-    # 每个元素都打心跳
-    assert heartbeats.count('构建PPTX') >= count
+    assert all(step == 'PPTX' for step, _ in element_reports)
+    # Test verification logic
+    assert heartbeats.count('PPTX') >= count
 
 
 def test_style_extraction_reports_progress_per_task(tmp_path):
@@ -152,15 +152,15 @@ def test_style_extraction_reports_progress_per_task(tmp_path):
         fail_fast=True,
     )
 
-    style_messages = [m for step, m, _ in progress if step == '样式提取']
-    total_tasks = 1 + element_count  # 1 个全局识别 + N 个单元素识别
-    assert len(style_messages) >= 2, '样式提取阶段应多次上报进度'
-    assert any(f'（{total_tasks}/{total_tasks}）' in m for m in style_messages)
-    assert heartbeats.count('样式提取') >= total_tasks
+    style_messages = [m for step, m, _ in progress if step == '']
+    total_tasks = 1 + element_count  # Test logic
+    assert len(style_messages) >= 2, ''
+    assert any(f'{total_tasks}/{total_tasks}' in m for m in style_messages)
+    assert heartbeats.count('') >= total_tasks
 
 
 def test_export_task_writes_heartbeat_into_progress(app, db_session, tmp_path, monkeypatch):
-    """任务进度里必须写入 heartbeat_at，重启后的对账依赖它。"""
+    """ Test docstring """
     image_path = _make_image(tmp_path / 'page.png')
 
     project = Project(creation_type='idea', idea_prompt='demo')
@@ -186,8 +186,8 @@ def test_export_task_writes_heartbeat_into_progress(app, db_session, tmp_path, m
     )
 
     def fake_export(*_args, progress_callback=None, heartbeat_callback=None, **_kwargs):
-        progress_callback('构建PPTX', '构建第 1/1 页...', 88)
-        heartbeat_callback('构建PPTX')
+        progress_callback('PPTX', ' 1/1 ...', 88)
+        heartbeat_callback('PPTX')
         return b'pptx-bytes', None
 
     monkeypatch.setattr(

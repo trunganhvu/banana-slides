@@ -1,12 +1,12 @@
 """
-元素提取器 - 抽象不同的元素识别方法
+ - 
 
-包含：
-- ElementExtractor: 提取器抽象接口
-- MinerUElementExtractor: MinerU版面分析提取器
-- BaiduOCRElementExtractor: 百度表格OCR提取器
-- BaiduAccurateOCRElementExtractor: 百度高精度OCR提取器（文字识别）
-- ExtractorRegistry: 元素类型到提取器的映射注册表
+: 
+- ElementExtractor: 
+- MinerUElementExtractor: MinerU
+- BaiduOCRElementExtractor: OCR
+- BaiduAccurateOCRElementExtractor: OCR () 
+- ExtractorRegistry: 
 """
 import os
 import json
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExtractionContext:
-    """提取上下文 - 提取器可能需要的额外信息"""
+    """ Backend docstring """
     
     def __init__(
         self,
@@ -33,15 +33,15 @@ class ExtractionContext:
     ):
         """
         Args:
-            result_dir: 结果目录（如MinerU的输出目录）
-            metadata: 其他元数据
+            result_dir:  (MinerU) 
+            metadata: 
         """
         self.result_dir = result_dir
         self.metadata = metadata or {}
 
 
 class ExtractionResult:
-    """提取结果"""
+    """ Backend docstring """
 
     def __init__(
         self,
@@ -51,9 +51,9 @@ class ExtractionResult:
     ):
         """
         Args:
-            elements: 提取的元素列表
-            context: 提取上下文（用于后续递归处理）
-            error: 提取过程中的错误信息（如果有）
+            elements: 
+            context:  () 
+            error:  () 
         """
         self.elements = elements
         self.context = context or ExtractionContext()
@@ -61,20 +61,20 @@ class ExtractionResult:
 
     @property
     def has_error(self) -> bool:
-        """是否有错误"""
+        """ Backend docstring """
         return self.error is not None
 
 
 class ElementExtractor(ABC):
     """
-    元素提取器抽象接口
     
-    用于抽象不同的元素识别方法，支持接入多种实现：
-    - MinerU解析器（当前默认）
-    - 百度OCR（用于表格）
+    
+    , : 
+    - MinerU () 
+    - OCR () 
     - PaddleOCR
     - Tesseract OCR
-    - 其他自定义识别服务
+    - 
     """
     
     @abstractmethod
@@ -85,60 +85,60 @@ class ElementExtractor(ABC):
         **kwargs
     ) -> ExtractionResult:
         """
-        从图像中提取元素
+        
         
         Args:
-            image_path: 图像文件路径
-            element_type: 元素类型提示（如 'table', 'text', 'image'等），可选
-            **kwargs: 其他由具体实现自定义的参数
+            image_path: 
+            element_type: Gợi ý loại phần tử ( như 'table', 'text', 'image' v.v.) , tùy chọn
+            **kwargs: 
         
         Returns:
-            ExtractionResult对象，包含：
-            - elements: 元素字典列表，每个字典包含：
-                - bbox: List[float] - 边界框 [x0, y0, x1, y1]
-                - type: str - 元素类型（'text', 'image', 'table', 'title'等）
-                - content: Optional[str] - 文本内容
-                - image_path: Optional[str] - 图片相对路径
-                - metadata: Dict[str, Any] - 其他元数据
-            - context: 提取上下文（用于后续递归处理）
+            ExtractionResult, : 
+            - elements: , : 
+                - bbox: List[float] -  [x0, y0, x1, y1]
+                - type: str - Loại phần tử ('text', 'image', 'table', 'title' v.v.) 
+                - content: Optional[str] - 
+                - image_path: Optional[str] - 
+                - metadata: Dict[str, Any] - 
+            - context:  () 
         """
         pass
     
     @abstractmethod
     def supports_type(self, element_type: Optional[str]) -> bool:
         """
-        检查提取器是否支持指定的元素类型
+        
         
         Args:
-            element_type: 元素类型（如 'table', 'image'等），None表示通用
+            element_type: Loại phần tử ( như 'table', 'image' v.v.) , Nonebiểu thị chung
         
         Returns:
-            是否支持该类型
+            
         """
         pass
 
 
 class MinerUElementExtractor(ElementExtractor):
     """
-    基于MinerU的元素提取器（默认实现）
+    MinerU () 
     
-    从MinerU的解析结果中提取文本、图片、表格等元素
-    自包含：自己处理PDF转换、MinerU解析、结果提取
+    MinerU, , 
+    : PDF, MinerU, 
     """
     
     def __init__(self, parser_service, upload_folder: Path):
         """
-        初始化MinerU提取器
+        MinerU
         
         Args:
-            parser_service: FileParserService实例
-            upload_folder: 上传文件夹路径
+            parser_service: FileParserService
+            upload_folder: 
         """
         self._parser_service = parser_service
         self._upload_folder = upload_folder
     
     def supports_type(self, element_type: Optional[str]) -> bool:
-        """MinerU支持所有通用类型（除了特殊的表格单元格）"""
+        """ Backend docstring """
         return element_type != 'table_cell'
     
     def extract(
@@ -148,37 +148,37 @@ class MinerUElementExtractor(ElementExtractor):
         **kwargs
     ) -> ExtractionResult:
         """
-        从图像中提取元素（自动处理PDF转换和MinerU解析）
+         (PDFMinerU) 
 
-        支持的kwargs:
-        - depth: int, 递归深度（用于日志）
+        kwargs:
+        - depth: int,  () 
         """
         depth = kwargs.get('depth', 0)
 
-        # 获取图片尺寸
+        # Backend logic
         img = Image.open(image_path)
         image_size = img.size  # (width, height)
 
-        # 1. 检查缓存
+        # Backend logic
         cached_dir = self._find_cache(image_path)
         if cached_dir:
-            logger.info(f"{'  ' * depth}使用MinerU缓存")
+            logger.info(f"{' ' * depth}Sử dụngMinerUbộ nhớ đệm")
             mineru_result_dir = cached_dir
             parse_error = None
         else:
-            # 2. 解析图片
+            # Backend logic
             mineru_result_dir, parse_error = self._parse_image(image_path, depth)
             if not mineru_result_dir:
                 return ExtractionResult(elements=[], error=parse_error)
 
-        # 3. 提取元素
+        # Backend logic
         elements = self._extract_from_result(
             mineru_result_dir=mineru_result_dir,
             target_image_size=image_size,
             depth=depth
         )
 
-        # 4. 返回结果（带上下文）
+        # Backend logic
         context = ExtractionContext(
             result_dir=mineru_result_dir,
             metadata={'source': 'mineru', 'image_size': image_size}
@@ -187,7 +187,7 @@ class MinerUElementExtractor(ElementExtractor):
         return ExtractionResult(elements=elements, context=context)
     
     def _find_cache(self, image_path: str) -> Optional[str]:
-        """查找缓存的MinerU结果"""
+        """ Backend docstring """
         try:
             import hashlib
             import time
@@ -200,40 +200,40 @@ class MinerUElementExtractor(ElementExtractor):
             if not mineru_files_dir.exists():
                 return None
             
-            # 简单策略：不使用缓存（更安全）
+            # Backend logic
             return None
             
         except Exception as e:
-            logger.debug(f"查找缓存失败: {e}")
+            logger.debug(f"Tìm bộ nhớ đệm thất bại: {e}")
             return None
     
     def _parse_image(self, image_path: str, depth: int) -> Tuple[Optional[str], Optional[str]]:
-        """解析图片，返回MinerU结果目录和错误信息
+        """, MinerU
 
         Returns:
             Tuple of (result_dir, error_message)
         """
         from services.export_service import ExportService
 
-        # 转换为PDF
+        # Backend logic
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
             pdf_path = tmp_pdf.name
 
         try:
             ExportService.create_pdf_from_images([image_path], output_file=pdf_path)
 
-            # 调用MinerU解析
+            # Backend logic
             image_id = str(uuid.uuid4())[:8]
             batch_id, markdown_content, extract_id, error_message, failed_image_count = \
                 self._parser_service.parse_file(pdf_path, f"image_{image_id}.pdf")
 
             if error_message or not extract_id:
-                logger.error(f"{'  ' * depth}MinerU解析失败: {error_message}")
-                return None, error_message or "MinerU解析失败，未返回extract_id"
+                logger.error(f"{' ' * depth}MinerUphân tích thất bại: {error_message}")
+                return None, error_message or "MinerUphân tích thất bại, chưa trả vềextract_id"
 
             mineru_result_dir = (self._upload_folder / 'mineru_files' / extract_id).resolve()
             if not mineru_result_dir.exists():
-                err = f"MinerU结果目录不存在: {mineru_result_dir}"
+                err = f"MinerUThư mục kết quả không tồn tại: {mineru_result_dir}"
                 logger.error(f"{'  ' * depth}{err}")
                 return None, err
 
@@ -249,18 +249,18 @@ class MinerUElementExtractor(ElementExtractor):
         target_image_size: Tuple[int, int],
         depth: int
     ) -> List[Dict[str, Any]]:
-        """从MinerU结果目录中提取元素"""
+        """ Backend docstring """
         elements = []
         
         try:
             mineru_dir = Path(mineru_result_dir)
             
-            # 加载layout.json和content_list.json
+            # Backend logic
             layout_file = mineru_dir / 'layout.json'
             content_list_files = list(mineru_dir.glob("*_content_list.json"))
             
             if not layout_file.exists() or not content_list_files:
-                logger.warning(f"layout.json或content_list.json不存在")
+                logger.warning(f"layout.json hoặc content_list.jsonkhông tồn tại")
                 return []
             
             with open(layout_file, 'r', encoding='utf-8') as f:
@@ -269,18 +269,18 @@ class MinerUElementExtractor(ElementExtractor):
             with open(content_list_files[0], 'r', encoding='utf-8') as f:
                 content_list = json.load(f)
             
-            # 从layout.json提取元素
+            # Backend logic
             if 'pdf_info' not in layout_data or not layout_data['pdf_info']:
                 return []
             
             page_info = layout_data['pdf_info'][0]
             source_page_size = page_info.get('page_size', target_image_size)
             
-            # 计算缩放比例
+            # Backend logic
             scale_x = target_image_size[0] / source_page_size[0]
             scale_y = target_image_size[1] / source_page_size[1]
             
-            # 处理块的通用函数
+            # Backend logic
             def process_block(block):
                 bbox = block.get('bbox')
                 block_type = block.get('type', 'text')
@@ -290,21 +290,21 @@ class MinerUElementExtractor(ElementExtractor):
                 if not bbox or len(bbox) != 4:
                     return None
                 
-                # 过滤掉 type 为 header/footer 且内容仅为 "#" 的特殊标记
+                # Backend logic
                 if block_type in ['header', 'footer']:
                     if block.get('lines'):
-                        # 提取所有文本内容
+                        # Backend logic
                         all_text = []
                         for line in block['lines']:
                             for span in line.get('spans', []):
                                 if span.get('type') == 'text' and span.get('content'):
                                     all_text.append(span['content'])
-                        # 如果所有文本合并后仅为"#"，则跳过此块
+                        # Backend logic
                         combined_text = ''.join(all_text).strip()
                         if combined_text == '#':
                             return None
                 
-                # 缩放bbox到目标尺寸
+                # Backend logic
                 scaled_bbox = [
                     bbox[0] * scale_x,
                     bbox[1] * scale_y,
@@ -312,10 +312,10 @@ class MinerUElementExtractor(ElementExtractor):
                     bbox[3] * scale_y
                 ]
                 
-                # 对于 header/footer，需要根据实际内容判断类型
+                # Backend logic
                 actual_content_type = 'text' if is_equation_source_block else block_type
                 if block_type in ['header', 'footer']:
-                    # 检查是否包含图片
+                    # Backend logic
                     has_image = False
                     if block.get('blocks'):
                         for sub_block in block['blocks']:
@@ -323,7 +323,7 @@ class MinerUElementExtractor(ElementExtractor):
                                 has_image = True
                                 break
                     
-                    # 检查是否包含文本
+                    # Backend logic
                     has_text = False
                     if block.get('lines'):
                         for line in block['lines']:
@@ -334,18 +334,18 @@ class MinerUElementExtractor(ElementExtractor):
                             if has_text:
                                 break
                     
-                    # 根据内容判断实际类型
+                    # Backend logic
                     if has_image and not has_text:
                         actual_content_type = 'image'
                     elif has_text:
-                        actual_content_type = 'text'  # 将 header/footer 转换为 text
+                        actual_content_type = 'text'  # Backend logic
                     else:
-                        # 默认当作文本处理
+                        # Backend logic
                         actual_content_type = 'text'
                 
-                # 辅助函数：从 lines 提取文本
+                # Backend logic
                 def extract_text_from_lines(lines, preserve_equations=False):
-                    """从 lines 数组提取所有文本内容"""
+                    """ Backend docstring """
                     line_texts = []
                     for line in lines:
                         span_texts = []
@@ -367,7 +367,7 @@ class MinerUElementExtractor(ElementExtractor):
                             line_texts.append(line_text)
                     return line_texts
                 
-                # 提取content（文本）- 包括 caption 类型
+                # Backend logic
                 content = None
                 if actual_content_type in ['text', 'title', 'table_caption', 'image_caption']:
                     if block.get('lines'):
@@ -379,7 +379,7 @@ class MinerUElementExtractor(ElementExtractor):
                             content = '\n'.join(line_texts).strip()
 
                 elif actual_content_type == 'list':
-                    # list 类型包含 blocks 子数组，每个 block 有 lines
+                    # Backend logic
                     if block.get('blocks'):
                         all_line_texts = []
                         for sub_block in block['blocks']:
@@ -389,7 +389,7 @@ class MinerUElementExtractor(ElementExtractor):
                         if all_line_texts:
                             content = '\n'.join(all_line_texts).strip()
                 
-                # 提取img_path（图片/表格）- 转换为绝对路径
+                # Backend logic
                 img_path = None
                 if actual_content_type in ['image', 'table']:
                     if block.get('blocks'):
@@ -400,7 +400,7 @@ class MinerUElementExtractor(ElementExtractor):
                                         relative_path = span['image_path']
                                         if not relative_path.startswith('images/'):
                                             relative_path = 'images/' + relative_path
-                                        # 转换为绝对路径
+                                        # Backend logic
                                         abs_path = mineru_dir / relative_path
                                         if abs_path.exists():
                                             img_path = str(abs_path)
@@ -412,22 +412,22 @@ class MinerUElementExtractor(ElementExtractor):
                 
                 return {
                     'bbox': scaled_bbox,
-                    'type': actual_content_type,  # 使用实际内容类型而不是原始类型
+                    'type': actual_content_type,  # Backend logic
                     'content': content,
-                    'image_path': img_path,  # 现在是绝对路径
+                    'image_path': img_path,  # Backend logic
                     'metadata': {
                         **block,
-                        'original_type': block_type  # 保留原始类型（header/footer）在metadata中
+                        'original_type': block_type  # Backend logic
                     }
                 }
             
-            # 处理主要内容块（para_blocks）
+            # Backend logic
             for block in page_info.get('para_blocks', []):
                 element = process_block(block)
                 if element:
                     elements.append(element)
-                # 递归处理子块（table_caption, image_caption 等）
-                # 注意：list 类型的子块已在 process_block 中处理，不需要再递归
+                # Backend logic
+                # Backend logic
                 block_type = block.get('type', '')
                 if block_type != 'list':
                     for sub_block in block.get('blocks', []):
@@ -435,13 +435,13 @@ class MinerUElementExtractor(ElementExtractor):
                         if sub_elem:
                             elements.append(sub_elem)
             
-            # 处理页眉页脚（discarded_blocks）
+            # Backend logic
             for block in page_info.get('discarded_blocks', []):
                 element = process_block(block)
                 if element:
                     elements.append(element)
-                # 递归处理子块
-                # 注意：list 类型的子块已在 process_block 中处理，不需要再递归
+                # Backend logic
+                # Backend logic
                 block_type = block.get('type', '')
                 if block_type != 'list':
                     for sub_block in block.get('blocks', []):
@@ -449,33 +449,33 @@ class MinerUElementExtractor(ElementExtractor):
                         if sub_elem:
                             elements.append(sub_elem)
             
-            logger.info(f"MinerU提取了 {len(elements)} 个元素")
+            logger.info(f"MinerUđã trích xuất {len(elements)} phần tử")
         
         except Exception as e:
-            logger.error(f"MinerU提取元素失败: {e}", exc_info=True)
+            logger.error(f"MinerUTrích xuất phần tử thất bại: {e}", exc_info=True)
         
         return elements
 
 
 class BaiduOCRElementExtractor(ElementExtractor):
     """
-    基于百度OCR的元素提取器
+    OCR
     
-    专门用于表格识别，提取表格单元格
-    自包含：自己处理OCR调用和单元格提取
+    , 
+    : OCR
     """
     
     def __init__(self, baidu_table_ocr_provider):
         """
-        初始化百度OCR提取器
+        OCR
         
         Args:
-            baidu_table_ocr_provider: 百度表格OCR Provider实例
+            baidu_table_ocr_provider: OCR Provider
         """
         self._ocr_provider = baidu_table_ocr_provider
     
     def supports_type(self, element_type: Optional[str]) -> bool:
-        """百度OCR主要支持表格类型"""
+        """ Backend docstring """
         return element_type in ['table', 'table_cell', None]
     
     def extract(
@@ -485,11 +485,11 @@ class BaiduOCRElementExtractor(ElementExtractor):
         **kwargs
     ) -> ExtractionResult:
         """
-        从表格图片中提取单元格
         
-        支持的kwargs:
-        - depth: int, 递归深度（用于日志）
-        - shrink_cells: bool, 是否收缩单元格以避免重叠，默认True
+        
+        kwargs:
+        - depth: int,  () 
+        - shrink_cells: bool, , True
         """
         depth = kwargs.get('depth', 0)
         shrink_cells = kwargs.get('shrink_cells', True)
@@ -497,37 +497,37 @@ class BaiduOCRElementExtractor(ElementExtractor):
         elements = []
         
         try:
-            # 调用百度OCR识别表格
+            # Backend logic
             ocr_result = self._ocr_provider.recognize_table(
                 image_path,
                 cell_contents=True
             )
             
             table_cells = ocr_result.get('cells', [])
-            # OCR结果通常会包含image_size，如果没有则自己获取
+            # Backend logic
             table_img_size = ocr_result.get('image_size')
             if not table_img_size:
                 img = Image.open(image_path)
                 table_img_size = img.size
             
-            logger.info(f"{'  ' * depth}百度OCR识别到 {len(table_cells)} 个单元格")
+            logger.info(f"{' ' * depth}BaiduOCRnhận diện được {len(table_cells)} ô bảng")
             
-            # 只处理body单元格
+            # Backend logic
             body_cells = [cell for cell in table_cells if cell.get('section') == 'body']
             valid_cells = [cell for cell in body_cells if cell.get('text', '').strip()]
             
             if not valid_cells:
-                logger.warning(f"{'  ' * depth}没有有效的单元格")
+                logger.warning(f"{' ' * depth}Không có ô hợp lệ")
                 return ExtractionResult(elements=elements)
             
-            # 处理单元格（可选择性收缩）
+            # Backend logic
             cell_bboxes = []
             if shrink_cells:
                 cell_bboxes = self._shrink_cells_to_avoid_overlap(valid_cells, depth)
             else:
                 cell_bboxes = [cell.get('bbox', [0, 0, 0, 0]) for cell in valid_cells]
             
-            # 构建元素列表
+            # Backend logic
             for idx, (cell, bbox) in enumerate(zip(valid_cells, cell_bboxes)):
                 elements.append({
                     'bbox': bbox,
@@ -543,14 +543,14 @@ class BaiduOCRElementExtractor(ElementExtractor):
                     }
                 })
             
-            logger.info(f"{'  ' * depth}百度OCR提取了 {len(elements)} 个单元格元素")
+            logger.info(f"{' ' * depth}BaiduOCRđã trích xuất {len(elements)} phần tử ô bảng")
 
         except Exception as e:
-            error_msg = f"百度OCR识别失败: {e}"
+            error_msg = f"BaiduOCRnhận diện thất bại: {e}"
             logger.error(f"{'  ' * depth}{error_msg}", exc_info=True)
             return ExtractionResult(elements=elements, error=error_msg)
 
-        # 百度OCR不需要result_dir（表格单元格不会有子元素）
+        # Backend logic
         return ExtractionResult(elements=elements)
     
     def _shrink_cells_to_avoid_overlap(
@@ -558,7 +558,7 @@ class BaiduOCRElementExtractor(ElementExtractor):
         valid_cells: List[Dict],
         depth: int
     ) -> List[List[float]]:
-        """收缩单元格以避免重叠（算法同原实现）"""
+        """ Backend docstring """
         TARGET_MIN_GAP = 6
         SHRINK_STEP = 0.02
         MIN_SIZE_RATIO = 0.4
@@ -612,9 +612,9 @@ class BaiduOCRElementExtractor(ElementExtractor):
             
             if current_min_gap >= TARGET_MIN_GAP:
                 if iteration == 0:
-                    logger.info(f"{'  ' * depth}单元格间距已满足要求（最小={current_min_gap:.1f}px），无需收缩")
+                    logger.info(f"{' ' * depth}Khoảng cách giữa các ô đã đạt yêu cầu (tối thiểu={current_min_gap:.1f}px) , không cần thu hẹp")
                 else:
-                    logger.info(f"{'  ' * depth}收缩完成：{iteration}次迭代，最小间距={current_min_gap:.1f}px")
+                    logger.info(f"{' ' * depth}Hoàn tất thu hẹp: {iteration}vòng lặp, khoảng cách tối thiểu={current_min_gap:.1f}px")
                 break
             
             all_cells_can_shrink = True
@@ -648,7 +648,7 @@ class BaiduOCRElementExtractor(ElementExtractor):
                 data['current_bbox'] = [new_x0, new_y0, new_x1, new_y1]
             
             if not all_cells_can_shrink:
-                logger.warning(f"{'  ' * depth}达到最小尺寸限制，当前最小间距={current_min_gap:.1f}px")
+                logger.warning(f"{' ' * depth}Đã chạm giới hạn kích thước tối thiểu, khoảng cách tối thiểu hiện tại={current_min_gap:.1f}px")
                 break
             
             total_shrink_ratio += SHRINK_STEP
@@ -656,30 +656,30 @@ class BaiduOCRElementExtractor(ElementExtractor):
         
         if iteration >= MAX_ITERATIONS:
             current_min_gap = calculate_min_gap(cell_data)
-            logger.warning(f"{'  ' * depth}达到最大迭代次数，当前最小间距={current_min_gap:.1f}px")
+            logger.warning(f"{' ' * depth}Đã đạt số vòng lặp tối đa, khoảng cách tối thiểu hiện tại={current_min_gap:.1f}px")
         
         return [data['current_bbox'] for data in cell_data]
 
 
 class BaiduAccurateOCRElementExtractor(ElementExtractor):
     """
-    基于百度高精度OCR的元素提取器
+    OCR
     
-    专门用于文字识别，提取文本行元素
-    支持多语种、高精度识别，返回文字位置信息
+    , 
+    , , 
     """
     
     def __init__(self, baidu_accurate_ocr_provider):
         """
-        初始化百度高精度OCR提取器
+        OCR
         
         Args:
-            baidu_accurate_ocr_provider: 百度高精度OCR Provider实例
+            baidu_accurate_ocr_provider: OCR Provider
         """
         self._ocr_provider = baidu_accurate_ocr_provider
     
     def supports_type(self, element_type: Optional[str]) -> bool:
-        """百度高精度OCR主要支持文字类型"""
+        """ Backend docstring """
         return element_type in ['text', 'title', 'paragraph', None]
     
     def extract(
@@ -689,14 +689,14 @@ class BaiduAccurateOCRElementExtractor(ElementExtractor):
         **kwargs
     ) -> ExtractionResult:
         """
-        从图片中提取文字元素
         
-        支持的kwargs:
-        - depth: int, 递归深度（用于日志）
-        - language_type: str, 识别语言类型，默认'CHN_ENG'
-        - recognize_granularity: str, 是否定位单字符位置，'big'或'small'
-        - detect_direction: bool, 是否检测图像朝向
-        - paragraph: bool, 是否输出段落信息
+        
+        kwargs:
+        - depth: int,  () 
+        - language_type: str, Loại ngôn ngữ nhận diện, mặc định'CHN_ENG'
+        - recognize_granularity: str, Có định vị trí từng ký tự đơn hay không, 'big' hoặc 'small'
+        - detect_direction: bool, 
+        - paragraph: bool, 
         """
         depth = kwargs.get('depth', 0)
         language_type = kwargs.get('language_type', 'CHN_ENG')
@@ -707,30 +707,30 @@ class BaiduAccurateOCRElementExtractor(ElementExtractor):
         elements = []
         
         try:
-            # 调用百度高精度OCR识别
+            # Backend logic
             ocr_result = self._ocr_provider.recognize(
                 image_path,
                 language_type=language_type,
                 recognize_granularity=recognize_granularity,
                 detect_direction=detect_direction,
                 paragraph=paragraph,
-                probability=True,  # 获取置信度
+                probability=True,  # Backend logic
             )
             
             text_lines = ocr_result.get('text_lines', [])
             image_size = ocr_result.get('image_size', (0, 0))
             direction = ocr_result.get('direction', None)
             
-            logger.info(f"{'  ' * depth}百度高精度OCR识别到 {len(text_lines)} 行文字")
+            logger.info(f"{' ' * depth}Baidu độ chính xác caoOCRnhận diện được {len(text_lines)} dòng văn bản")
             
-            # 只处理有内容的文字行
+            # Backend logic
             valid_lines = [line for line in text_lines if line.get('text', '').strip()]
             
             if not valid_lines:
-                logger.warning(f"{'  ' * depth}没有识别到有效的文字")
+                logger.warning(f"{' ' * depth}Không nhận diện được văn bản hợp lệ")
                 return ExtractionResult(elements=elements)
             
-            # 构建元素列表
+            # Backend logic
             for idx, line in enumerate(valid_lines):
                 bbox = line.get('bbox', [0, 0, 0, 0])
                 text = line.get('text', '')
@@ -746,23 +746,23 @@ class BaiduAccurateOCRElementExtractor(ElementExtractor):
                     }
                 }
                 
-                # 添加置信度信息
+                # Backend logic
                 if 'probability' in line:
                     element['metadata']['probability'] = line['probability']
                 
-                # 添加单字符信息
+                # Backend logic
                 if 'chars' in line:
                     element['metadata']['chars'] = line['chars']
                 
-                # 添加外接多边形顶点
+                # Backend logic
                 if 'vertexes_location' in line:
                     element['metadata']['vertexes_location'] = line['vertexes_location']
                 
                 elements.append(element)
             
-            logger.info(f"{'  ' * depth}百度高精度OCR提取了 {len(elements)} 个文字元素")
+            logger.info(f"{' ' * depth}Baidu độ chính xác caoOCRđã trích xuất {len(elements)} phần tử văn bản")
             
-            # 添加图片方向信息到上下文
+            # Backend logic
             context = ExtractionContext(
                 metadata={
                     'source': 'baidu_accurate_ocr',
@@ -774,65 +774,65 @@ class BaiduAccurateOCRElementExtractor(ElementExtractor):
             return ExtractionResult(elements=elements, context=context)
 
         except Exception as e:
-            error_msg = f"百度高精度OCR识别失败: {e}"
+            error_msg = f"Baidu độ chính xác caoOCRnhận diện thất bại: {e}"
             logger.error(f"{'  ' * depth}{error_msg}", exc_info=True)
             return ExtractionResult(elements=elements, error=error_msg)
 
 
 class ExtractorRegistry:
     """
-    元素类型到提取器的映射注册表
     
-    用于管理不同元素类型应该使用哪个提取器进行子元素提取：
-    - 图片/图表元素 → MinerU 版面分析
-    - 表格元素 → 百度表格OCR
-    - 其他类型 → 默认提取器
     
-    使用方式：
+    : 
+    - / → MinerU 
+    -  → OCR
+    -  → 
+    
+    : 
         >>> registry = ExtractorRegistry()
         >>> registry.register('table', baidu_ocr_extractor)
         >>> registry.register('image', mineru_extractor)
         >>> registry.register_default(mineru_extractor)
         >>> 
-        >>> extractor = registry.get_extractor('table')  # 返回 baidu_ocr_extractor
-        >>> extractor = registry.get_extractor('chart')  # 返回 mineru_extractor (默认)
+        >>> extractor = registry.get_extractor('table')  # Backend logic
+        >>> extractor = registry.get_extractor('chart')  # Backend logic
     """
     
-    # 预定义的元素类型分组
+    # Backend logic
     TABLE_TYPES = {'table', 'table_cell'}
     IMAGE_TYPES = {'image', 'figure', 'chart', 'diagram'}
     TEXT_TYPES = {'text', 'title', 'paragraph', 'header', 'footer', 'list'}
     
     def __init__(self):
-        """初始化注册表"""
+        """ Backend docstring """
         self._type_mapping: Dict[str, ElementExtractor] = {}
         self._default_extractor: Optional[ElementExtractor] = None
     
     def register(self, element_type: str, extractor: ElementExtractor) -> 'ExtractorRegistry':
         """
-        注册元素类型到提取器的映射
+        
         
         Args:
-            element_type: 元素类型（如 'table', 'image' 等）
-            extractor: 对应的提取器实例
+            element_type: Loại phần tử ( như 'table', 'image' v.v.) 
+            extractor: 
         
         Returns:
-            self，支持链式调用
+            self, 
         """
         self._type_mapping[element_type] = extractor
-        logger.debug(f"注册提取器: {element_type} -> {extractor.__class__.__name__}")
+        logger.debug(f"Đăng ký bộ trích xuất: {element_type} -> {extractor.__class__.__name__}")
         return self
     
     def register_types(self, element_types: List[str], extractor: ElementExtractor) -> 'ExtractorRegistry':
         """
-        批量注册多个元素类型到同一个提取器
+        
         
         Args:
-            element_types: 元素类型列表
-            extractor: 对应的提取器实例
+            element_types: 
+            extractor: 
         
         Returns:
-            self，支持链式调用
+            self, 
         """
         for t in element_types:
             self.register(t, extractor)
@@ -840,44 +840,44 @@ class ExtractorRegistry:
     
     def register_default(self, extractor: ElementExtractor) -> 'ExtractorRegistry':
         """
-        注册默认提取器（当没有特定类型映射时使用）
+         () 
         
         Args:
-            extractor: 默认提取器实例
+            extractor: 
         
         Returns:
-            self，支持链式调用
+            self, 
         """
         self._default_extractor = extractor
-        logger.debug(f"注册默认提取器: {extractor.__class__.__name__}")
+        logger.debug(f"Đăng ký bộ trích xuất mặc định: {extractor.__class__.__name__}")
         return self
     
     def get_extractor(self, element_type: Optional[str]) -> Optional[ElementExtractor]:
         """
-        根据元素类型获取对应的提取器
+        
         
         Args:
-            element_type: 元素类型，None表示使用默认提取器
+            element_type: , None
         
         Returns:
-            对应的提取器，如果没有注册则返回默认提取器
+            , 
         """
         if element_type is None:
             return self._default_extractor
         
-        # 先查找精确匹配
+        # Backend logic
         if element_type in self._type_mapping:
             return self._type_mapping[element_type]
         
-        # 返回默认提取器
+        # Backend logic
         return self._default_extractor
     
     def get_all_extractors(self) -> List[ElementExtractor]:
         """
-        获取所有已注册的提取器（去重）
+         () 
         
         Returns:
-            提取器列表
+            
         """
         extractors = list(set(self._type_mapping.values()))
         if self._default_extractor and self._default_extractor not in extractors:
@@ -892,41 +892,41 @@ class ExtractorRegistry:
         baidu_accurate_ocr_extractor: Optional[ElementExtractor] = None
     ) -> 'ExtractorRegistry':
         """
-        创建默认配置的注册表
         
-        默认配置：
-        - 表格类型 → 百度表格OCR（如果可用）
-        - 文字类型 → 百度高精度OCR（如果可用），否则MinerU
-        - 图片类型 → MinerU
-        - 其他类型 → MinerU（默认）
+        
+        : 
+        -  → OCR () 
+        -  → OCR () , MinerU
+        -  → MinerU
+        -  → MinerU () 
         
         Args:
-            mineru_extractor: MinerU提取器实例
-            baidu_ocr_extractor: 百度表格OCR提取器实例（可选）
-            baidu_accurate_ocr_extractor: 百度高精度OCR提取器实例（可选）
+            mineru_extractor: MinerU
+            baidu_ocr_extractor: OCR () 
+            baidu_accurate_ocr_extractor: OCR () 
         
         Returns:
-            配置好的注册表实例
+            
         """
         registry = cls()
         
-        # 设置默认提取器
+        # Backend logic
         registry.register_default(mineru_extractor)
         
-        # 图片类型使用MinerU
+        # Backend logic
         registry.register_types(list(cls.IMAGE_TYPES), mineru_extractor)
         
-        # 表格类型使用百度表格OCR（如果可用），否则使用MinerU
+        # Backend logic
         table_extractor = baidu_ocr_extractor if baidu_ocr_extractor else mineru_extractor
         registry.register_types(list(cls.TABLE_TYPES), table_extractor)
         
-        # 文字类型使用百度高精度OCR（如果可用），否则使用MinerU
+        # Backend logic
         text_extractor = baidu_accurate_ocr_extractor if baidu_accurate_ocr_extractor else mineru_extractor
         registry.register_types(list(cls.TEXT_TYPES), text_extractor)
         
-        logger.info(f"创建默认ExtractorRegistry: "
-                   f"表格->{table_extractor.__class__.__name__}, "
-                   f"文字->{text_extractor.__class__.__name__}, "
-                   f"图片->{mineru_extractor.__class__.__name__}")
+        logger.info(f"Tạo mặc địnhExtractorRegistry: "
+                   f"Bảng->{table_extractor.__class__.__name__}, "
+                   f"văn bản->{text_extractor.__class__.__name__}, "
+                   f"hình ảnh->{mineru_extractor.__class__.__name__}")
         
         return registry

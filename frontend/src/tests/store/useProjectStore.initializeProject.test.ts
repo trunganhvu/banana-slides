@@ -1,5 +1,5 @@
 /**
- * initializeProject 测试 - 验证参考文件在 AI 生成前被关联到项目
+ * initializeProject  -  AI 
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'

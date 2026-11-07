@@ -1,17 +1,17 @@
 #!/bin/bash
-# Docker环境完整测试脚本
-# 测试项目在Docker环境下的完整功能
+# Script kiem tra toan dien moi truong Docker
+# Kiem tra day du chuc nang cua du an trong moi truong Docker
 
-set -e  # 遇到错误立即退出
+set -e  # Thoat ngay khi gap loi
 
-# 颜色定义
+# Dinh nghia mau sac
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 日志函数
+# Ham ghi log
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -28,72 +28,72 @@ log_warning() {
     echo -e "${YELLOW}[!]${NC} $1"
 }
 
-# 测试开始
+# Bat dau kiem tra
 echo ""
 echo "================================="
-echo "🐳 Docker环境完整测试"
+echo "🐳 Kiem tra toan dien moi truong Docker"
 echo "================================="
 echo ""
 
-# 检查前置条件
-log_info "检查前置条件..."
+# Kiem tra dieu kien tien quyet
+log_info "Kiem tra dieu kien tien quyet..."
 
 if ! command -v docker &> /dev/null; then
-    log_error "Docker未安装，请先安装Docker"
+    log_error "Docker chua duoc cai dat, vui long cai dat Docker truoc"
     exit 1
 fi
 
 if ! command -v docker compose &> /dev/null && ! docker compose version &> /dev/null; then
-    log_error "Docker Compose未安装"
+    log_error "Docker Compose chua duoc cai dat"
     exit 1
 fi
 
 if [ ! -f ".env" ]; then
-    log_warning ".env文件不存在，从.env.example复制"
+    log_warning "File .env khong ton tai, sao chep tu .env.example"
     cp .env.example .env
 fi
 
-log_success "前置条件检查通过"
+log_success "Kiem tra dieu kien tien quyet thanh cong"
 
-# 1. 清理旧环境
-log_info "步骤1/10: 清理旧环境..."
+# 1. Don dep moi truong cu
+log_info "Buoc 1/10: Don dep moi truong cu..."
 docker compose down -v 2>/dev/null || true
 docker system prune -f >/dev/null 2>&1 || true
-log_success "环境清理完成"
+log_success "Don dep moi truong hoan tat"
 
-# 2. 构建镜像
-log_info "步骤2/10: 构建Docker镜像..."
+# 2. Xay dung image
+log_info "Buoc 2/10: Xay dung Docker image..."
 if docker compose build --no-cache; then
-    log_success "镜像构建成功"
+    log_success "Xay dung image thanh cong"
 else
-    log_error "镜像构建失败"
+    log_error "Xay dung image that bai"
     exit 1
 fi
 
-# 3. 启动服务
-log_info "步骤3/10: 启动Docker服务..."
+# 3. Khoi dong dich vu
+log_info "Buoc 3/10: Khoi dong dich vu Docker..."
 if docker compose up -d; then
-    log_success "服务启动成功"
+    log_success "Khoi dong dich vu thanh cong"
 else
-    log_error "服务启动失败"
+    log_error "Khoi dong dich vu that bai"
     docker compose logs
     exit 1
 fi
 
-# 4. 等待服务就绪
-log_info "步骤4/10: 等待服务就绪（最多60秒）..."
+# 4. Cho dich vu san sang
+log_info "Buoc 4/10: Cho dich vu san sang (toi da 60 giay)..."
 max_wait=60
 waited=0
 backend_ready=false
 frontend_ready=false
 
 while [ $waited -lt $max_wait ]; do
-    # 检查后端
+    # Kiem tra backend
     if curl -s http://localhost:5011/health >/dev/null 2>&1; then
         backend_ready=true
     fi
     
-    # 检查前端
+    # Kiem tra frontend
     if curl -s http://localhost:3011 >/dev/null 2>&1; then
         frontend_ready=true
     fi
@@ -109,121 +109,121 @@ done
 echo ""
 
 if [ "$backend_ready" = false ] || [ "$frontend_ready" = false ]; then
-    log_error "服务启动超时"
-    log_info "查看容器状态："
+    log_error "Khoi dong dich vu qua thoi gian cho"
+    log_info "Xem trang thai container:"
     docker compose ps
-    log_info "查看后端日志："
+    log_info "Xem log backend:"
     docker compose logs backend
-    log_info "查看前端日志："
+    log_info "Xem log frontend:"
     docker compose logs frontend
     exit 1
 fi
 
-log_success "服务就绪（耗时 ${waited}秒）"
+log_success "Dich vu da san sang (mat ${waited} giay)"
 
-# 5. 检查容器健康状态
-log_info "步骤5/10: 检查容器健康状态..."
+# 5. Kiem tra trang thai suc khoe container
+log_info "Buoc 5/10: Kiem tra trang thai container..."
 backend_status=$(docker compose ps backend | grep -c "Up" || echo "0")
 frontend_status=$(docker compose ps frontend | grep -c "Up" || echo "0")
 
 if [ "$backend_status" -eq "0" ] || [ "$frontend_status" -eq "0" ]; then
-    log_error "容器状态异常"
+    log_error "Trang thai container bat thuong"
     docker compose ps
     exit 1
 fi
-log_success "容器状态正常"
+log_success "Trang thai container binh thuong"
 
-# 6. 后端健康检查
-log_info "步骤6/10: 后端健康检查..."
+# 6. Kiem tra suc khoe backend
+log_info "Buoc 6/10: Kiem tra suc khoe backend..."
 backend_health=$(curl -s http://localhost:5011/health)
 if echo "$backend_health" | grep -q '"status":"ok"'; then
-    log_success "后端健康检查通过"
-    echo "    响应: $backend_health"
+    log_success "Kiem tra suc khoe backend thanh cong"
+    echo "    Phan hoi: $backend_health"
 else
-    log_error "后端健康检查失败"
-    echo "    响应: $backend_health"
+    log_error "Kiem tra suc khoe backend that bai"
+    echo "    Phan hoi: $backend_health"
     exit 1
 fi
 
-# 7. 前端访问测试
-log_info "步骤7/10: 前端访问测试..."
+# 7. Kiem tra truy cap frontend
+log_info "Buoc 7/10: Kiem tra truy cap frontend..."
 frontend_status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3011)
 if [ "$frontend_status_code" = "200" ]; then
-    log_success "前端访问正常 (HTTP $frontend_status_code)"
+    log_success "Truy cap frontend binh thuong (HTTP $frontend_status_code)"
 else
-    log_error "前端访问失败 (HTTP $frontend_status_code)"
+    log_error "Truy cap frontend that bai (HTTP $frontend_status_code)"
     exit 1
 fi
 
-# 8. API功能测试
-log_info "步骤8/10: API功能测试..."
+# 8. Kiem tra chuc nang API
+log_info "Buoc 8/10: Kiem tra chuc nang API..."
 
-# 8.1 创建项目
-log_info "  8.1 创建项目..."
+# 8.1 Tao du an
+log_info "  8.1 Tao du an..."
 create_response=$(curl -s -X POST http://localhost:5011/api/projects \
     -H "Content-Type: application/json" \
-    -d '{"creation_type":"idea","idea_prompt":"Docker测试项目"}')
+    -d '{"creation_type":"idea","idea_prompt":"Du an thu nghiem Docker"}')
 
 if echo "$create_response" | grep -q '"success":true'; then
     project_id=$(echo "$create_response" | grep -o '"project_id":"[^"]*"' | cut -d'"' -f4)
-    log_success "  项目创建成功: $project_id"
+    log_success "  Tao du an thanh cong: $project_id"
 else
-    log_error "  项目创建失败"
-    echo "    响应: $create_response"
+    log_error "  Tao du an that bai"
+    echo "    Phan hoi: $create_response"
     exit 1
 fi
 
-# 8.2 获取项目
-log_info "  8.2 获取项目详情..."
+# 8.2 Lay chi tiet du an
+log_info "  8.2 Lay chi tiet du an..."
 get_response=$(curl -s http://localhost:5011/api/projects/$project_id)
 if echo "$get_response" | grep -q '"success":true'; then
-    log_success "  项目获取成功"
+    log_success "  Lay chi tiet du an thanh cong"
 else
-    log_error "  项目获取失败"
+    log_error "  Lay chi tiet du an that bai"
     exit 1
 fi
 
-# 8.3 上传模板（如果存在）
+# 8.3 Tai len mau (neu ton tai)
 if [ -f "template_g.png" ]; then
-    log_info "  8.3 上传模板文件..."
+    log_info "  8.3 Tai len file mau..."
     upload_response=$(curl -s -X POST http://localhost:5011/api/projects/$project_id/template \
         -F "template_image=@template_g.png")
     
     if echo "$upload_response" | grep -q '"success":true'; then
-        log_success "  模板上传成功"
+        log_success "  Tai len mau thanh cong"
     else
-        log_warning "  模板上传失败（非关键）"
+        log_warning "  Tai len mau that bai (khong nghiem trong)"
     fi
 else
-    log_warning "  8.3 跳过模板上传（文件不存在）"
+    log_warning "  8.3 Bo qua tai len mau (file khong ton tai)"
 fi
 
-# 8.4 删除项目（清理）
-log_info "  8.4 删除测试项目..."
+# 8.4 Xoa du an (don dep)
+log_info "  8.4 Xoa du an thu nghiem..."
 delete_response=$(curl -s -X DELETE http://localhost:5011/api/projects/$project_id)
 if echo "$delete_response" | grep -q '"success":true'; then
-    log_success "  项目删除成功"
+    log_success "  Xoa du an thanh cong"
 else
-    log_warning "  项目删除失败（非关键）"
+    log_warning "  Xoa du an that bai (khong nghiem trong)"
 fi
 
-log_success "API功能测试通过"
+log_success "Kiem tra chuc nang API thanh cong"
 
-# 9. 数据持久化测试
-log_info "步骤9/10: 数据持久化测试..."
+# 9. Kiem tra luu tru du lieu ben vung
+log_info "Buoc 9/10: Kiem tra luu tru du lieu ben vung..."
 
-# 创建一个项目
+# Tao mot du an
 create_response=$(curl -s -X POST http://localhost:5011/api/projects \
     -H "Content-Type: application/json" \
-    -d '{"creation_type":"idea","idea_prompt":"持久化测试"}')
+    -d '{"creation_type":"idea","idea_prompt":"Kiem tra luu tru ben vung"}')
 persist_project_id=$(echo "$create_response" | grep -o '"project_id":"[^"]*"' | cut -d'"' -f4)
 
-# 重启后端容器
-log_info "  重启后端容器..."
+# Khoi dong lai container backend
+log_info "  Khoi dong lai container backend..."
 docker compose restart backend
 sleep 5
 
-# 等待后端恢复
+# Cho backend khoi phuc
 for i in {1..30}; do
     if curl -s http://localhost:5011/health >/dev/null 2>&1; then
         break
@@ -231,68 +231,67 @@ for i in {1..30}; do
     sleep 1
 done
 
-# 检查项目是否还存在
+# Kiem tra xem du an con ton tai khong
 persist_check=$(curl -s http://localhost:5011/api/projects/$persist_project_id)
 if echo "$persist_check" | grep -q '"success":true'; then
-    log_success "数据持久化测试通过"
+    log_success "Kiem tra luu tru du lieu ben vung thanh cong"
 else
-    log_error "数据持久化测试失败"
+    log_error "Kiem tra luu tru du lieu ben vung that bai"
     exit 1
 fi
 
-# 清理测试数据
+# Don dep du lieu thu nghiem
 curl -s -X DELETE http://localhost:5011/api/projects/$persist_project_id >/dev/null
 
-# 10. 日志检查
-log_info "步骤10/10: 检查容器日志是否有错误..."
+# 10. Kiem tra log
+log_info "Buoc 10/10: Kiem tra log container co loi khong..."
 backend_errors=$(docker compose logs backend 2>&1 | grep -i "error\|exception\|traceback" | grep -v "DEBUG" | wc -l)
 frontend_errors=$(docker compose logs frontend 2>&1 | grep -i "error" | grep -v "warn" | wc -l)
 
 if [ "$backend_errors" -gt 5 ]; then
-    log_warning "后端日志中发现 $backend_errors 个错误"
+    log_warning "Phat hien $backend_errors loi trong log backend"
     docker compose logs backend | grep -i "error\|exception" | tail -10
 else
-    log_success "后端日志检查通过（$backend_errors 个错误）"
+    log_success "Kiem tra log backend thanh cong ($backend_errors loi)"
 fi
 
 if [ "$frontend_errors" -gt 5 ]; then
-    log_warning "前端日志中发现 $frontend_errors 个错误"
+    log_warning "Phat hien $frontend_errors loi trong log frontend"
 else
-    log_success "前端日志检查通过（$frontend_errors 个错误）"
+    log_success "Kiem tra log frontend thanh cong ($frontend_errors loi)"
 fi
 
-# 测试总结
+# Tong ket kiem tra
 echo ""
 echo "================================="
-echo "✅ Docker环境测试完成"
+echo "✅ Hoan tat kiem tra moi truong Docker"
 echo "================================="
 echo ""
-echo "📊 测试摘要："
-echo "  ✓ 镜像构建"
-echo "  ✓ 服务启动"
-echo "  ✓ 健康检查"
-echo "  ✓ API功能"
-echo "  ✓ 数据持久化"
-echo "  ✓ 日志检查"
+echo "📊 Tom tat kiem tra:"
+echo "  ✓ Xay dung image"
+echo "  ✓ Khoi dong dich vu"
+echo "  ✓ Kiem tra suc khoe"
+echo "  ✓ Chuc nang API"
+echo "  ✓ Luu tru du lieu ben vung"
+echo "  ✓ Kiem tra log"
 echo ""
-echo "🎯 下一步："
-echo "  1. 运行完整API测试: cd backend && python ../tests/test_e2e.py"
-echo "  2. 运行E2E测试: npx playwright test"
-echo "  3. 停止环境: docker compose down"
+echo "🎯 Buoc tiep theo:"
+echo "  1. Chay kiem tra API day du: cd backend && python ../tests/test_e2e.py"
+echo "  2. Chay kiem tra E2E: npx playwright test"
+echo "  3. Dung moi truong: docker compose down"
 echo ""
 
-# 询问是否清理环境
+# Hoi co don dep moi truong khong
 if [ "${AUTO_CLEANUP}" != "false" ]; then
-    read -p "是否停止Docker环境？(y/N) " -n 1 -r
+    read -p "Ban co muon dung moi truong Docker khong? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        log_info "停止Docker环境..."
+        log_info "Dang dung moi truong Docker..."
         docker compose down
-        log_success "环境已清理"
+        log_success "Da don dep moi truong"
     else
-        log_info "保持环境运行，可手动执行: docker compose down"
+        log_info "Giu moi truong chay, co the dung thu cong: docker compose down"
     fi
 fi
 
 exit 0
-

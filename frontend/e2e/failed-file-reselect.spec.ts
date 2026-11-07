@@ -44,14 +44,14 @@ test.describe('Failed file re-selection (mocked)', () => {
     await paperclip.click()
 
     // Wait for file selector modal (by title)
-    const modal = page.getByRole('dialog', { name: '选择参考文件' })
+    const modal = page.getByRole('dialog', { name: '' })
     await expect(modal).toBeVisible({ timeout: 5_000 })
 
     // Click the failed file row to select it
     await modal.locator('text=broken.pdf').first().click()
 
     // Click confirm button
-    await modal.getByRole('button', { name: /确定/ }).click()
+    await modal.getByRole('button', { name: // }).click()
 
     // Verify parse was triggered for the failed file
     expect(parseCalled).toBe(true)

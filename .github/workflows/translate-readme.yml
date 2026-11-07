@@ -89,6 +89,6 @@ jobs:
           fi
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git commit -m "文档：增量同步多语言 README 与翻译状态"
+          git commit -m "docs: sync multi-language README and translation state"
           # Reject concurrent upstream edits; never rebase stale generated translations.
           git push origin HEAD:main

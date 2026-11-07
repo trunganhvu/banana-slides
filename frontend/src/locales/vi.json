@@ -1,0 +1,48 @@
+{
+  "common": {
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "add": "Thêm",
+    "remove": "Gỡ bỏ",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "loading": "Đang tải...",
+    "generating": "Đang tạo...",
+    "success": "Thành công",
+    "failed": "Thất bại",
+    "error": "Lỗi",
+    "retry": "Thử lại",
+    "export": "Xuất",
+    "download": "Tải xuống",
+    "upload": "Tải lên",
+    "preview": "Xem trước",
+    "select": "Chọn",
+    "clear": "Xóa",
+    "reset": "Đặt lại",
+    "search": "Tìm kiếm",
+    "noData": "Chưa có dữ liệu",
+    "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn tất cả"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "history": "Dự án lịch sử",
+    "settings": "Cài đặt",
+    "materialCenter": "Kho tư liệu",
+    "backToHome": "Về trang chủ"
+  },
+  "theme": {
+    "light": "Chế độ sáng",
+    "dark": "Chế độ tối",
+    "system": "Theo hệ thống",
+    "switchToLight": "Chuyển sang chế độ sáng",
+    "switchToDark": "Chuyển sang chế độ tối"
+  },
+  "settings": {
+    "title": "Cài đặt hệ thống"
+  }
+}

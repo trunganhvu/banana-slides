@@ -8,14 +8,14 @@ const STORAGE_KEY = 'banana-access-code';
 
 const translations = {
   zh: {
-    title: '请输入访问口令',
-    placeholder: '输入口令',
-    submit: '确认',
-    error: '口令错误，请重试',
-    networkError: '网络错误，请稍后重试',
-    connectError: '无法连接到后端服务',
-    connectHint: '请检查后端服务是否正常运行',
-    retry: '重试',
+    title: 'Vui lòng nhập mã truy cập',
+    placeholder: 'Nhập mã truy cập',
+    submit: 'Xác nhận',
+    error: 'Sai mã truy cập, Vui lòng thử lại',
+    networkError: 'Lỗi mạng, vui lòng thử lại sau',
+    connectError: 'Không thể kết nối tới dịch vụ backend',
+    connectHint: 'Vui lòng kiểm tra dịch vụ backend có đang hoạt động bình thường không',
+    retry: 'Thử lại',
   },
   en: {
     title: 'Enter Access Code',

@@ -16,60 +16,61 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// 组件内翻译
+// Component translations
 const detailI18n = {
   zh: {
-    home: { title: '蕉幻' },
+    home: { title: 'Banana Slides' },
     detail: {
-      title: "编辑页面描述", pageCount: "共 {{count}} 页", generateImages: "生成图片",
-      generating: "生成中...", page: "第 {{num}} 页", titleLabel: "标题",
-      description: "描述", batchGenerate: "批量生成描述", export: "导出描述", exportFull: "导出大纲和描述", import: "导入", importExport: "导入/导出",
-      pagesCompleted: "页已完成", noPages: "还没有页面",
-      toMultiTemplate: "转为每页独立模板", toTemplateSetup: "前往模板配置", switchFailed: "切换模板模式失败",
-      noPagesHint: "请先返回大纲编辑页添加页面", backToOutline: "返回大纲编辑",
-      aiPlaceholder: "例如：让描述更详细、删除第2页的某个要点、强调XXX的重要性... · Ctrl+Enter提交",
-      aiPlaceholderShort: "例如：让描述更详细... · Ctrl+Enter",
-      renovationProcessing: "正在解析页面内容...",
-      renovationProgress: "{{completed}}/{{total}} 页",
-      renovationFailed: "PDF 解析失败，请返回重试",
-      renovationPollFailed: "与服务器通信失败，请检查网络后刷新页面重试",
-      disabledNextTip: "还有 {{count}} 页缺少描述，请先完成所有页面的描述",
-      detailLevel: { label: "详细程度", concise: "精简", default: "默认", detailed: "详细" },
-      descSettings: "描述设置",
-      generationMode: "生成模式",
-      generationModeHint: "流式：AI 从第一页开始逐页输出，速度慢但效果更好。并行：AI 根据大纲并行生成每页描述，速度快但可能不够细致。",
-      streaming: "流式",
-      parallel: "并行",
-      extraFields: "额外字段",
-      extraFieldsHint: "启用后，AI 生成描述时会带上这些字段。可通过「描述生成要求」进一步约束字段输出的内容。点击胶囊启用/禁用，拖拽调整顺序。",
-      imagePromptOn: "该字段会影响生成的图片效果，点击可关闭",
-      imagePromptOff: "该字段不会影响生成的图片，点击可开启",
-      addField: "添加字段",
-      descRequirements: "描述生成要求",
-      descRequirementsPlaceholder: "例如：每页描述控制在100字以内、多使用数据和案例、强调关键指标...",
-      importModalTitle: "导入 Markdown",
-      importModalDesc: "可直接粘贴 Markdown，也可以上传 `.md`、`.markdown` 或 `.txt` 文件。导入的页面会追加到当前项目末尾。",
-      importPasteLabel: "粘贴内容",
-      importPastePlaceholder: "把描述或大纲+描述的 Markdown 粘贴到这里...",
-      importUploadLabel: "上传文件",
-      importUploadHint: "点击选择文件，或拖拽 Markdown 文件到这里",
-      importUploadFormatsHint: "支持 `.md`、`.markdown`、`.txt`",
-      importPreviewReady: "将追加 {{count}} 页到当前项目",
-      importPreviewEmpty: "未识别到可导入页面，请确认包含 `## 第 N 页: 标题` 或 `## Page N: Title`",
-      importConfirm: "导入到项目",
-      importCancel: "取消",
+      title: "Chỉnh sửa mô tả trang", pageCount: "Tổng cộng {{count}} trang", generateImages: "Tạo hình ảnh",
+      generating: "Đang tạo...", page: "Trang {{num}}", titleLabel: "Tiêu đề",
+      description: "Mô tả", batchGenerate: "Tạo hàng loạt mô tả", export: "Xuất mô tả", exportFull: "Xuất dàn ý và mô tả", import: "Nhập", importExport: "Nhập/Xuất",
+      pagesCompleted: "trang đã hoàn thành", noPages: "Chưa có trang nào",
+      toMultiTemplate: "Chuyển sang mẫu riêng từng trang", toTemplateSetup: "Đi tới cấu hình mẫu", switchFailed: "Chuyển chế độ mẫu thất bại",
+      noPagesHint: "Vui lòng quay lại trang chỉnh sửa dàn ý để thêm trang trước", backToOutline: "Quay lại chỉnh sửa dàn ý",
+      aiPlaceholder: "Ví dụ: Làm cho mô tả chi tiết hơn, xóa một ý ở trang 2, nhấn mạnh tầm quan trọng của... · Ctrl+Enter để gửi",
+      aiPlaceholderShort: "Ví dụ: Làm cho mô tả chi tiết hơn... · Ctrl+Enter",
+      renovationProcessing: "Đang phân tích nội dung trang...",
+      renovationProgress: "{{completed}}/{{total}} trang",
+      renovationFailed: "Phân tích PDF thất bại, vui lòng quay lại thử lại",
+      renovationPollFailed: "Mất kết nối với máy chủ, vui lòng kiểm tra mạng và tải lại trang",
+      disabledNextTip: "Còn {{count}} trang thiếu mô tả, vui lòng hoàn thành mô tả cho tất cả các trang trước",
+      detailLevel: { label: "Mức độ chi tiết", concise: "Tinh gọn", default: "Mặc định", detailed: "Chi tiết" },
+      descSettings: "Cài đặt mô tả",
+      generationMode: "Chế độ tạo",
+      generationModeHint: "Luồng: AI xuất tuần tự từng trang từ đầu đến cuối, tốc độ chậm hơn nhưng mạch lạc hơn. Song song: AI tạo độc lập từng trang theo dàn ý, tốc độ nhanh hơn.",
+      streaming: "Luồng (Streaming)",
+      parallel: "Song song (Parallel)",
+      extraFields: "Trường bổ sung",
+      extraFieldsHint: "Khi bật, AI sẽ tạo mô tả kèm các trường này. Có thể dùng \"Yêu cầu tạo mô tả\" để định hướng nội dung. Nhấp để bật/tắt, kéo thả để đổi thứ tự.",
+      imagePromptOn: "Trường này ảnh hưởng đến hình ảnh được tạo, nhấp để tắt",
+      imagePromptOff: "Trường này không ảnh hưởng đến hình ảnh được tạo, nhấp để bật",
+      addField: "Thêm trường",
+      descRequirements: "Yêu cầu tạo mô tả",
+      descRequirementsPlaceholder: "Ví dụ: Mỗi trang khống chế dưới 100 từ, dùng nhiều số liệu và ví dụ thực tế, làm nổi bật chỉ số chính...",
+      importModalTitle: "Nhập Markdown",
+      importModalDesc: "Có thể dán trực tiếp Markdown, hoặc tải lên tệp `.md`, `.markdown` hoặc `.txt`. Các trang được nhập sẽ thêm vào cuối dự án.",
+      importPasteLabel: "Dán nội dung",
+      importPastePlaceholder: "Dán nội dung Markdown của mô tả hoặc dàn ý + mô tả vào đây...",
+      importUploadLabel: "Tải lên tệp",
+      importUploadHint: "Nhấp để chọn tệp hoặc kéo thả tệp Markdown vào đây",
+      importUploadFormatsHint: "Hỗ trợ `.md`, `.markdown`, `.txt`",
+      importPreviewReady: "Sẽ thêm {{count}} trang vào dự án hiện tại",
+      importPreviewEmpty: "Không nhận diện được trang hợp lệ. Vui lòng dùng `## Trang N: Tiêu đề` hoặc `## Page N: Title`",
+      importConfirm: "Nhập vào dự án",
+      importCancel: "Hủy",
       messages: {
-        confirmRegenerate: "部分页面已有描述，重新生成将覆盖，确定继续吗？",
-        confirmRegenerateTitle: "确认重新生成",
-        confirmRegeneratePage: "该页面已有描述，重新生成将覆盖现有内容，确定继续吗？",
-        confirmRenovationRegenerate: "您现在是 PPT 翻新模式，重新生成会依照原 PPT 相同页码页面，重新解析并生成该页的大纲和描述，覆盖已有内容。确定要继续吗？",
-        confirmRenovationRegenerateTitle: "重新解析此页",
-        refineSuccess: "页面描述修改成功", refineFailed: "修改失败，请稍后重试",
-        exportSuccess: "导出成功", importSuccess: "导入成功", importFailed: "导入失败，请检查文件格式", importEmpty: "文件中未找到有效页面",
-        importContentEmpty: "请先粘贴内容或上传文件",
-        importReadFailed: "读取文件失败，请重试",
-        importInvalidFileType: "只能导入 .md、.markdown 或 .txt 文件",
-        loadingProject: "加载项目中..."
+        generateSuccess: "Tạo thành công", generateFailed: "Tạo thất bại",
+        confirmRegenerate: "Một số trang đã có mô tả, tạo lại sẽ ghi đè nội dung cũ. Bạn có chắc chắn muốn tiếp tục?",
+        confirmRegenerateTitle: "Xác nhận tạo lại",
+        confirmRegeneratePage: "Trang này đã có mô tả, tạo lại sẽ ghi đè nội dung hiện tại. Tiếp tục?",
+        confirmRenovationRegenerate: "Bạn đang ở chế độ làm mới PPT. Tạo lại sẽ phân tích lại trang PDF gốc và tạo lại dàn ý cùng mô tả, ghi đè nội dung cũ. Tiếp tục?",
+        confirmRenovationRegenerateTitle: "Phân tích lại trang này",
+        refineSuccess: "Chỉnh sửa mô tả trang thành công", refineFailed: "Chỉnh sửa thất bại, vui lòng thử lại sau",
+        exportSuccess: "Xuất thành công", importSuccess: "Nhập thành công", importFailed: "Nhập thất bại, vui lòng kiểm tra định dạng tệp", importEmpty: "Không tìm thấy trang hợp lệ trong tệp",
+        importContentEmpty: "Vui lòng dán nội dung hoặc tải lên tệp trước",
+        importReadFailed: "Đọc tệp thất bại, vui lòng thử lại",
+        importInvalidFileType: "Chỉ hỗ trợ tệp .md, .markdown hoặc .txt",
+        loadingProject: "Đang tải dự án..."
       }
     }
   },
@@ -110,7 +111,7 @@ const detailI18n = {
       importUploadHint: "Click to choose a file, or drag a Markdown file here",
       importUploadFormatsHint: "Supports `.md`, `.markdown`, `.txt`",
       importPreviewReady: "{{count}} page(s) will be appended to this project",
-      importPreviewEmpty: "No importable pages detected. Use `## Page N: Title` or `## 第 N 页: 标题`.",
+      importPreviewEmpty: "No importable pages detected. Use `## Page N: Title` or `## Trang N: Tiêu đề`.",
       importConfirm: "Import into Project",
       importCancel: "Cancel",
       messages: {
@@ -137,7 +138,7 @@ import { refineDescriptions, getTaskStatus, addPages, updateProject, getSettings
 import { normalizeRenovationErrorMessage } from '@/utils';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 
-// 详细程度图标 — 暂时屏蔽，效果不够理想
+// Detail level icons - hidden
 // const DETAIL_LEVEL_LINES: Record<string, number[]> = {
 //   concise:  [5, 8],
 //   default:  [4, 7, 10],
@@ -145,12 +146,24 @@ import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtil
 // };
 // const DetailLevelIcon: React.FC<{ level: string }> = ({ level }) => ( ... );
 
-// 与后端 Settings.DEFAULT_EXTRA_FIELDS / DEFAULT_IMAGE_PROMPT_FIELDS 保持一致
-const DEFAULT_EXTRA_FIELDS = ['配图与素材', '版式与重点', '演讲者备注'];
-const DEFAULT_IMAGE_PROMPT_FIELDS = ['配图与素材', '版式与重点'];
+export const LEGACY_FIELD_MAP: Record<string, string> = {
+  '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+  '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+  '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+  '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
+  '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
+  '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
+  '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
+};
+
+export const normalizeFieldName = (name: string): string => LEGACY_FIELD_MAP[name] || name;
+
+// Keep consistent with backend Settings.DEFAULT_EXTRA_FIELDS / DEFAULT_IMAGE_PROMPT_FIELDS
+const DEFAULT_EXTRA_FIELDS = ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình'];
+const DEFAULT_IMAGE_PROMPT_FIELDS = ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm'];
 const PRESET_EXTRA_FIELDS = new Set(DEFAULT_EXTRA_FIELDS);
 
-// 可拖拽排序的额外字段胶囊
+// Draggable extra field pills
 const SortableFieldPill: React.FC<{
   name: string;
   active: boolean;
@@ -237,14 +250,17 @@ export const DetailEditor: React.FC = () => {
   const [generationMode, setGenerationMode] = useState<'streaming' | 'parallel'>('streaming');
   const [extraFieldNames, setExtraFieldNames] = useState<string[]>(DEFAULT_EXTRA_FIELDS);
   const [imagePromptFields, setImagePromptFields] = useState<string[]>(DEFAULT_IMAGE_PROMPT_FIELDS);
-  // 可选字段池（localStorage 持久化，包含所有已知字段名）
+  // Available fields pool (persisted in localStorage)
   const [availableFields, setAvailableFields] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('banana-available-extra-fields');
       if (stored) {
         const parsed = JSON.parse(stored);
-        // 缓存结构损坏时回落到默认值，否则后续 map/indexOf 会崩
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          const mapped = [...new Set(parsed.map(normalizeFieldName))];
+          localStorage.setItem('banana-available-extra-fields', JSON.stringify(mapped));
+          return mapped;
+        }
       }
       return DEFAULT_EXTRA_FIELDS;
     } catch { return DEFAULT_EXTRA_FIELDS; }
@@ -269,10 +285,12 @@ export const DetailEditor: React.FC = () => {
         const storedLevel = sessionStorage.getItem('banana-detail-level');
         if (storedLevel) setDetailLevel(storedLevel);
         setGenerationMode(s.description_generation_mode || 'streaming');
-        const activeFields = s.description_extra_fields || DEFAULT_EXTRA_FIELDS;
+        const activeFields = (s.description_extra_fields || DEFAULT_EXTRA_FIELDS).map(normalizeFieldName);
         setExtraFieldNames(activeFields);
-        if (s.image_prompt_extra_fields) setImagePromptFields(s.image_prompt_extra_fields);
-        // 合并活跃字段到可选池
+        if (s.image_prompt_extra_fields) {
+          setImagePromptFields(s.image_prompt_extra_fields.map(normalizeFieldName));
+        }
+        // Merge active fields into pool
         setAvailableFields(prev => {
           const merged = [...new Set([...prev, ...activeFields])];
           localStorage.setItem('banana-available-extra-fields', JSON.stringify(merged));
@@ -299,7 +317,7 @@ export const DetailEditor: React.FC = () => {
     }, 800);
   }, []);
 
-  // 额外字段拖拽排序
+  // Drag-and-drop sort extra fields
   const fieldSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const handleFieldDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -310,7 +328,7 @@ export const DetailEditor: React.FC = () => {
     const nextPool = arrayMove(availableFields, oldIdx, newIdx);
     setAvailableFields(nextPool);
     localStorage.setItem('banana-available-extra-fields', JSON.stringify(nextPool));
-    // 激活字段按新池顺序重排
+    // Reorder active fields according to pool
     const activeSet = new Set(extraFieldNames);
     const nextActive = nextPool.filter(f => activeSet.has(f));
     setExtraFieldNames(nextActive);
@@ -327,7 +345,7 @@ export const DetailEditor: React.FC = () => {
     reqTextareaRef.current?.insertAtCursor(markdown + '\n');
   }, []);
 
-  // 点击外部关闭下拉
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target;
@@ -347,7 +365,7 @@ export const DetailEditor: React.FC = () => {
     }
   }, [settingsOpen, fileMenuOpen]);
 
-  // PPT 翻新：异步任务轮询
+  // PPT renovation: poll async tasks
   useEffect(() => {
     if (!projectId) return;
     const taskId = localStorage.getItem('renovationTaskId');
@@ -415,22 +433,22 @@ export const DetailEditor: React.FC = () => {
     return () => { cancelled = true; };
   }, [projectId]);
 
-  // 加载项目数据
+  // Load project data
   useEffect(() => {
     if (projectId && (!currentProject || currentProject.id !== projectId)) {
-      // 直接使用 projectId 同步项目数据
+      // Sync project data using projectId
       syncProject(projectId);
     } else if (projectId && currentProject && currentProject.id === projectId) {
-      // 如果项目已存在，也同步一次以确保数据是最新的（特别是从描述生成后）
-      // 但只在首次加载时同步，避免频繁请求
+      // Sync project once to ensure data freshness
+      // Only sync on initial mount to avoid spam
       const shouldSync = !currentProject.pages.some(p => p.description_content);
       if (shouldSync) {
         syncProject(projectId);
       }
     }
-  }, [projectId, currentProject?.id]); // 只在 projectId 或项目ID变化时更新
+  }, [projectId, currentProject?.id]); // Only update when projectId changes
 
-  // 同步描述生成要求
+  // Sync description generation requirements
   useEffect(() => {
     if (currentProject) {
       setDescRequirements(currentProject.description_requirements || '');
@@ -446,7 +464,7 @@ export const DetailEditor: React.FC = () => {
         await updateProject(projectId, { description_requirements: descRequirements });
         setIsDescReqDirty(false);
       } catch (e) {
-        console.error('保存描述要求失败:', e);
+        console.error('Lưu yêu cầu mô tả thất bại:', e);
       }
     }, 1000);
     return () => clearTimeout(timer);
@@ -492,7 +510,7 @@ export const DetailEditor: React.FC = () => {
     const page = currentProject.pages.find((p) => p.id === pageId);
     if (!page) return;
 
-    // 判断是否是 PPT 翻新模式
+    // Check if PPT renovation mode
     const isRenovation = currentProject.creation_type === 'ppt_renovation';
 
     const executeRegenerate = async () => {
@@ -511,7 +529,7 @@ export const DetailEditor: React.FC = () => {
       }
     };
 
-    // PPT 翻新模式 或 已有描述时，需要确认
+    // Confirmation required for renovation mode or existing descriptions
     if (isRenovation) {
       confirm(
         t('detail.messages.confirmRenovationRegenerate'),
@@ -557,30 +575,30 @@ export const DetailEditor: React.FC = () => {
         type: 'success' 
       });
     } catch (error: any) {
-      console.error('修改页面描述失败:', error);
+      console.error('Chỉnh sửa mô tả trang thất bại:', error);
       const errorMessage = error?.response?.data?.error?.message 
         || error?.message 
         || t('detail.messages.refineFailed');
       show({ message: errorMessage, type: 'error' });
-      throw error; // 抛出错误让组件知道失败了
+      throw error; // Throw error to let component handle failure
     }
   }, [currentProject, projectId, syncProject, show, t]);
 
-  // 导出页面描述为 Markdown 文件
+  // Export descriptions as Markdown file
   const handleExportDescriptions = useCallback(() => {
     if (!currentProject) return;
     exportProjectToMarkdown(currentProject, { outline: false, description: true });
     show({ message: t('detail.messages.exportSuccess'), type: 'success' });
   }, [currentProject, show, t]);
 
-  // 导出大纲+描述
+  // Export outline + descriptions
   const handleExportFull = useCallback(() => {
     if (!currentProject) return;
     exportProjectToMarkdown(currentProject);
     show({ message: t('detail.messages.exportSuccess'), type: 'success' });
   }, [currentProject, show, t]);
 
-  // 导入描述 Markdown（追加新页面）
+  // Import description Markdown (append new pages)
   const handleImportDescriptions = useCallback(async (text: string) => {
     if (!currentProject || !projectId) return;
     try {
@@ -624,10 +642,10 @@ export const DetailEditor: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background-primary flex flex-col">
-      {/* 顶栏 */}
+      {/* Top bar */}
       <header className="bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-2 md:py-3 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 md:gap-4">
-          {/* 左侧：Logo 和标题 */}
+          {/* Left: Logo and title */}
           <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
             <Button
               variant="ghost"
@@ -653,7 +671,7 @@ export const DetailEditor: React.FC = () => {
             <span className="text-sm md:text-lg font-semibold hidden lg:inline">{t('detail.title')}</span>
           </div>
           
-          {/* 中间：AI 修改输入框 */}
+          {/* Middle: AI refine input */}
           <div className="flex-1 max-w-xl mx-auto hidden md:block md:-translate-x-3 pr-10">
             <AiRefineInput
               title=""
@@ -665,7 +683,7 @@ export const DetailEditor: React.FC = () => {
             />
           </div>
 
-          {/* 右侧：操作按钮 */}
+          {/* Right: Action buttons */}
           <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
             <Button
               variant="secondary"
@@ -689,7 +707,7 @@ export const DetailEditor: React.FC = () => {
                 <span className="hidden lg:inline">{t('detail.toMultiTemplate')}</span>
               </Button>
             )}
-            {/* multi 模式下一步是模板配置（生成在预览页发生），文案与去向保持一致 */}
+            {/* In multi-template mode, next step is template setup */}
             <Button
               variant="primary"
               size="sm"
@@ -714,7 +732,7 @@ export const DetailEditor: React.FC = () => {
           </div>
         </div>
         
-        {/* 移动端：AI 输入框 */}
+        {/* Mobile: AI input */}
         <div className="mt-2 md:hidden">
             <AiRefineInput
             title=""
@@ -727,7 +745,7 @@ export const DetailEditor: React.FC = () => {
         </div>
       </header>
 
-      {/* 操作栏 */}
+      {/* Action bar */}
       <div className="bg-white dark:bg-background-secondary border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-3 md:py-4 flex-shrink-0">
         {isRenovationProcessing ? (
           <div className="max-w-xl mx-auto">
@@ -768,7 +786,7 @@ export const DetailEditor: React.FC = () => {
               {t('detail.batchGenerate')}
             </Button>
 
-            {/* 描述设置面板 */}
+            {/* Description settings panel */}
             <div className="relative" ref={settingsRef}>
               <Button
                 variant="ghost"
@@ -779,7 +797,7 @@ export const DetailEditor: React.FC = () => {
               />
               {settingsOpen && (
                 <div className="absolute top-full left-0 mt-1 z-50 w-80 rounded-xl border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none p-4 space-y-4">
-                  {/* 生成模式 */}
+                  {/* Generation mode */}
                   <div>
                     <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
                       {t('detail.generationMode')}
@@ -809,9 +827,9 @@ export const DetailEditor: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 详细程度 — 暂时屏蔽，效果不够理想，始终使用默认值 */}
+                  {/* Detail level */}
 
-                  {/* 额外字段 */}
+                  {/* Extra fields */}
                   <div>
                     <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
                       {t('detail.extraFields')}
@@ -873,7 +891,7 @@ export const DetailEditor: React.FC = () => {
                               const nextPool = [...availableFields, trimmed];
                               setAvailableFields(nextPool);
                               localStorage.setItem('banana-available-extra-fields', JSON.stringify(nextPool));
-                              // 新增字段默认勾选
+                              // Newly added fields enabled by default
                               const nextActive = [...extraFieldNames, trimmed];
                               setExtraFieldNames(nextActive);
                               saveSettingsDebounced({ description_extra_fields: nextActive });
@@ -904,7 +922,7 @@ export const DetailEditor: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 生成要求 */}
+                  {/* Generation requirements */}
                   <div className="border-t border-gray-100 dark:border-border-primary pt-3">
                     <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
                       {t('detail.descRequirements')}
@@ -936,7 +954,7 @@ export const DetailEditor: React.FC = () => {
             </div>
 
             <div className="w-px h-6 bg-gray-200 dark:bg-border-primary flex-shrink-0" />
-            {/* 导入导出下拉菜单 */}
+            {/* Import/Export dropdown */}
             <div className="relative" ref={fileMenuRef}>
               <Button
                 variant="secondary"
@@ -988,7 +1006,7 @@ export const DetailEditor: React.FC = () => {
         )}
       </div>
 
-      {/* 主内容区 */}
+      {/* Main content area */}
       <main className="flex-1 p-3 md:p-6 overflow-y-auto min-h-0">
         <div className="max-w-7xl mx-auto">
           <ReferenceFileList

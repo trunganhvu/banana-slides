@@ -16,7 +16,7 @@
 <!-- /readme:intro -->
 
 <!-- readme:languages -->
-<p><a href="README.md#gh-light-mode-only"><img src="./assets/buttons/language-zh-selected-pt-br-light.svg" alt="简体中文" width="86" height="24"></a><a href="README.md#gh-dark-mode-only"><img src="./assets/buttons/language-zh-selected-pt-br-dark.svg" alt="简体中文" width="86" height="24"></a><a href="README_EN.md#gh-light-mode-only"><img src="./assets/buttons/language-en-selected-pt-br-light.svg" alt="English" width="82" height="24"></a><a href="README_EN.md#gh-dark-mode-only"><img src="./assets/buttons/language-en-selected-pt-br-dark.svg" alt="English" width="82" height="24"></a><a href="README_PT-BR.md#gh-light-mode-only"><img src="./assets/buttons/language-pt-br-selected-pt-br-light.svg" alt="Português" width="98" height="24"></a><a href="README_PT-BR.md#gh-dark-mode-only"><img src="./assets/buttons/language-pt-br-selected-pt-br-dark.svg" alt="Português" width="98" height="24"></a><a href="README_JA.md#gh-light-mode-only"><img src="./assets/buttons/language-ja-selected-pt-br-light.svg" alt="日本語" width="72" height="24"></a><a href="README_JA.md#gh-dark-mode-only"><img src="./assets/buttons/language-ja-selected-pt-br-dark.svg" alt="日本語" width="72" height="24"></a><a href="README_KO.md#gh-light-mode-only"><img src="./assets/buttons/language-ko-selected-pt-br-light.svg" alt="한국어" width="72" height="24"></a><a href="README_KO.md#gh-dark-mode-only"><img src="./assets/buttons/language-ko-selected-pt-br-dark.svg" alt="한국어" width="72" height="24"></a></p>
+<p><a href="README.md#gh-light-mode-only"><img src="./assets/buttons/language-zh-selected-pt-br-light.svg" alt="" width="86" height="24"></a><a href="README.md#gh-dark-mode-only"><img src="./assets/buttons/language-zh-selected-pt-br-dark.svg" alt="" width="86" height="24"></a><a href="README_EN.md#gh-light-mode-only"><img src="./assets/buttons/language-en-selected-pt-br-light.svg" alt="English" width="82" height="24"></a><a href="README_EN.md#gh-dark-mode-only"><img src="./assets/buttons/language-en-selected-pt-br-dark.svg" alt="English" width="82" height="24"></a><a href="README_PT-BR.md#gh-light-mode-only"><img src="./assets/buttons/language-pt-br-selected-pt-br-light.svg" alt="Português" width="98" height="24"></a><a href="README_PT-BR.md#gh-dark-mode-only"><img src="./assets/buttons/language-pt-br-selected-pt-br-dark.svg" alt="Português" width="98" height="24"></a><a href="README_JA.md#gh-light-mode-only"><img src="./assets/buttons/language-ja-selected-pt-br-light.svg" alt="" width="72" height="24"></a><a href="README_JA.md#gh-dark-mode-only"><img src="./assets/buttons/language-ja-selected-pt-br-dark.svg" alt="" width="72" height="24"></a><a href="README_KO.md#gh-light-mode-only"><img src="./assets/buttons/language-ko-selected-pt-br-light.svg" alt="한국어" width="72" height="24"></a><a href="README_KO.md#gh-dark-mode-only"><img src="./assets/buttons/language-ko-selected-pt-br-dark.svg" alt="한국어" width="72" height="24"></a></p>
 <!-- /readme:languages -->
 
 <!-- readme:actions -->
@@ -51,7 +51,7 @@
 <p>
   <a href="https://trendshift.io/repositories/22056#gh-light-mode-only"><img src="https://trendshift.io/api/badge/repositories/22056" alt="Anionex%2Fbanana-slides | Trendshift" width="244" height="54"></a><a href="https://trendshift.io/repositories/22056#gh-dark-mode-only"><img src="./assets/badge-trendshift-dark.svg" alt="Anionex%2Fbanana-slides | Trendshift" width="244" height="54"></a>
   &nbsp;
-  <a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-light-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=neutral" alt="Featured｜HelloGitHub" width="244" height="54"></a><a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-dark-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=dark" alt="Featured｜HelloGitHub" width="244" height="54"></a>
+  <a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-light-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=neutral" alt="FeaturedHelloGitHub" width="244" height="54"></a><a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-dark-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=dark" alt="FeaturedHelloGitHub" width="244" height="54"></a>
 </p>
 
 <p>
@@ -95,9 +95,9 @@
 
 <p><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/readme/section-rule-dark.svg"><source media="(prefers-color-scheme: light)" srcset="./assets/readme/section-rule-light.svg"><img src="./assets/readme/section-rule-light.svg" alt="" width="838" height="20"></picture></p>
 
-<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"><img src="./assets/huoshan.png" alt="火山引擎" width="160"></a></p>
+<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"><img src="./assets/huoshan.png" alt="" width="160"></a></p>
 
-<p>Agradecemos à <a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">火山引擎</a> por patrocinar este projeto! Em comparação com as APIs oficiais internacionais populares, os preços são mais baixos e o custo-benefício é maior, com resultados de geração semelhantes; conexão direta na China, sem necessidade de ambiente de rede especial. Após a assinatura, também pode ser usado para uso diário e outras ferramentas compatíveis, não se limitando ao Banana Slides.</p>
+<p>Agradecemos à <a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"></a> por patrocinar este projeto! Em comparação com as APIs oficiais internacionais populares, os preços são mais baixos e o custo-benefício é maior, com resultados de geração semelhantes; conexão direta na China, sem necessidade de ambiente de rede especial. Após a assinatura, também pode ser usado para uso diário e outras ferramentas compatíveis, não se limitando ao Banana Slides.</p>
 
 <p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">Ver ofertas e assinar →</a></p>
 
@@ -109,22 +109,22 @@
 <details open>
 <summary>Clique para recolher</summary>
 
-- **[2026-09-05]**：Lançamento da versão candidata 0.9.0 RC7, corrigindo o problema onde o Codex (OpenAI OAuth) estava conectado, mas a geração de imagens retornava 400: a chamada interna do modelo principal foi atualizada de `gpt-5.4` para `gpt-5.6-terra`, o modelo de imagem permanece `gpt-image-2`, sem necessidade de alterar o modelo de imagem para modelo de texto. Esta versão também inclui descrições de estilo orientadas por conteúdo pós-RC6 e suporte para geração de imagens SenseNova U1; [ver instruções de download e instalação](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.7)
-- **[2026-08-30]**：Lançamento da versão candidata 0.9.0 RC6, adicionando verificação de atualização na inicialização do desktop (opcional), cartões de atualização com resumo e links para logs completos, além de progresso de download, tentativa em caso de falha e reinicialização para instalação; também corrige tarefas de imagem assíncronas APIMart compatíveis com OpenAI, requisições sem streaming e passagem de resolução 1K/2K/4K; [ver instruções de download e instalação](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.6)
-- **[2026-08-29]**：Lançamento da versão candidata 0.9.0 RC5, adicionando player de slides online imersivo e predefinição de Provedor APIMart compatível com OpenAI; a verificação de atualização da versão desktop agora segue corretamente o canal RC; melhoria nas mensagens de erro de credenciais MinerU para reformulação de PPT, correção de risco SSRF em imagens remotas de documentos de referência e definição do modo de seleção como padrão na edição de imagens; [ver instruções de download e instalação](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.5)
-- **[2026-08-20]**：Lançamento da versão candidata 0.9.0 RC4, com foco na correção de provedores online LazyLLM indisponíveis (qwen, etc.) na versão desktop empacotada e ausência de dependência de proxy SOCKS; restauração do botão "Voltar" na página de visualização para retornar à edição de descrição; correção de sobreposição da janela de tarefas de exportação e interação da gaveta de propriedades no desktop; [download e instalação com um clique](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.4)
-- **[2026-08-20]**：O botão "Voltar" foi restaurado na página de visualização, permitindo retornar da visualização de slides para a página de edição de descrição com um clique para continuar as modificações
-- **[2026-08-20]**：Correção do problema onde a janela flutuante de tarefas de exportação era bloqueada pela gaveta de propriedades da página; a gaveta de propriedades da página no desktop agora expande por padrão e se adapta automaticamente à largura da janela
-- **[2026-07-31]**：A versão desktop empacotada registrou totalmente 11 provedores online LazyLLM (qwen / doubao / deepseek / glm / kimi / minimax / sensenova / siliconflow / ppio / aiping / openai), corrigindo o erro `Unsupported source: qwen` na versão empacotada
-- **[2026-08-06]**：Lançamento da versão candidata 0.9.0 RC3, com foco na correção da configuração e recuperação de credenciais do Volcengine Agent Plans, além de trazer isolamento de fluxo de tópicos, edição de slides no local, contrato de campos v2, correspondência de modelos e melhorias na exportação de PPTX editável; [download e instalação com um clique](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.3)
-- **[2026-07-15]**：Predefinições personalizadas de requisitos de tópicos/descrição agora corrigem automaticamente o cache corrompido do navegador, mantendo as predefinições válidas e evitando que caches anômalos bloqueiem a página de edição
-- **[2026-07-11]**：Lançamento da versão candidata 0.9.0 RC2, contendo todos os recursos do RC1 e corrigindo a inconsistência de diretório MinerU para PPTX editável no Windows desktop e erro de caminho FFprobe em vídeos explicativos; [download e instalação com um clique](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.2)
-- **[2026-06-23]**：Lançamento de modelos página por página — suporte aos modos de modelo unificado ou modelo independente por página; permite upload de imagens ou PDF para construir uma biblioteca de modelos de projeto; a IA analisa automaticamente o estilo do modelo e faz a correspondência inteligente para cada página, ou permite vinculação manual página por página; troca bidirecional entre os dois modos a qualquer momento ([documentação](https://docs.bananaslides.online/zh/features/templates))
-- **[2026-04-25]**：Lançamento da Caixa de Ferramentas de Materiais — novos modos de edição de imagem completa, edição por seleção (sobrepor/substituir) e apagamento inteligente adicionados à geração de materiais original, com entrada unificada e operação em um só lugar
-- **[2026-04-25]**：Suporte para login e vinculação de conta via OAuth oficial da OpenAI; após a vinculação, o Codex pode ser usado diretamente como provedor de geração de texto/imagem sem preenchimento manual de API Key; contas Plus podem gerar mais de 100 imagens 2k em cinco horas ([tutorial](https://ziy68cvfvu3.feishu.cn/wiki/LDSOwPzkhiNonkkNTF1ct2VBnNc)) (baseado no fluxo de autorização OAuth PKCE oficial da OpenAI, não é engenharia reversa)
-- **[2026-04-25]**：Suporte para salvar modelos personalizados de estilo de texto, permitindo nomear, colorir e reutilizar de forma persistente, sem necessidade de redigitar todas as vezes
-- **[2026-04-23]**：Suporte ao modelo gpt-image-2; o efeito de exportação de fundos editáveis também foi aprimorado devido à atualização das capacidades do modelo (em Configurações - Opções de Exportação - Obtenção de Fundo, selecione Obtenção Generativa)
-- **[2026-04-11]**：Suporte para [operações via CLI e adição de agent skills](https://docs.bananaslides.online/cli)
+- **[2026-09-05]**Lançamento da versão candidata 0.9.0 RC7, corrigindo o problema onde o Codex (OpenAI OAuth) estava conectado, mas a geração de imagens retornava 400: a chamada interna do modelo principal foi atualizada de `gpt-5.4` para `gpt-5.6-terra`, o modelo de imagem permanece `gpt-image-2`, sem necessidade de alterar o modelo de imagem para modelo de texto. Esta versão também inclui descrições de estilo orientadas por conteúdo pós-RC6 e suporte para geração de imagens SenseNova U1; [ver instruções de download e instalação](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.7)
+- **[2026-08-30]**Lançamento da versão candidata 0.9.0 RC6, adicionando verificação de atualização na inicialização do desktop (opcional), cartões de atualização com resumo e links para logs completos, além de progresso de download, tentativa em caso de falha e reinicialização para instalação; também corrige tarefas de imagem assíncronas APIMart compatíveis com OpenAI, requisições sem streaming e passagem de resolução 1K/2K/4K; [ver instruções de download e instalação](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.6)
+- **[2026-08-29]**Lançamento da versão candidata 0.9.0 RC5, adicionando player de slides online imersivo e predefinição de Provedor APIMart compatível com OpenAI; a verificação de atualização da versão desktop agora segue corretamente o canal RC; melhoria nas mensagens de erro de credenciais MinerU para reformulação de PPT, correção de risco SSRF em imagens remotas de documentos de referência e definição do modo de seleção como padrão na edição de imagens; [ver instruções de download e instalação](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.5)
+- **[2026-08-20]**Lançamento da versão candidata 0.9.0 RC4, com foco na correção de provedores online LazyLLM indisponíveis (qwen, etc.) na versão desktop empacotada e ausência de dependência de proxy SOCKS; restauração do botão "Voltar" na página de visualização para retornar à edição de descrição; correção de sobreposição da janela de tarefas de exportação e interação da gaveta de propriedades no desktop; [download e instalação com um clique](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.4)
+- **[2026-08-20]**O botão "Voltar" foi restaurado na página de visualização, permitindo retornar da visualização de slides para a página de edição de descrição com um clique para continuar as modificações
+- **[2026-08-20]**Correção do problema onde a janela flutuante de tarefas de exportação era bloqueada pela gaveta de propriedades da página; a gaveta de propriedades da página no desktop agora expande por padrão e se adapta automaticamente à largura da janela
+- **[2026-07-31]**A versão desktop empacotada registrou totalmente 11 provedores online LazyLLM (qwen / doubao / deepseek / glm / kimi / minimax / sensenova / siliconflow / ppio / aiping / openai), corrigindo o erro `Unsupported source: qwen` na versão empacotada
+- **[2026-08-06]**Lançamento da versão candidata 0.9.0 RC3, com foco na correção da configuração e recuperação de credenciais do Volcengine Agent Plans, além de trazer isolamento de fluxo de tópicos, edição de slides no local, contrato de campos v2, correspondência de modelos e melhorias na exportação de PPTX editável; [download e instalação com um clique](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.3)
+- **[2026-07-15]**Predefinições personalizadas de requisitos de tópicos/descrição agora corrigem automaticamente o cache corrompido do navegador, mantendo as predefinições válidas e evitando que caches anômalos bloqueiem a página de edição
+- **[2026-07-11]**Lançamento da versão candidata 0.9.0 RC2, contendo todos os recursos do RC1 e corrigindo a inconsistência de diretório MinerU para PPTX editável no Windows desktop e erro de caminho FFprobe em vídeos explicativos; [download e instalação com um clique](https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.2)
+- **[2026-06-23]**Lançamento de modelos página por página — suporte aos modos de modelo unificado ou modelo independente por página; permite upload de imagens ou PDF para construir uma biblioteca de modelos de projeto; a IA analisa automaticamente o estilo do modelo e faz a correspondência inteligente para cada página, ou permite vinculação manual página por página; troca bidirecional entre os dois modos a qualquer momento ([documentação](https://docs.bananaslides.online/zh/features/templates))
+- **[2026-04-25]**Lançamento da Caixa de Ferramentas de Materiais — novos modos de edição de imagem completa, edição por seleção (sobrepor/substituir) e apagamento inteligente adicionados à geração de materiais original, com entrada unificada e operação em um só lugar
+- **[2026-04-25]**Suporte para login e vinculação de conta via OAuth oficial da OpenAI; após a vinculação, o Codex pode ser usado diretamente como provedor de geração de texto/imagem sem preenchimento manual de API Key; contas Plus podem gerar mais de 100 imagens 2k em cinco horas ([tutorial](https://ziy68cvfvu3.feishu.cn/wiki/LDSOwPzkhiNonkkNTF1ct2VBnNc)) (baseado no fluxo de autorização OAuth PKCE oficial da OpenAI, não é engenharia reversa)
+- **[2026-04-25]**Suporte para salvar modelos personalizados de estilo de texto, permitindo nomear, colorir e reutilizar de forma persistente, sem necessidade de redigitar todas as vezes
+- **[2026-04-23]**Suporte ao modelo gpt-image-2; o efeito de exportação de fundos editáveis também foi aprimorado devido à atualização das capacidades do modelo (em Configurações - Opções de Exportação - Obtenção de Fundo, selecione Obtenção Generativa)
+- **[2026-04-11]**Suporte para [operações via CLI e adição de agent skills](https://docs.bananaslides.online/cli)
 </details>
 
 <!-- i18n:origin -->
@@ -165,9 +165,9 @@ No entanto, o surgimento do modelo nano banana🍌 mudou tudo. Tentei usar o �
 
 | | |
 |:---:|:---:|
-| <img src="https://github.com/user-attachments/assets/d58ce3f7-bcec-451d-a3b9-ca3c16223644" width="500" alt="案例3"> | <img src="https://github.com/user-attachments/assets/c64cd952-2cdf-4a92-8c34-0322cbf3de4e" width="500" alt="案例2"> |
+| <img src="https://github.com/user-attachments/assets/d58ce3f7-bcec-451d-a3b9-ca3c16223644" width="500" alt="3"> | <img src="https://github.com/user-attachments/assets/c64cd952-2cdf-4a92-8c34-0322cbf3de4e" width="500" alt="2"> |
 | **Melhores práticas de desenvolvimento de software** | **Demonstração técnica do DeepSeek-V3.2** |
-| <img src="https://github.com/user-attachments/assets/383eb011-a167-4343-99eb-e1d0568830c7" width="500" alt="案例4"> | <img src="https://github.com/user-attachments/assets/1a63afc9-ad05-4755-8480-fc4aa64987f1" width="500" alt="案例1"> |
+| <img src="https://github.com/user-attachments/assets/383eb011-a167-4343-99eb-e1d0568830c7" width="500" alt="4"> | <img src="https://github.com/user-attachments/assets/1a63afc9-ad05-4755-8480-fc4aa64987f1" width="500" alt="1"> |
 | **P&D e industrialização de equipamentos para linhas de produção inteligentes de pratos prontos** | **A evolução do dinheiro: a jornada das conchas às notas de papel** |
 
 </div>
@@ -193,7 +193,7 @@ Suporta três formas de começar: **ideias**, **esboços** e **descrições de p
 - **Armazenamento automático de imagens**: As imagens extraídas dos documentos entrarão automaticamente na biblioteca de materiais do projeto após o arquivo de referência ser associado ao projeto, podendo ser reutilizadas diretamente no futuro.
 - **Referência de estilo**: Suporte para upload de imagens de referência ou modelos para personalizar o estilo do PPT.
 
-<img width="1920" height="1080" alt="文件解析与素材处理" src="https://github.com/user-attachments/assets/8cda1fd2-2369-4028-b310-ea6604183936" />
+<img width="1920" height="1080" alt="" src="https://github.com/user-attachments/assets/8cda1fd2-2369-4028-b310-ea6604183936" />
 
 <!-- i18n:editing -->
 ### 3. Edição em linguagem natural estilo "Vibe"
@@ -210,7 +210,7 @@ Não se limite mais a botões de menu complexos; dê comandos de edição direta
 - **Adaptação perfeita**: proporção padrão 16:9, sem necessidade de ajustes secundários de layout, pronto para apresentação direta.
 
 <img width="1000" alt="image" src="https://github.com/user-attachments/assets/3e54bbba-88be-4f69-90a1-02e875c25420" />
-<img width="1748" height="538" alt="PPT与PDF导出" src="https://github.com/user-attachments/assets/647eb9b1-d0b6-42cb-a898-378ebe06c984" />
+<img width="1748" height="538" alt="PPTPDF" src="https://github.com/user-attachments/assets/647eb9b1-d0b6-42cb-a898-378ebe06c984" />
 
 <!-- i18n:editable-pptx -->
 ### 5. Exportação de pptx livremente editável (em iteração Beta)
@@ -256,7 +256,7 @@ Não se limite mais a botões de menu complexos; dê comandos de edição direta
 <!-- i18n:usage -->
 ## 📦 Como usar
 
-<a name="-使用方法#gh-light-mode-only"></a><a name="-使用方法#gh-dark-mode-only"></a>
+<a name="-#gh-light-mode-only"></a><a name="-#gh-dark-mode-only"></a>
 
 <!-- i18n:one-click -->
 ### (Novo) Implantação em um clique usando modelos de aplicativo
@@ -304,55 +304,55 @@ cp .env.example .env
 > **As interfaces de modelos de linguagem de grande porte (LLM) no projeto seguem o padrão da plataforma AIHubMix. Recomenda-se usar o [AIHubMix (clique aqui para acessar)](https://api.inferera.com/?aff=17EC) para obter chaves de API e reduzir custos de migração**<br>
 > **Dica amigável: As interfaces dos modelos Google nano banana pro têm custos elevados, atente-se aos custos de chamada**
 ```env
-# AI Provider格式配置 (gemini / openai / volcengine / vertex)
+# Config
 AI_PROVIDER_FORMAT=gemini
 
-# Gemini 格式配置（当 AI_PROVIDER_FORMAT=gemini 时使用）
+# Config
 GOOGLE_API_KEY=your-api-key-here
 GOOGLE_API_BASE=https://generativelanguage.googleapis.com
-# 代理示例: https://api.inferera.com/gemini
+# Config
 
-# OpenAI 格式配置（当 AI_PROVIDER_FORMAT=openai 时使用）
+# Config
 OPENAI_API_KEY=your-api-key-here
 OPENAI_API_BASE=https://api.openai.com/v1
-# 代理示例: https://api.inferera.com/v1
+# Config
 
-# 商汤日日新 U1 图片模型（保留旧 Provider，图片走 OpenAI 兼容路径）
-# 推荐：文本继续用 Gemini，只让图片走商汤
+# Config
+# Config
 # IMAGE_MODEL_SOURCE=openai
 # IMAGE_API_KEY=your-sensenova-api-key
 # IMAGE_API_BASE=https://token.sensenova.cn/v1
 # IMAGE_MODEL=sensenova-u1.5-lite
 
-# 火山方舟 Agent Plans 配置（当 AI_PROVIDER_FORMAT=volcengine 时使用）
-# 注意: Agent Plan 需使用专属 API Key 与模型名 (doubao-seed-2.1-turbo / doubao-seedream-5.0-lite)
+# Config
+# Config
 VOLCENGINE_API_KEY=your-volcengine-api-key-here
 VOLCENGINE_API_BASE=https://ark.cn-beijing.volces.com/api/plan/v3
 
-# Vertex AI 配置（AI_PROVIDER_FORMAT=vertex）
-# 需要 GCP 项目和服务账户密钥
+# Config
+# Config
 # VERTEX_PROJECT_ID=your-gcp-project-id
 # VERTEX_LOCATION=global
 # GOOGLE_APPLICATION_CREDENTIALS=./gcp-service-account.json
 
-# Lazyllm 格式配置（当 AI_PROVIDER_FORMAT=lazyllm 时使用）
-# 选择文本生成和图片生成使用的厂商
-TEXT_MODEL_SOURCE=deepseek        # 文本生成模型厂商
-IMAGE_MODEL_SOURCE=doubao         # 图片编辑模型厂商
-IMAGE_CAPTION_MODEL_SOURCE=qwen   # 图片描述模型厂商
+# Config
+# Config
+TEXT_MODEL_SOURCE=deepseek        # 
+IMAGE_MODEL_SOURCE=doubao         # 
+IMAGE_CAPTION_MODEL_SOURCE=qwen   # 
 
-# 各厂商 API Key（只需配置你要使用的厂商）
-DOUBAO_API_KEY=your-doubao-api-key            # 火山引擎/豆包
+# Config
+DOUBAO_API_KEY=your-doubao-api-key            # /
 DEEPSEEK_API_KEY=your-deepseek-api-key        # DeepSeek
-QWEN_API_KEY=your-qwen-api-key                # 阿里云/通义千问
-GLM_API_KEY=your-glm-api-key                  # 智谱 GLM
-SILICONFLOW_API_KEY=your-siliconflow-api-key  # 硅基流动
-SENSENOVA_API_KEY=your-sensenova-api-key      # 商汤日日新
-# U1 生图请优先使用上面的 IMAGE_MODEL_SOURCE=openai 配置；此 Key 用于旧 LazyLLM 路径
+QWEN_API_KEY=your-qwen-api-key                # /
+GLM_API_KEY=your-glm-api-key                  #  GLM
+SILICONFLOW_API_KEY=your-siliconflow-api-key  # 
+SENSENOVA_API_KEY=your-sensenova-api-key      # 
+# Config
 MINIMAX_API_KEY=your-minimax-api-key          # MiniMax
-KIMI_API_KEY=your-kimi-api-key                # 月之暗面 Kimi
-PPIO_API_KEY=your-ppio-api-key                # PPIO 派欧云
-AIPING_API_KEY=your-aiping-api-key            # AIPing 爱拼
+KIMI_API_KEY=your-kimi-api-key                #  Kimi
+PPIO_API_KEY=your-ppio-api-key                # PPIO 
+AIPING_API_KEY=your-aiping-api-key            # AIPing 
 ...
 ```
 
@@ -396,7 +396,7 @@ O Google Cloud Vertex AI permite chamar modelos Gemini por meio de contas de ser
 O projeto fornece imagens de front-end e back-end construídas no Docker Hub (sincronizadas com a versão mais recente da ramificação principal), permitindo pular as etapas de construção local para uma implantação rápida:
 
 ```bash
-# 使用预构建镜像启动（无需从头构建）
+# Config
 docker compose -f docker-compose.prod.yml up -d
 ```
 
@@ -416,7 +416,7 @@ docker compose up -d
 > [!TIP]
 > Se encontrar problemas de rede, você pode remover o comentário da configuração da fonte de espelhamento no arquivo `.env` e executar o comando de inicialização novamente:
 > ```env
-> # 在 .env 文件中取消以下注释即可使用国内镜像源
+> #  .env 
 > DOCKER_REGISTRY=docker.1ms.run/
 > GHCR_REGISTRY=ghcr.nju.edu.cn/
 > APT_MIRROR=mirrors.aliyun.com
@@ -433,13 +433,13 @@ docker compose up -d
 4. **Ver logs**
 
 ```bash
-# 查看后端日志（最后 200 行）
+# Config
 docker logs --tail 200 banana-slides-backend
 
-# 实时查看后端日志（最后 100 行）
+# Config
 docker logs -f --tail 100 banana-slides-backend
 
-# 查看前端日志（最后 100 行）
+# Config
 docker logs --tail 100 banana-slides-frontend
 ```
 
@@ -507,7 +507,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Execute no diretório raiz do projeto:
 ```bash
-# macOS（Homebrew）
+# Config
 brew install ffmpeg-full
 brew unlink ffmpeg 2>/dev/null || true
 brew link --overwrite --force ffmpeg-full
@@ -516,7 +516,7 @@ brew link --overwrite --force ffmpeg-full
 sudo apt-get update
 sudo apt-get install -y ffmpeg libass9
 
-# 然后安装 Python 依赖
+# Config
 uv sync
 ```
 
@@ -527,7 +527,7 @@ Isso instalará automaticamente todas as dependências de acordo com o `pyprojec
 Copie o modelo de variáveis de ambiente:
 ```bash
 cp .env.example .env
-# 然后按照前述方法，打开编辑 `.env` 文件，配置你的 API 密钥
+# Config
 ```
 
 <!-- i18n:frontend -->
@@ -640,7 +640,7 @@ Código aberto não é fácil 🙏 Se este projeto for valioso para você, sinta
 <img width="240" alt="image" src="https://github.com/user-attachments/assets/fd7a286d-711b-445e-aecf-43e3fe356473" />
 
 Agradecemos aos seguintes amigos pelo apoio e patrocínio voluntário ao projeto:
-> @雅俗共赏、@曹峥、@以年观日、@John、@胡yun星Ethan, @azazo1、@刘聪NLP、@🍟、@苍何、@万瑾、@biubiu、@law、@方源、@寒松Falcon、@刘星宇&小陀螺AIGC
+> @@@@John@yunEthan, @azazo1@NLP@🍟@@@biubiu@law@@Falcon@&AIGC
 > Se tiver dúvidas sobre a lista de patrocinadores, você pode <a href="mailto:davidyang042@gmail.com"> entrar em contato com o autor </a>
 
 <!-- i18n:statistics -->
@@ -664,7 +664,7 @@ Agradecemos aos seguintes amigos pelo apoio e patrocínio voluntário ao projeto
 
 <p><strong>Banana Slides</strong></p>
 
-<p><a href="README.md">简体中文</a> · <a href="README_EN.md">English</a> · <a href="README_PT-BR.md">Português</a> · <a href="README_JA.md">日本語</a> · <a href="README_KO.md">한국어</a></p>
+<p><a href="README.md"></a> · <a href="README_EN.md">English</a> · <a href="README_PT-BR.md">Português</a> · <a href="README_JA.md"></a> · <a href="README_KO.md">한국어</a></p>
 
 <p><a href="https://bananaslides.online/">Demo online</a> · <a href="https://docs.bananaslides.online/">Documentação</a> · <a href="https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.7">Desktop RC7</a> · <a href="https://github.com/Anionex/banana-slides#-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95">Implantação</a> · <a href="https://x.com/anion_ex">anion_ex</a> · <a href="#user-content-community">Grupo WeChat</a></p>
 
@@ -680,9 +680,9 @@ Agradecemos aos seguintes amigos pelo apoio e patrocínio voluntário ao projeto
 
 
 
-<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">火山引擎</a></p>
+<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"></a></p>
 
-<p>Agradecemos à <a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">火山引擎</a> por patrocinar este projeto! Em comparação com as APIs oficiais internacionais populares, os preços são mais baixos e o custo-benefício é maior, com resultados de geração semelhantes; conexão direta na China, sem necessidade de ambiente de rede especial. Após a assinatura, também pode ser usado para uso diário e outras ferramentas compatíveis, não se limitando ao Banana Slides.</p>
+<p>Agradecemos à <a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"></a> por patrocinar este projeto! Em comparação com as APIs oficiais internacionais populares, os preços são mais baixos e o custo-benefício é maior, com resultados de geração semelhantes; conexão direta na China, sem necessidade de ambiente de rede especial. Após a assinatura, também pode ser usado para uso diário e outras ferramentas compatíveis, não se limitando ao Banana Slides.</p>
 
 <p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">Ver ofertas e assinar →</a></p>
 

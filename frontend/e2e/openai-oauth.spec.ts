@@ -14,7 +14,7 @@ async function getBaseSettings(): Promise<Record<string, unknown>> {
 }
 
 async function expandAdvancedSettings(page: import('@playwright/test').Page) {
-  const advancedBtn = page.locator('button', { hasText: /高级设置|Advanced/ });
+  const advancedBtn = page.locator('button', { hasText: /|Advanced/ });
   await advancedBtn.waitFor({ state: 'visible', timeout: 10000 });
   await advancedBtn.click();
   await page.waitForTimeout(500);
@@ -41,7 +41,7 @@ test.describe('OpenAI OAuth Settings Section', () => {
       const loginBtn = page.locator('button', { hasText: 'Login with OpenAI' });
       await expect(loginBtn).toBeVisible();
 
-      const disconnectBtn = page.locator('button', { hasText: /断开连接|Disconnect/ });
+      const disconnectBtn = page.locator('button', { hasText: /|Disconnect/ });
       await expect(disconnectBtn).not.toBeVisible();
     });
 
@@ -86,11 +86,11 @@ test.describe('OpenAI OAuth Settings Section', () => {
 
       await page.goto(`${BASE_URL}/settings`);
       await expandAdvancedSettings(page);
-      await page.waitForSelector('text=/Connected|已连接/');
+      await page.waitForSelector('text=/Connected|/');
 
       await expect(page.locator('text=user@example.com')).toBeVisible();
 
-      const disconnectBtn = page.locator('button', { hasText: /Disconnect|断开连接/ });
+      const disconnectBtn = page.locator('button', { hasText: /Disconnect|/ });
       await expect(disconnectBtn).toBeVisible();
 
       const loginBtn = page.locator('button', { hasText: 'Login with OpenAI' });
@@ -193,7 +193,7 @@ test.describe('OpenAI OAuth Settings Section', () => {
       await expandAdvancedSettings(page);
       await page.getByRole('button', { name: 'Login with OpenAI' }).click();
 
-      await expect(page.getByRole('button', { name: /连接中|Connecting/ })).toBeVisible();
+      await expect(page.getByRole('button', { name: /|Connecting/ })).toBeVisible();
       await expect(page.getByText('desktop@example.com')).toBeVisible({ timeout: 5000 });
       expect(statusChecks).toBeGreaterThanOrEqual(2);
     });
@@ -316,7 +316,7 @@ test.describe('OpenAI OAuth Settings Section', () => {
       });
       await page.getByRole('button', { name: 'Login with OpenAI' }).click();
 
-      await expect(page.getByText(/登录窗口被浏览器拦截|login window was blocked/i)).toBeVisible();
+      await expect(page.getByText(/|login window was blocked/i)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Login with OpenAI' })).toBeEnabled();
     });
 
@@ -345,7 +345,7 @@ test.describe('OpenAI OAuth Settings Section', () => {
       });
       await page.getByRole('button', { name: 'Login with OpenAI' }).click();
 
-      await expect(page.getByText(/登录窗口被浏览器拦截|login window was blocked/i)).toBeVisible();
+      await expect(page.getByText(/|login window was blocked/i)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Login with OpenAI' })).toBeEnabled();
     });
 
@@ -392,8 +392,8 @@ test.describe('OpenAI OAuth Settings Section', () => {
 
       await page.click('button:has-text("Login with OpenAI")');
 
-      await expect(page.getByText('检测到本机 1455 端口被占用，请登录后复制弹窗地址栏中的完整地址并粘贴到下方。')).toBeVisible();
-      await expect(page.getByPlaceholder('粘贴回调地址...')).toBeVisible();
+      await expect(page.getByText(' 1455 ')).toBeVisible();
+      await expect(page.getByPlaceholder('...')).toBeVisible();
 
       const openedUrl = await page.evaluate(() => (window as any).__openedUrl);
       expect(openedUrl).toContain('auth.openai.com');
@@ -422,9 +422,9 @@ test.describe('OpenAI OAuth Settings Section', () => {
 
       await page.goto(`${BASE_URL}/settings`);
       await expandAdvancedSettings(page);
-      await page.waitForSelector('text=/Connected|已连接/');
+      await page.waitForSelector('text=/Connected|/');
 
-      const disconnectBtn = page.locator('button', { hasText: /Disconnect|断开连接/ });
+      const disconnectBtn = page.locator('button', { hasText: /Disconnect|/ });
       await disconnectBtn.click();
       await page.waitForTimeout(500);
 
@@ -464,11 +464,11 @@ test.describe('OpenAI OAuth Settings Section', () => {
 
       await page.goto(`${BASE_URL}/settings`);
       await expandAdvancedSettings(page);
-      await page.getByRole('button', { name: /登录后连接失败|Connection failed after login/ }).click();
+      await page.getByRole('button', { name: /|Connection failed after login/ }).click();
 
       const callbackUrl = 'http://localhost:1455/auth/callback?code=auth-code&state=state-123';
-      await page.getByPlaceholder(/粘贴回调地址|Paste callback URL/).fill(callbackUrl);
-      await page.getByRole('button', { name: /提交|Submit/ }).click();
+      await page.getByPlaceholder(/|Paste callback URL/).fill(callbackUrl);
+      await page.getByRole('button', { name: /|Submit/ }).click();
 
       await expect(page.locator('text=user@example.com')).toBeVisible();
       expect(manualCallbackPayload).toEqual({ callback_url: callbackUrl });
@@ -500,7 +500,7 @@ test.describe('OpenAI OAuth Settings Section', () => {
             success: true,
             data: {
               status: 'FAILED',
-              error: 'Codex 登录已过期或无效，已断开 OpenAI 账号连接。请重新登录 OpenAI 后再测试。',
+              error: 'Codex  OpenAI  OpenAI ',
               openai_oauth_disconnected: true,
             },
           },
@@ -511,12 +511,12 @@ test.describe('OpenAI OAuth Settings Section', () => {
       await expandAdvancedSettings(page);
       await expect(page.locator('text=user@example.com')).toBeVisible();
 
-      const textModelTestBtn = page.locator('button', { hasText: /开始测试|Start Test/ }).nth(1);
+      const textModelTestBtn = page.locator('button', { hasText: /|Start Test/ }).nth(1);
       await textModelTestBtn.click();
 
       await expect(page.locator('button', { hasText: 'Login with OpenAI' })).toBeVisible({ timeout: 5000 });
       await expect(page.locator('text=user@example.com')).not.toBeVisible();
-      await expect(page.getByText('Codex 登录已过期或无效，已断开 OpenAI 账号连接。请重新登录 OpenAI 后再测试。', { exact: true })).toBeVisible();
+      await expect(page.getByText('Codex  OpenAI  OpenAI ', { exact: true })).toBeVisible();
     });
   });
 
@@ -569,7 +569,7 @@ test.describe('OpenAI OAuth Settings Section', () => {
       await expandAdvancedSettings(page);
 
       const loginBtn = page.locator('button', { hasText: 'Login with OpenAI' });
-      const disconnectBtn = page.locator('button', { hasText: /Disconnect|断开连接/ });
+      const disconnectBtn = page.locator('button', { hasText: /Disconnect|/ });
       const hasLogin = await loginBtn.isVisible().catch(() => false);
       const hasDisconnect = await disconnectBtn.isVisible().catch(() => false);
       expect(hasLogin || hasDisconnect).toBeTruthy();

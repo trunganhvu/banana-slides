@@ -55,7 +55,7 @@ def _generate_image_caption(filepath: str) -> str:
         if output_lang == 'en':
             prompt = "Please provide a short description of the main content of this image. Return only the description text without any other explanation."
         else:
-            prompt = "请用一句简短的中文描述这张图片的主要内容。只返回描述文字，不要其他解释。"
+            prompt = "Hãy mô tả ngắn gọn nội dung chính của bức ảnh này bằng một câu tiếng Việt. Chỉ trả về văn bản mô tả, không kèm giải thích khác. "
 
         provider_format = (current_app.config.get('AI_PROVIDER_FORMAT') or 'gemini').lower()
         caption_source = (current_app.config.get('IMAGE_CAPTION_MODEL_SOURCE') or '').lower()
@@ -390,14 +390,14 @@ def generate_material_image(project_id):
     Note: project_id can be 'none' to generate global materials (not associated with any project)
     """
     try:
-        # 支持 'none' 作为特殊值，表示生成全局素材
+        # Backend logic
         if project_id != 'none':
             project = Project.query.get(project_id)
             if not project:
                 return not_found('Project')
         else:
             project = None
-            project_id = None  # 设置为None表示全局素材
+            project_id = None  # Backend logic
 
         # Parse request data (prioritize multipart for file uploads)
         if request.is_json:
@@ -418,11 +418,11 @@ def generate_material_image(project_id):
         if not prompt:
             return bad_request("prompt is required")
 
-        # 处理project_id：对于全局素材，使用'global'作为Task的project_id
-        # Task模型要求project_id不能为null，但Material可以
+        # Backend logic
+        # Backend logic
         task_project_id = project_id if project_id is not None else 'global'
         
-        # 验证project_id（如果不是'global'）
+        # Backend logic
         if task_project_id != 'global':
             project = Project.query.get(task_project_id)
             if not project:
@@ -432,7 +432,7 @@ def generate_material_image(project_id):
         ai_service = get_ai_service()
         file_service = FileService(current_app.config['UPLOAD_FOLDER'])
 
-        # 创建临时目录保存参考图片（后台任务会清理）
+        # Backend logic
         temp_dir = Path(tempfile.mkdtemp(dir=current_app.config['UPLOAD_FOLDER']))
         temp_dir_str = str(temp_dir)
 
@@ -478,7 +478,7 @@ def generate_material_image(project_id):
             task_manager.submit_task(
                 task.id,
                 generate_material_image_task,
-                task_project_id,  # 传递给任务函数，它会处理'global'的情况
+                task_project_id,  # Backend logic
                 prompt,
                 ai_service,
                 file_service,
@@ -490,7 +490,7 @@ def generate_material_image(project_id):
                 app
             )
 
-            # Return task_id immediately (不再清理temp_dir，由后台任务清理)
+            # Backend logic
             return success_response({
                 'task_id': task.id,
                 'status': 'PENDING'

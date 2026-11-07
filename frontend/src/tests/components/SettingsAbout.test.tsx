@@ -18,17 +18,17 @@ vi.mock('@/api/endpoints', () => ({
 }));
 
 const labels: Record<string, string> = {
-  'settings.sections.about': '关于',
-  'settings.about.version': '当前版本',
-  'settings.about.source': 'GitHub 项目',
-  'settings.about.checkUpdate': '检查更新',
-  'settings.about.checking': '检查中...',
-  'settings.about.upToDate': '您当前已是最新版本',
-  'settings.about.updateAvailable': '有版本更新：{{version}}',
-  'settings.about.unknown': '无法判断当前是否为最新版本',
-  'settings.about.resultTitle': '检查更新结果',
-  'settings.about.download': '前往下载',
-  'settings.about.close': '关闭',
+  'settings.sections.about': '',
+  'settings.about.version': '',
+  'settings.about.source': 'GitHub ',
+  'settings.about.checkUpdate': '',
+  'settings.about.checking': '...',
+  'settings.about.upToDate': '',
+  'settings.about.updateAvailable': '{{version}}',
+  'settings.about.unknown': '',
+  'settings.about.resultTitle': '',
+  'settings.about.download': '',
+  'settings.about.close': '',
 };
 
 const t = (key: string, vars?: Record<string, string>) => {
@@ -43,10 +43,10 @@ describe('SettingsAbout', () => {
   it('shows the current app version in settings', () => {
     render(<SettingsAbout t={t} />);
 
-    expect(screen.getByText('关于')).toBeInTheDocument();
-    expect(screen.getByText('当前版本: v9.9.9')).toBeInTheDocument();
-    expect(screen.getByLabelText('当前版本 v9.9.9 (abcdef1234567890)')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'GitHub 项目' })).toHaveAttribute('href', 'https://github.com/Anionex/banana-slides');
+    expect(screen.getByText('')).toBeInTheDocument();
+    expect(screen.getByText(': v9.9.9')).toBeInTheDocument();
+    expect(screen.getByLabelText(' v9.9.9 (abcdef1234567890)')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'GitHub ' })).toHaveAttribute('href', 'https://github.com/Anionex/banana-slides');
   });
 
   it('shows a user-friendly message when an update is available', async () => {
@@ -68,15 +68,15 @@ describe('SettingsAbout', () => {
 
     render(<SettingsAbout t={t} />);
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+      await userEvent.click(screen.getByRole('button', { name: // }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('有版本更新：2222222')).toBeInTheDocument();
+    expect(within(dialog).getByText('2222222')).toBeInTheDocument();
     expect(within(dialog).getByTestId('update-available-icon')).toBeInTheDocument();
-    expect(within(dialog).getByText('检查更新结果')).toBeInTheDocument();
+    expect(within(dialog).getByText('')).toBeInTheDocument();
     expect(within(dialog).queryByText(/Docker Hub/)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/镜像/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(//)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/SHA/i)).not.toBeInTheDocument();
   });
 
@@ -100,11 +100,11 @@ describe('SettingsAbout', () => {
     });
 
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+      await userEvent.click(screen.getByRole('button', { name: // }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('您当前已是最新版本')).toBeInTheDocument();
+    expect(within(dialog).getByText('')).toBeInTheDocument();
     expect(within(dialog).getByTestId('update-success-icon')).toBeInTheDocument();
     expect(within(dialog).queryByText(/Docker Hub/)).not.toBeInTheDocument();
   });

@@ -3,14 +3,14 @@ import { twMerge } from 'tailwind-merge';
 import type { Project, Page } from '@/types';
 
 /**
- * 合并 className (支持 Tailwind CSS)
+ *  className ( Tailwind CSS)
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * 标准化后端返回的项目数据
+ * 
  */
 export function normalizeProject(data: any): Project {
   return {
@@ -22,7 +22,7 @@ export function normalizeProject(data: any): Project {
 }
 
 /**
- * 标准化后端返回的页面数据
+ * 
  */
 export function normalizePage(data: any): Page {
   return {
@@ -33,7 +33,7 @@ export function normalizePage(data: any): Page {
 }
 
 /**
- * 防抖函数
+ * 
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -47,7 +47,7 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 /**
- * 节流函数
+ * 
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
@@ -64,7 +64,7 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 
 /**
- * 下载文件
+ * 
  */
 export function downloadFile(blob: Blob, filename: string) {
   const url = window.URL.createObjectURL(blob);
@@ -90,7 +90,7 @@ export function downloadFromUrl(url: string, filename?: string) {
 }
 
 /**
- * 格式化日期
+ * 
  */
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -106,23 +106,23 @@ export function formatDate(dateString: string): string {
 }
 
 /**
- * 生成唯一ID
+ * ID
  */
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
- * 将错误消息转换为友好的中英文提示
+ * 
  */
 export function normalizeErrorMessage(
   errorMessage: string | null | undefined,
   language?: string,
 ): string {
   const lang = language || localStorage.getItem('i18nextLng') || navigator.language || 'zh';
-  const isZh = lang.startsWith('zh');
+  const isVi = lang.startsWith('zh');
 
-  if (!errorMessage) return isZh ? '操作失败' : 'Operation failed';
+  if (!errorMessage) return isVi ? 'Thao tác thất bại' : 'Operation failed';
 
   const rawMessage = typeof errorMessage === 'string'
     ? errorMessage
@@ -134,7 +134,7 @@ export function normalizeErrorMessage(
         }
       })();
 
-  if (!rawMessage) return isZh ? '操作失败' : 'Operation failed';
+  if (!rawMessage) return isVi ? 'Thao tác thất bại' : 'Operation failed';
 
   const message = rawMessage.toLowerCase();
   const isCodexContext = (
@@ -146,47 +146,47 @@ export function normalizeErrorMessage(
 
   // Handle specific error messages
   if (message.includes('no template image found')) {
-    return isZh
-      ? '当前项目还没有模板，请先点击页面工具栏的"更换模板"按钮，选择或上传一张模板图片后再生成。'
+    return isVi
+      ? 'Dự án hiện tại chưa có mẫu phong cách. Vui lòng chọn hoặc tải lên ảnh mẫu trước khi tạo.'
       : 'No template found. Please select or upload a template image first.';
   } else if (message.includes('page must have description content')) {
-    return isZh
-      ? '该页面还没有描述内容，请先在"编辑页面描述"步骤为此页生成或填写描述。'
+    return isVi
+      ? 'Trang này chưa có mô tả. Vui lòng tạo hoặc nhập mô tả trước.'
       : 'This page has no description. Please generate or write a description first.';
   } else if (message.includes('image already exists')) {
-    return isZh
-      ? '该页面已经有图片，如需重新生成，请在生成时选择"重新生成"或稍后重试。'
+    return isVi
+      ? 'Trang này đã có ảnh. Vui lòng chọn Tạo lại nếu muốn làm mới.'
       : 'Image already exists. Choose "Regenerate" to create a new one.';
   }
 
   // Handle HTTP error codes
   if (message.includes('503') || message.includes('service unavailable')) {
-    return isZh ? 'AI 服务暂时不可用，请稍后重试。如果问题持续，请检查设置页的 API 配置。' : 'AI service temporarily unavailable. Please try again later.';
+    return isVi ? 'Dịch vụ AI tạm thời không khả dụng, vui lòng thử lại sau hoặc kiểm tra cấu hình API trong Cài đặt.' : 'AI service temporarily unavailable. Please try again later.';
   } else if (message.includes('500') || message.includes('internal server error')) {
-    return isZh ? '服务器内部错误，请稍后重试。' : 'Internal server error. Please try again later.';
+    return isVi ? 'Lỗi nội bộ máy chủ, vui lòng thử lại sau.' : 'Internal server error. Please try again later.';
   } else if (message.includes('502') || message.includes('bad gateway')) {
-    return isZh ? '网关错误，请稍后重试。' : 'Bad gateway. Please try again later.';
+    return isVi ? 'Lỗi cổng kết nối, vui lòng thử lại sau.' : 'Bad gateway. Please try again later.';
   } else if (message.includes('504') || message.includes('gateway timeout')) {
-    return isZh ? '请求超时，请稍后重试。' : 'Gateway timeout. Please try again later.';
+    return isVi ? 'Hết thời gian chờ yêu cầu, vui lòng thử lại sau.' : 'Gateway timeout. Please try again later.';
   } else if (message.includes('429') || message.includes('too many requests')) {
-    return isZh ? '请求过于频繁，请稍后重试。' : 'Too many requests. Please try again later.';
+    return isVi ? 'Yêu cầu quá thường xuyên, vui lòng thử lại sau.' : 'Too many requests. Please try again later.';
   } else if (message.includes('401') || message.includes('unauthorized')) {
     if (isCodexContext || (message.includes('oauth') && message.includes('not connected'))) {
-      return isZh
-        ? 'Codex 登录已过期或未连接，请前往设置重新登录 OpenAI 账号后再试。'
+      return isVi
+        ? 'Đăng nhập Codex đã hết hạn hoặc chưa kết nối, vui lòng vào Cài đặt để kết nối lại tài khoản OpenAI.'
         : 'Your Codex login has expired or is disconnected. Please reconnect your OpenAI account in Settings and try again.';
     }
-    return isZh ? '认证失败，请检查 API 密钥配置。' : 'Authentication failed. Please check API key settings.';
+    return isVi ? 'Xác thực thất bại, vui lòng kiểm tra cấu hình API Key.' : 'Authentication failed. Please check API key settings.';
   } else if (message.includes('403') || message.includes('forbidden')) {
-    return isZh ? '访问被拒绝，请检查 API 权限配置。' : 'Access denied. Please check API permissions.';
+    return isVi ? 'Truy cập bị từ chối, vui lòng kiểm tra quyền API.' : 'Access denied. Please check API permissions.';
   } else if (message.includes('aspect_ratio') || message.includes('aspect ratio')) {
-    return isZh
-      ? '当前画面比例不被该模型支持，请在项目设置中尝试其他画面比例后重试。'
+    return isVi
+      ? 'Tỷ lệ khung hình hiện tại không được mô hình này hỗ trợ, vui lòng thử tỷ lệ khác trong cài đặt dự án.'
       : 'The selected aspect ratio is not supported by this model. Please try a different ratio in project settings.';
   } else if (message.includes('network error') || message.includes('econnrefused')) {
-    return isZh ? '网络连接失败，请检查网络或后端服务是否正常运行。' : 'Network error. Please check your connection.';
+    return isVi ? 'Kết nối mạng thất bại, vui lòng kiểm tra kết nối mạng hoặc máy chủ backend.' : 'Network error. Please check your connection.';
   } else if (message.includes('timeout')) {
-    return isZh ? '请求超时，请稍后重试。' : 'Request timed out. Please try again later.';
+    return isVi ? 'Hết thời gian chờ yêu cầu, vui lòng thử lại sau.' : 'Request timed out. Please try again later.';
   } else if (
     message.includes('sslerror')
     || message.includes('ssleoferror')
@@ -196,21 +196,21 @@ export function normalizeErrorMessage(
     || message.includes('httpsconnectionpool')
   ) {
     if (isCodexContext) {
-      return isZh
-        ? '连接 Codex 服务时中断，导致导出失败。请稍后重试；如果反复出现，可前往设置重新登录 OpenAI 账号后再试。'
+      return isVi
+        ? 'Kết nối tới dịch vụ Codex bị gián đoạn dẫn đến xuất thất bại. Vui lòng kết nối lại tài khoản OpenAI trong Cài đặt.'
         : 'The connection to Codex was interrupted and the export failed. Please try again later, or reconnect your OpenAI account in Settings if it keeps happening.';
     }
-    return isZh
-      ? '网络连接中断，导致操作失败。请稍后重试。'
+    return isVi
+      ? 'Kết nối mạng bị gián đoạn khiến thao tác thất bại, vui lòng thử lại.'
       : 'The connection was interrupted and the operation failed. Please try again later.';
-  } else if (message.includes('样式提取失败') || message.includes('style extraction failed')) {
-    if (message.includes('不支持图片输入') || message.includes('support image input')) {
-      return isZh
-        ? '可编辑 PPTX 导出失败：当前图片样式提取模型不支持图片输入。请在设置中改用支持视觉输入的 image caption 模型，或切换 provider 后重试。'
+  } else if (message.includes('Trích xuất phong cách thất bại') || message.includes('style extraction failed')) {
+    if (message.includes('Không hỗ trợ ảnh đầu vào') || message.includes('support image input')) {
+      return isVi
+        ? 'Xuất PPTX chỉnh sửa thất bại: Mô hình trích xuất không hỗ trợ ảnh đầu vào. Vui lòng đổi mô hình hỗ trợ thị giác trong Cài đặt.'
         : 'Editable PPTX export failed: the current style extraction model does not support image input. Switch to a vision-capable image caption model and try again.';
     }
-    return isZh
-      ? '可编辑 PPTX 导出失败：文本样式提取没有成功完成。请检查 image caption 模型/API 配置，或在项目设置中开启“允许返回半成品”后重试。'
+    return isVi
+      ? 'Xuất PPTX chỉnh sửa thất bại: Trích xuất phong cách văn bản không hoàn tất. Vui lòng kiểm tra cấu hình trong Cài đặt.'
       : 'Editable PPTX export failed because text style extraction did not complete. Check the image caption model/API settings, or enable partial results and try again.';
   }
 
@@ -218,14 +218,14 @@ export function normalizeErrorMessage(
 }
 
 /**
- * PPT 翻新依赖 MinerU 解析 PDF。只在该工作流中将凭据类失败转成明确的修复动作，
- * 避免把其他 provider 的认证错误错误归因为 MinerU。
+ * PPT  MinerU  PDF. , 
+ *  provider  MinerU. 
  */
 export function normalizeRenovationErrorMessage(errorMessage: string | null | undefined): string {
   const rawMessage = typeof errorMessage === 'string' ? errorMessage : String(errorMessage || '');
   const message = rawMessage.toLowerCase();
   const lang = localStorage.getItem('banana-slides-language') || navigator.language || 'zh';
-  const isZh = lang.startsWith('zh');
+  const isVi = lang.startsWith('zh');
   const normalized = normalizeErrorMessage(errorMessage, lang);
   const looksLikeMineruCredentialStage = message.includes('get upload url')
     || message.includes('requesting upload url')
@@ -245,9 +245,9 @@ export function normalizeRenovationErrorMessage(errorMessage: string | null | un
     || message.includes('authentication failed');
 
   if (message.includes('mineru') && looksLikeMineruCredentialStage && looksLikeCredentialFailure) {
-    return isZh
-      ? 'PPT 翻新无法解析 PDF：MinerU Token 已失效、无效或没有权限。请到「设置 → MinerU 配置」更新 Token，先运行“MinerU 解析 PDF”服务测试，再重新创建翻新项目。'
-      : 'PPT Renovation could not parse the PDF because the MinerU token is expired, invalid, or unauthorized. Update it in Settings → MinerU Configuration, run the “MinerU PDF Parsing” service test, then create the renovation project again.';
+    return isVi
+      ? 'Làm mới PPT không thể phân tích PDF: MinerU Token không hợp lệ hoặc đã hết hạn. Vui lòng cập nhật Token trong Cài đặt.'
+      : 'PPT Renovation could not parse the PDF because the MinerU token is expired, invalid, or unauthorized. Update it in Settings → MinerU Configuration, run the "MinerU PDF Parsing" service test, then create the renovation project again.';
   }
 
   return normalized;

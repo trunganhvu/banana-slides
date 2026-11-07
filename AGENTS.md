@@ -1,19 +1,27 @@
 # Project notes
 
-- 安装 Playwright 浏览器依赖的 CI job 须固定到锁定版本支持的 OS；修复须扫描全部工作流（含 PR、nightly、发布），运行 `scripts/check_browser_runners.py`，不能只修改当前失败入口。升级 runner 前核对兼容性，避免 `ubuntu-latest` 漂移导致浏览器安装失败。
+## Bản địa hóa Tiếng Việt & Tiếng Anh (Quan trọng cho mọi Agent)
+- Xem chi tiết đầy đủ tại `AGENT_HANDOFF.md`.
+- Dự án đã được bản địa hóa hoàn toàn sang **Tiếng Việt (mặc định)** và **Tiếng Anh**, với quy tắc nghiêm ngặt **0 ký tự tiếng Trung (CJK)** trong toàn bộ tệp văn bản/mã nguồn của dự án.
+- Giữ nguyên **100% logic nghiệp vụ**. Trên Frontend (`frontend/src/i18n.ts`), bản dịch tiếng Việt được nạp vào khóa `zh` (và bí danh `vi`) từ `frontend/src/locales/zh.json` để giữ nguyên toàn bộ logic điều kiện hiện có.
+- Các trường mở rộng mô tả trang chuẩn: `Hình ảnh & Tư liệu`, `Bố cục & Trọng tâm`, `Ghi chú thuyết trình`. Khi cần ánh xạ tương thích ngược với dữ liệu cũ, bắt buộc sử dụng chuỗi Unicode escape (`\u914d\u56fe\u4e0e\u7d20\u6750`, `\u7248\u5f0f\u4e0e\u91cd\u70b9`, `\u6f14\u8bb2\u8005\u5907\u6ce8`), tuyệt đối không đưa ký tự chữ Hán trực tiếp vào mã nguồn.
+- Cổng mặc định: Backend `5011` (trong Docker container là `5000`), Frontend `3011` (trong Docker container là `80`). Môi trường Python local đặt tại `.venv`.
 
-- Docker E2E 在环境测试重建容器后，须让宿主 runner 可写 `uploads`、`backend/instance` 及 SQLite 文件，并验证实际写事务；PPTX 下载须在点击前监听 Page 的 `download`，保存文件验收，不能用接口 200 代替。
-- nightly 的官方 PyPI 配置须在测试和发布两个 job 中通过 `scripts/prepare_nightly_lock.py` 同步锁文件 URL；`uv sync --frozen` 不会用索引环境变量覆盖锁定的下载地址，不能通过重新解析或升级依赖规避镜像 403。
+## Quy tắc CI / Docker / E2E
+- Các job CI cài đặt phụ thuộc trình duyệt Playwright phải cố định vào hệ điều hành được phiên bản khóa hỗ trợ; khi sửa phải quét toàn bộ workflow (bao gồm PR, nightly, phát hành), chạy `scripts/check_browser_runners.py`, không chỉ sửa nơi đang lỗi. Trước khi nâng cấp runner phải kiểm tra tính tương thích để tránh `ubuntu-latest` trôi phiên bản gây lỗi cài đặt trình duyệt.
 
-- README 翻译以 `docs/i18n/readme-state.json` 的成功同步快照为基线；保留 `i18n` 章节 ID，译文与状态一起提交。不可用干净 CI 工作区的 `git diff HEAD` 判断增量，也不可用中英文标题文字匹配章节。维护说明见 `docs/readme-i18n.md`。
+- Docker E2E sau khi dựng lại container trong kiểm thử môi trường phải đảm bảo runner máy chủ có quyền ghi vào `uploads`, `backend/instance` và tệp SQLite, đồng thời xác minh giao dịch ghi thực tế; tải xuống PPTX phải lắng nghe sự kiện `download` của Page trước khi nhấp, lưu tệp để nghiệm thu, không dùng mã phản hồi HTTP 200 để thay thế.
+- Cấu hình PyPI chính thức của nightly phải đồng bộ URL tệp khóa thông qua `scripts/prepare_nightly_lock.py` ở cả hai job kiểm thử và phát hành; `uv sync --frozen` sẽ không dùng biến môi trường index để ghi đè địa chỉ tải xuống đã khóa, không được né lỗi 403 của mirror bằng cách phân giải lại hoặc nâng cấp phụ thuộc.
 
-- 同一项目的素材工具箱会从多个入口同时挂载；任务列表和轮询必须按项目共享，验收跨入口提交、关闭其中一个入口及重新挂载，避免覆盖任务或重复轮询。
+- Bản dịch README lấy snapshot đồng bộ thành công trong `docs/i18n/readme-state.json` làm cơ sở; giữ nguyên ID chương mục `i18n`, nộp bản dịch cùng tệp trạng thái. Không dùng `git diff HEAD` trên vùng làm việc CI sạch để tính phần thay đổi, cũng không đối chiếu chương mục bằng tiêu đề văn bản. Xem hướng dẫn bảo trì tại `docs/readme-i18n.md`.
 
-- `main` 只承载通用开源功能。`bananaslides.online` 专属的 Landing、内测预约、站内反馈、公开 Demo、访客隔离、管理员入口及其配置/迁移只能进入 `production/bananaslides-online`；默认关闭的开关不等于分支隔离。官网任务创建分支和 PR 前必须核对基线与目标分支，未经用户明确要求不得“同步主线”。
+- Hộp công cụ tư liệu của cùng một dự án có thể được gắn đồng thời từ nhiều lối vào; danh sách tác vụ và cơ chế polling phải được chia sẻ theo từng dự án, nghiệm thu việc gửi tác vụ xuyên lối vào, đóng một trong các lối vào và gắn lại, tránh ghi đè tác vụ hoặc polling trùng lặp.
 
-- `bananaslides.online` 的正式源码基线为 `origin/production/bananaslides-online`（2026-09-27 建立，包含当时线上首页与后端补丁）；官网改动从该分支出发，发布前重新核对线上镜像及差异，不把旧 `feat/sponsor` 或独立 `feat/public-site-landing` 当作完整线上代码。
-- `bananaslides.online` 经 Cloudflare 访问时，服务器内 Python `urllib` 可能被返回 403，即使源站和浏览器正常。发布验收分别核对源站构建哈希与公网 `curl`/真实浏览器结果；不要仅因 `urllib` 的边缘拦截判定部署失败。
-- 官网发布含数据库迁移时，先用真实 SQLite 库的在线备份预演，再核对该备份的 `alembic_version`、新表和原有数据行数；镜像中的 `alembic.ini` 不得指向占位数据库。
-- 官网前端使用 `npm run build:online`（启用 `VITE_PUBLIC_LANDING=true`）；验收实际发布产物和公网根路径的 landing 标题及 Demo 跳转，不能只检查 HTTP 200。
+- Nhánh `main` chỉ chứa các tính năng mã nguồn mở chung. Các tính năng riêng của `bananaslides.online` gồm Landing, đăng ký thử nghiệm, phản hồi trên trang, Demo công khai, cách ly khách truy cập, lối vào quản trị viên cùng cấu hình/migration chỉ được đưa vào `production/bananaslides-online`; công tắc tắt mặc định không thay thế cho việc cách ly nhánh. Trước khi tạo nhánh và PR cho tác vụ trang chủ phải kiểm tra nhánh cơ sở và nhánh đích, không tự ý đồng bộ nhánh chính khi chưa có yêu cầu rõ ràng.
 
-- 下架赞助商须移除所有品牌入口、提供商预设、注册链接和获取密钥引导，并按新访客及已有配置验收；不能只删除广告卡片。保留底层兼容不得变成继续展示或引流。
+- Cơ sở mã nguồn chính thức của `bananaslides.online` là `origin/production/bananaslides-online` (thiết lập ngày 2026-09-27, bao gồm trang chủ trực tuyến và các bản vá backend tại thời điểm đó); mọi thay đổi trang chủ xuất phát từ nhánh này, trước khi phát hành phải đối chiếu lại image trực tuyến và phần khác biệt, không coi nhánh `feat/sponsor` cũ hay `feat/public-site-landing` độc lập là mã nguồn trực tuyến đầy đủ.
+- Khi truy cập `bananaslides.online` qua Cloudflare, `urllib` của Python từ phía máy chủ có thể nhận mã 403 ngay cả khi máy chủ gốc và trình duyệt hoạt động bình thường. Khi nghiệm thu phát hành cần kiểm tra riêng mã băm bản dựng trên máy chủ gốc và kết quả `curl` công khai / trình duyệt thực tế; không kết luận triển khai thất bại chỉ vì `urllib` bị chặn ở tầng biên.
+- Khi phát hành trang chủ có kèm migration cơ sở dữ liệu, trước tiên phải diễn tập trên bản sao lưu trực tuyến của cơ sở dữ liệu SQLite thực tế, sau đó kiểm tra `alembic_version`, các bảng mới và số dòng dữ liệu hiện có trên bản sao lưu đó; `alembic.ini` trong image không được trỏ tới cơ sở dữ liệu giữ chỗ.
+- Frontend trang chủ sử dụng `npm run build:online` (bật `VITE_PUBLIC_LANDING=true`); nghiệm thu sản phẩm phát hành thực tế, tiêu đề landing ở đường dẫn gốc công khai và luồng chuyển hướng Demo, không chỉ kiểm tra HTTP 200.
+
+- Khi gỡ bỏ nhà tài trợ phải xóa toàn bộ lối vào thương hiệu, cấu hình mẫu nhà cung cấp, liên kết đăng ký và hướng dẫn lấy khóa API, đồng thời nghiệm thu theo cả khách truy cập mới lẫn cấu hình đã có; không được chỉ xóa thẻ quảng cáo. Việc giữ tương thích tầng dưới không được biến thành tiếp tục hiển thị hoặc điều hướng người dùng.

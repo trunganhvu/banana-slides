@@ -1,15 +1,15 @@
 """
-健康检查API单元测试
+API
 """
 
 import pytest
 
 
 class TestHealthEndpoint:
-    """健康检查端点测试"""
+    """ Test docstring """
     
     def test_health_check_returns_ok(self, client):
-        """测试健康检查返回正常状态"""
+        """ Test docstring """
         response = client.get('/health')
         
         assert response.status_code == 200
@@ -18,11 +18,10 @@ class TestHealthEndpoint:
         assert 'message' in data
     
     def test_health_check_response_format(self, client):
-        """测试健康检查响应格式"""
+        """ Test docstring """
         response = client.get('/health')
         
         data = response.get_json()
         assert isinstance(data, dict)
         assert 'status' in data
         assert 'message' in data
-

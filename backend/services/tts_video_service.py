@@ -1,11 +1,11 @@
 """
-TTS Video Service — 将 PPT 页面转换为带旁白的播报视频
+TTS Video Service —  PPT 
 
-功能:
-  1. edge-tts 文本转语音
-  2. Ken Burns 动效（zoompan，可选）
-  3. FFmpeg 视频合成与拼接
-  4. ASS 字幕烧录
+:
+  1. edge-tts 
+  2. Ken Burns  (zoompan, ) 
+  3. FFmpeg 
+  4. ASS 
 """
 import asyncio
 import logging
@@ -22,28 +22,28 @@ from typing import List, Optional, Callable, Tuple
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 模块级常量
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# 字幕单段最大字符数，超过此长度的句子将按次级标点二次拆分
+# Backend logic
 _MAX_SUBTITLE_SEGMENT_LENGTH = 30
 
-# 无旁白页面的默认静音片段时长（秒）
+# Backend logic
 _DEFAULT_SILENT_DURATION = 3.0
 
-# 整片头/尾的静音 padding（秒），避免播放器开场吃掉首词、结尾被截断
+# Backend logic
 _LEADING_PAD_SECONDS = 0.8
 _TRAILING_PAD_SECONDS = 1.2
 
-# FFmpeg 连续多久没有任何输出才视为卡死
+# Backend logic
 _FFMPEG_IDLE_TIMEOUT_SECONDS = 600.0
 
-# 进度输出频率（秒）
+# Backend logic
 _FFMPEG_PROGRESS_INTERVAL_SECONDS = 1.0
 
 
 def _inject_ffmpeg_progress_args(cmd: List[str]) -> List[str]:
-    """为 FFmpeg 命令追加进度输出，便于 idle watchdog 判断进程是否卡死。"""
+    """ Backend docstring """
     if '-progress' in cmd:
         return cmd
     return [
@@ -56,7 +56,7 @@ def _inject_ffmpeg_progress_args(cmd: List[str]) -> List[str]:
 
 
 def _read_process_lines(stream, output_queue: "queue.Queue[str]", collected_lines: List[str]) -> None:
-    """后台读取 stderr，既用于错误回溯，也用于 watchdog 判断是否仍有进展。"""
+    """ Backend docstring """
     try:
         for raw_line in iter(stream.readline, b''):
             line = raw_line.decode('utf-8', errors='replace').strip()
@@ -76,10 +76,10 @@ def _wait_for_process_with_idle_watchdog(
     idle_timeout: float = _FFMPEG_IDLE_TIMEOUT_SECONDS,
 ) -> None:
     """
-    等待 FFmpeg 结束。
+     FFmpeg . 
 
-    不限制总执行时长，只要 stderr/progress 持续有输出就继续等待；
-    连续 idle_timeout 秒没有任何新输出，才认为进程卡死。
+    ,  stderr/progress ; 
+     idle_timeout , . 
     """
     stderr_queue: "queue.Queue[str]" = queue.Queue()
     stderr_lines: List[str] = []
@@ -125,7 +125,7 @@ def _run_ffmpeg_command(
     error_prefix: str,
     idle_timeout: float = _FFMPEG_IDLE_TIMEOUT_SECONDS,
 ) -> None:
-    """运行 FFmpeg 命令，仅在无进展卡死时中止，不设置总超时。"""
+    """ Backend docstring """
     proc = subprocess.Popen(
         _inject_ffmpeg_progress_args(cmd),
         stdout=subprocess.DEVNULL,
@@ -142,17 +142,17 @@ def create_placeholder_frame(
     ffmpeg_path: str = 'ffmpeg',
 ) -> None:
     """
-    为没有图片的页面生成占位帧图片（深色渐变背景 + 标题文字）。
+     ( + ) . 
 
-    使用 FFmpeg 纯滤镜生成，不需要外部图片资源。
+     FFmpeg , . 
     """
-    # 清理标题中的特殊字符，防止 FFmpeg drawtext 解析错误
+    # Backend logic
     safe_title = title.replace("'", "'").replace(":", "\\:").replace("\\", "\\\\")
-    safe_title = safe_title[:60]  # 限制长度
+    safe_title = safe_title[:60]  # Backend logic
 
     font_size = max(36, int(height / 20))
 
-    # 检测可用的 CJK 字体文件路径
+    # Backend logic
     font_file = _detect_cjk_font_file()
     if font_file:
         drawtext = (
@@ -168,7 +168,7 @@ def create_placeholder_frame(
             f"x=(w-text_w)/2:y=(h-text_h)/2"
         )
 
-    # 渐变深色背景 + 居中白色标题
+    # Backend logic
     vf = (
         f"color=c=#1a1a2e:s={width}x{height}:d=1,"
         f"format=rgb24,{drawtext}"
@@ -185,7 +185,7 @@ def create_placeholder_frame(
 
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
     if result.returncode != 0:
-        # fallback: 纯色背景（无文字）
+        # Backend logic
         logger.warning(f"Placeholder with text failed, using plain background: {result.stderr[-200:]}")
         vf_plain = f"color=c=#1a1a2e:s={width}x{height}:d=1"
         cmd_plain = [
@@ -202,8 +202,8 @@ def create_placeholder_frame(
 
 
 def _detect_cjk_font_file() -> Optional[str]:
-    """检测系统中 CJK 字体文件路径（用于 FFmpeg drawtext fontfile）"""
-    # 常见 CJK 字体文件路径
+    """ Backend docstring """
+    # Backend logic
     candidates = [
         '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
         '/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc',
@@ -215,7 +215,7 @@ def _detect_cjk_font_file() -> Optional[str]:
         if os.path.exists(path):
             return path
 
-    # 用 fc-match 查找
+    # Backend logic
     try:
         result = subprocess.run(
             ['fc-match', '-f', '%{file}', ':lang=zh'],
@@ -231,12 +231,12 @@ def _detect_cjk_font_file() -> Optional[str]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 辅助函数
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 def check_ffmpeg_available(ffmpeg_path: str = 'ffmpeg') -> bool:
-    """检查 ffmpeg 是否可用"""
+    """ Backend docstring """
     try:
         subprocess.run(
             [ffmpeg_path, '-version'],
@@ -248,7 +248,7 @@ def check_ffmpeg_available(ffmpeg_path: str = 'ffmpeg') -> bool:
 
 
 def check_ffmpeg_ass_filter_available(ffmpeg_path: str = 'ffmpeg') -> bool:
-    """检查 ffmpeg 是否支持 ASS 字幕烧录滤镜。"""
+    """ Backend docstring """
     try:
         result = subprocess.run(
             [ffmpeg_path, '-hide_banner', '-filters'],
@@ -271,7 +271,7 @@ def _derive_ffprobe_path(ffmpeg_path: str) -> str:
 
 
 def get_audio_duration(audio_path: str, ffmpeg_path: str = 'ffmpeg') -> float:
-    """使用 ffprobe 获取音频时长（秒）"""
+    """ Backend docstring """
     ffprobe_path = _derive_ffprobe_path(ffmpeg_path)
     cmd = [
         ffprobe_path, '-v', 'quiet',
@@ -290,7 +290,7 @@ def pad_audio_with_silence(
     trailing_seconds: float = 0.0,
     ffmpeg_path: str = 'ffmpeg',
 ) -> float:
-    """在音频两端追加静音，返回新音频时长。"""
+    """ Backend docstring """
     if leading_seconds <= 0 and trailing_seconds <= 0:
         shutil.copy2(src_path, dst_path)
         return get_audio_duration(dst_path, ffmpeg_path)
@@ -313,7 +313,7 @@ def pad_audio_with_silence(
 
 
 def get_default_voice(language: str, config: Optional[dict] = None) -> str:
-    """根据语言返回默认 TTS 语音名称"""
+    """ Backend docstring """
     defaults = {
         'zh': 'zh-CN-XiaoxiaoNeural',
         'en': 'en-US-JennyNeural',
@@ -330,12 +330,12 @@ def get_default_voice(language: str, config: Optional[dict] = None) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TTS 语音合成
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 async def _generate_tts_async(text: str, output_path: str, voice: str, rate: str) -> None:
-    """edge-tts 异步语音合成"""
+    """ Backend docstring """
     import edge_tts
     communicate = edge_tts.Communicate(text, voice, rate=rate)
     await communicate.save(output_path)
@@ -349,17 +349,17 @@ def generate_tts_audio_sync(
     ffmpeg_path: str = 'ffmpeg',
 ) -> float:
     """
-    同步封装：生成 TTS 音频文件（edge-tts）。
+    :  TTS  (edge-tts) . 
 
     Args:
-        text: 待合成的文本
-        output_path: 输出音频文件路径（MP3）
-        voice: edge-tts 语音名称
-        rate: 语速调整
-        ffmpeg_path: ffmpeg 路径（用于 ffprobe 获取时长）
+        text: 
+        output_path:  (MP3) 
+        voice: edge-tts 
+        rate: 
+        ffmpeg_path: ffmpeg  ( ffprobe ) 
 
     Returns:
-        float: 音频时长（秒）
+        float:  () 
     """
     loop = asyncio.new_event_loop()
     try:
@@ -381,12 +381,12 @@ def generate_elevenlabs_audio_sync(
     speed: float = 1.0,
 ) -> Tuple[float, Optional[dict]]:
     """
-    同步生成 ElevenLabs TTS 音频文件（MP3），并返回字符级对齐时间戳。
+     ElevenLabs TTS  (MP3) , . 
 
     Returns:
-        (duration_seconds, alignment) — alignment 形如
+        (duration_seconds, alignment) — alignment 
         {'characters': [...], 'character_start_times_ms': [...], 'character_durations_ms': [...]}
-        若接口未返回对齐信息则为 None。
+         None. 
     """
     import base64
     from elevenlabs.client import ElevenLabs
@@ -394,7 +394,7 @@ def generate_elevenlabs_audio_sync(
     from elevenlabs import VoiceSettings
 
     client = ElevenLabs(api_key=api_key)
-    # ElevenLabs 实际接受 speed 范围 0.7–1.2
+    # Backend logic
     clamped_speed = max(0.7, min(float(speed), 1.2))
     voice_settings = VoiceSettings(
         stability=0.75,
@@ -419,11 +419,11 @@ def generate_elevenlabs_audio_sync(
             response = _convert_with_timestamps('eleven_v3')
         except ElevenLabsApiError as e:
             logger.warning(
-                f"eleven_v3 不可用 (status={getattr(e, 'status_code', None)})，回退到 eleven_multilingual_v2"
+                f"eleven_v3 không khả dụng (status={getattr(e, 'status_code', None)}), chuyển dự phòng sang eleven_multilingual_v2"
             )
             response = _convert_with_timestamps('eleven_multilingual_v2')
 
-        # SDK 内部使用 audio_base_64（Python 属性名）/ audio_base64（JSON 别名）
+        # Backend logic
         audio_b64 = (
             getattr(response, 'audio_base_64', None)
             or getattr(response, 'audio_base64', None)
@@ -431,7 +431,7 @@ def generate_elevenlabs_audio_sync(
         if audio_b64 is None and isinstance(response, dict):
             audio_b64 = response.get('audio_base_64') or response.get('audio_base64')
         if not audio_b64:
-            raise RuntimeError("ElevenLabs 未返回 audio_base64 数据")
+            raise RuntimeError("ElevenLabs chưa trả về audio_base64 dữ liệu")
 
         with open(output_path, 'wb') as f:
             f.write(base64.b64decode(audio_b64))
@@ -441,7 +441,7 @@ def generate_elevenlabs_audio_sync(
             alignment_obj = response.get('alignment')
         if alignment_obj is not None:
             chars = getattr(alignment_obj, 'characters', None)
-            # SDK 使用 character_start_times_seconds / character_end_times_seconds
+            # Backend logic
             starts_sec = getattr(alignment_obj, 'character_start_times_seconds', None)
             ends_sec = getattr(alignment_obj, 'character_end_times_seconds', None)
             if chars is None and isinstance(alignment_obj, dict):
@@ -463,13 +463,13 @@ def generate_elevenlabs_audio_sync(
         err_status = detail.get('status', '') if isinstance(detail, dict) else ''
         msg = (detail.get('message') if isinstance(detail, dict) else None) or str(e)
         if err_status == 'quota_exceeded' or 'quota' in msg.lower() or 'credits' in msg.lower():
-            raise RuntimeError(f"ElevenLabs 免费配额已不足：{msg}") from e
+            raise RuntimeError(f"ElevenLabs hạn mức miễn phí không đủ: {msg}") from e
         elif err_status == 'invalid_api_key' or status == 401:
-            raise RuntimeError(f"ElevenLabs 认证失败，请检查 API Key 是否有效") from e
+            raise RuntimeError(f"ElevenLabs xác thực thất bại, Vui lòng kiểm tra API Key có hợp lệ không") from e
         elif status == 402 or (isinstance(detail, dict) and detail.get('code') == 'paid_plan_required'):
-            raise RuntimeError(f"ElevenLabs 该声音需要付费套餐：{msg}") from e
+            raise RuntimeError(f"ElevenLabs Giọng đọc này yêu cầu gói trả phí: {msg}") from e
         else:
-            raise RuntimeError(f"ElevenLabs API 错误 (HTTP {status})：{msg}") from e
+            raise RuntimeError(f"ElevenLabs API Lỗi (HTTP {status}): {msg}") from e
 
     duration = get_audio_duration(output_path, ffmpeg_path)
     logger.debug(
@@ -485,9 +485,9 @@ def _slice_audio_by_time(
     end_seconds: float,
     ffmpeg_path: str = 'ffmpeg',
 ) -> None:
-    """从源音频切出 [start, end] 区间到目标路径（重编码以保证起点精度）。"""
+    """ Backend docstring """
     if end_seconds <= start_seconds:
-        raise ValueError(f"非法切片区间 [{start_seconds:.3f}, {end_seconds:.3f}]")
+        raise ValueError(f"Khoảng cắt không hợp lệ [{start_seconds:.3f}, {end_seconds:.3f}]")
     cmd = [
         ffmpeg_path, '-y',
         '-ss', f'{start_seconds:.3f}',
@@ -508,15 +508,15 @@ def _find_page_boundaries_sec(
     snap_window_sec: float = 2.0,
 ) -> List[float]:
     """
-    返回 N+1 个递增时间点 [t_0, ..., t_N]，t_0=0、t_N=full_duration。
-    内部 N-1 个边界用 "字符比例估算 + 就近最长 pause 吸附" 算法定位：
+     N+1  [t_0, ..., t_N], t_0=0, t_N=full_duration. 
+    nội bộ N-1 đường viền dùng "ước lượng theo tỷ lệ ký tự + dài nhất gần nhất pause bám dính" định vị bằng thuật toán: 
 
-      1. 按源字符数比例算出每页边界的目标时间；
-      2. 在目标时间 ±snap_window_sec 内寻找最长的 alignment 间隙（gap）；
-      3. 吸附到该间隙的中点；找不到合适 gap 就用纯比例。
+      1. ; 
+      2.  ±snap_window_sec  alignment  (gap) ; 
+      3. ;  gap . 
 
-    依赖：TTS 在页边界 delimiter（\\n\\n）处会产生比页内常规停顿更长的 pause。
-    实测 ElevenLabs 满足这个假设，且不依赖源字符与 alignment 字符 1:1 对齐。
+    : TTS  delimiter (\\n\\n)  pause. 
+     ElevenLabs ,  alignment  1:1 . 
     """
     n_pages = len(page_texts)
     if n_pages <= 1:
@@ -525,7 +525,7 @@ def _find_page_boundaries_sec(
     chars_per_page = [len(t) for t in page_texts]
     total_chars = sum(chars_per_page) or 1
 
-    # 内部边界目标时间（按源字符比例）
+    # Backend logic
     target_times_sec: List[float] = []
     cum = 0
     for c in chars_per_page[:-1]:
@@ -535,7 +535,7 @@ def _find_page_boundaries_sec(
     starts_ms = full_alignment.get('character_start_times_ms') or []
     durs_ms = full_alignment.get('character_durations_ms') or []
 
-    # 计算所有相邻字符间的间隙：(gap_size_ms, gap_midpoint_ms)
+    # Backend logic
     gaps: List[Tuple[float, float]] = []
     if len(starts_ms) >= 2 and len(durs_ms) >= 2:
         for i in range(len(starts_ms) - 1):
@@ -571,7 +571,7 @@ def _find_page_boundaries_sec(
             chosen_ms = best_mid_ms
         else:
             chosen_ms = target_ms
-        # 单调保护
+        # Backend logic
         if chosen_ms <= last_t_ms:
             chosen_ms = last_t_ms + 100
         boundaries_sec.append(chosen_ms / 1000.0)
@@ -585,7 +585,7 @@ def _find_page_boundaries_sec(
 def _slice_alignment_by_time(
     full_alignment: dict, t_start_ms: int, t_end_ms: int,
 ) -> dict:
-    """提取 [t_start_ms, t_end_ms) 区间内字符的 sub-alignment，时间归零到 t_start_ms。"""
+    """ Backend docstring """
     chars = full_alignment.get('characters') or []
     starts = full_alignment.get('character_start_times_ms') or []
     durs = full_alignment.get('character_durations_ms') or []
@@ -604,9 +604,9 @@ def _slice_alignment_by_time(
     }
 
 
-# ElevenLabs 单次合成的字符上限保守阈值（含拼接 delimiter）。
-# multilingual_v2 官方上限 5000，eleven_v3 略高但未公开稳定上限；
-# 取 4500 留出 margin，超出时按页贪婪打包成多个批次。
+# Backend logic
+# Backend logic
+# Backend logic
 _ELEVENLABS_BATCH_CHAR_LIMIT = 4500
 
 
@@ -617,9 +617,9 @@ def _pack_pages_into_batches(
     delimiter: str,
 ) -> List[List[Tuple[int, str]]]:
     """
-    把连续的 narration 页贪婪打包成 N 个批次，每批拼接后字符数 ≤ char_limit。
+     narration  N ,  ≤ char_limit. 
 
-    单页若本身已超 char_limit，独占一批（让 ElevenLabs 自己处理或在调用时报错）。
+     char_limit,  ( ElevenLabs ) . 
     """
     batches: List[List[Tuple[int, str]]] = []
     cur: List[Tuple[int, str]] = []
@@ -651,18 +651,18 @@ def _synthesize_batch_and_split(
     speed: float,
 ) -> List[Tuple[str, dict, float]]:
     """
-    一批连续页：拼接 → 一次 ElevenLabs 调用 → 按字符 alignment 切回单页。
+    :  →  ElevenLabs  →  alignment . 
 
-    返回与 batch_indexes 同长的 (audio_path, sub_alignment, duration) 列表。
-    alignment 缺失或某页未对齐时直接 raise，由上层 fail-fast 中断导出。
+     batch_indexes  (audio_path, sub_alignment, duration) . 
+    alignment  raise,  fail-fast . 
 
-    切片边界：第 j 页 [t_j, t_{j+1})，最后一页到全曲末。delimiter 的自然停顿
-    分配给前一页尾部，相邻页拼接时不丢失停顿。
+    :  j  [t_j, t_{j+1}), . delimiter 
+    , . 
     """
     if not batch_texts:
         return []
 
-    # 单页批次：直接合成、不切片
+    # Backend logic
     if len(batch_texts) == 1:
         page_idx = batch_indexes[0]
         audio_path = os.path.join(tmp_dir, f'audio_{page_idx:03d}.mp3')
@@ -673,7 +673,7 @@ def _synthesize_batch_and_split(
         )
         if not alignment:
             raise RuntimeError(
-                f"ElevenLabs 未返回字符级 alignment（batch {batch_label}），无法定位字幕时间，已停止导出"
+                f"ElevenLabs không trả về cấp độ ký tự alignment (batch {batch_label}) , không thể xác định thời gian phụ đề, đã dừng xuất"
             )
         return [(audio_path, alignment, duration)]
 
@@ -689,7 +689,7 @@ def _synthesize_batch_and_split(
 
     if not full_alignment:
         raise RuntimeError(
-            f"ElevenLabs 未返回字符级 alignment（batch {batch_label}），无法做整段切片，已停止导出"
+            f"ElevenLabs không trả về cấp độ ký tự alignment (batch {batch_label}) , không thể cắt toàn đoạn, đã dừng xuất"
         )
 
     chars = full_alignment.get('characters') or []
@@ -697,7 +697,7 @@ def _synthesize_batch_and_split(
     durs_ms = full_alignment.get('character_durations_ms') or []
     if not chars or len(chars) != len(starts_ms) or len(chars) != len(durs_ms):
         raise RuntimeError(
-            f"ElevenLabs alignment 数据不完整（batch {batch_label}），已停止导出"
+            f"ElevenLabs alignment dữ liệu không đầy đủ (batch {batch_label}) , đã dừng xuất"
         )
 
     boundaries_sec = _find_page_boundaries_sec(
@@ -722,8 +722,8 @@ def _synthesize_batch_and_split(
         results.append((page_audio_path, sub_alignment, page_duration))
 
     logger.info(
-        f"batch {batch_label} 整段合成完成：{len(batch_texts)} 页 → 1 次 ElevenLabs 调用，"
-        f"全曲 {duration_full:.1f}s，边界吸附 {len(boundaries_sec) - 2} 处"
+        f"batch {batch_label} Hoàn tất tổng hợp toàn đoạn: {len(batch_texts)} trang → 1 lần ElevenLabs gọi, "
+        f"toàn bài {duration_full:.1f}s, bám dính viền {len(boundaries_sec) - 2} nơi "
     )
     return results
 
@@ -739,10 +739,10 @@ def _generate_elevenlabs_whole_and_split(
     progress_callback: Optional[Callable[[str, str, int], None]] = None,
 ) -> List[Tuple[str, dict, float]]:
     """
-    把所有非空 narration 页按字符上限切成若干批次，每批一次合成 + 切片回单页。
+     narration ,  + . 
 
-    返回与 narration_indexes 同长的列表，每项 (audio_path, sub_alignment, duration)。
-    任何 alignment 缺失 / 页未对齐 / API 错误都直接 raise（fail-fast，不回退到逐页）。
+     narration_indexes ,  (audio_path, sub_alignment, duration). 
+     alignment  /  / API  raise (fail-fast, ) . 
     """
     delimiter = '\n\n'
     page_texts = [
@@ -752,7 +752,7 @@ def _generate_elevenlabs_whole_and_split(
         for i in narration_indexes
     ]
     if not all(page_texts):
-        raise RuntimeError("整段合成：存在空 narration，无法构造完整文本")
+        raise RuntimeError("Tổng hợp toàn đoạn: có giá trị rỗng narration, không thể tạo văn bản hoàn chỉnh")
 
     batches = _pack_pages_into_batches(
         narration_indexes, page_texts,
@@ -769,7 +769,7 @@ def _generate_elevenlabs_whole_and_split(
             total_chars = sum(len(t) for t in batch_texts)
             progress_callback(
                 "TTS",
-                f"整段合成第 {label} 批（{len(batch)} 页 / {total_chars} 字）",
+                f"Tổng hợp toàn đoạn trang {label} lô ({len(batch)} trang / {total_chars} chữ ) ",
                 22,
             )
         batch_results = _synthesize_batch_and_split(
@@ -785,22 +785,22 @@ def _generate_elevenlabs_whole_and_split(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Ken Burns 动效
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# 四种交替动效
+# Backend logic
 KEN_BURNS_EFFECTS = ['zoom_in', 'zoom_out', 'pan_left', 'pan_right']
 
-# 轻量动效参数：既保留镜头感，也避免把边缘文字裁出屏幕
+# Backend logic
 KEN_BURNS_MAX_ZOOM = 1.08
 KEN_BURNS_PAN_CANVAS_SCALE = 1.08
 
 
 def _prepare_canvas(src, content_w: int, content_h: int, canvas_w: int, canvas_h: int):
-    """将任意画幅的图片 contain 到 content 区域，居中放置在 canvas 上，空白用高斯模糊填充。
+    """ contain  content ,  canvas , . 
 
-    content_w/h: 内容区域（zoom=1.0 时可见的区域）
-    canvas_w/h: 画布总尺寸（包含动效余量）
+    content_w/h:  (zoom=1.0 ) 
+    canvas_w/h:  () 
     """
     import cv2
 
@@ -834,8 +834,8 @@ def create_ken_burns_clip(
     fade_in_seconds: float = 0.0,
     fade_out_seconds: float = 0.0,
 ) -> None:
-    """OpenCV 逐帧渲染 Ken Burns 动效，pipe rawvideo 给 FFmpeg 编码。
-    用 _prepare_canvas 适配任意画幅，getRectSubPix 实现浮点精度裁切。"""
+    """OpenCV  Ken Burns , pipe rawvideo  FFmpeg . 
+     dùng _prepare_canvas tương thích mọi tỷ lệ khung hình, getRectSubPix thực hiện cắt với độ chính xác dấu phẩy động. """
     import cv2
 
     total_frames = max(int(duration * fps), 1)
@@ -848,7 +848,7 @@ def create_ken_burns_clip(
     canvas_scale = max(max_zoom, pan_canvas_scale)
     canvas_w = int(width * canvas_scale)
     canvas_h = int(height * canvas_scale)
-    # 先把整张 slide 缩进一个安全边距内，再做镜头运动，避免边缘文字被裁出画面。
+    # Backend logic
     safe_content_w = max(1, int(width / max_zoom))
     safe_content_h = max(1, int(height / max_zoom))
     img, (slide_x, slide_y, slide_w, slide_h) = _prepare_canvas(
@@ -952,7 +952,7 @@ def create_silent_clip(
     fade_in_seconds: float = 0.0,
     fade_out_seconds: float = 0.0,
 ) -> None:
-    """创建无声视频片段（用于没有旁白的页面）"""
+    """ Backend docstring """
     if enable_ken_burns:
         tmp_video = output_path + '.tmp.mp4'
         create_ken_burns_clip(
@@ -1010,7 +1010,7 @@ def create_static_clip(
     fade_in_seconds: float = 0.0,
     fade_out_seconds: float = 0.0,
 ) -> None:
-    """从单张图片创建静态视频片段（无动效）"""
+    """ Backend docstring """
     vf = f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2"
     if fade_in_seconds > 0:
         vf += f",fade=t=in:st=0:d={fade_in_seconds}"
@@ -1038,12 +1038,12 @@ def create_static_clip(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 字幕生成与烧录
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 def _format_ass_time(seconds: float) -> str:
-    """将秒数格式化为 ASS 时间格式 H:MM:SS.cc"""
+    """ Backend docstring """
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
     s = int(seconds % 60)
@@ -1053,22 +1053,22 @@ def _format_ass_time(seconds: float) -> str:
 
 def _split_narration_to_sentences(text: str) -> List[str]:
     """
-    将旁白文本按句拆分。
-    优先按中/英文句号、问号、叹号等断句，
-    过长的分句再按逗号/顿号二次拆分。
+    . 
+    /, , , 
+    /. 
     """
-    # 先按主要句末标点断句（保留标点在前一句末尾）
-    raw_parts = re.split(r'(?<=[。！？!?\n])', text.strip())
+    # Backend logic
+    raw_parts = re.split(r'(?<=[. ! ? !?\n])', text.strip())
     sentences = [p.strip() for p in raw_parts if p.strip()]
 
-    # 对超长句子按逗号等次级标点二次拆分
+    # Backend logic
     result = []
     for sent in sentences:
         if len(sent) <= _MAX_SUBTITLE_SEGMENT_LENGTH:
             result.append(sent)
             continue
-        # 按逗号、分号、顿号拆分
-        sub_parts = re.split(r'(?<=[，；、,;])', sent)
+        # Backend logic
+        sub_parts = re.split(r'(?<=[, ; , ,;])', sent)
         current = ''
         for part in sub_parts:
             if len(current) + len(part) <= _MAX_SUBTITLE_SEGMENT_LENGTH:
@@ -1076,7 +1076,7 @@ def _split_narration_to_sentences(text: str) -> List[str]:
             else:
                 if current:
                     result.append(current)
-                # 单段还是超长就硬切
+                # Backend logic
                 while len(part) > _MAX_SUBTITLE_SEGMENT_LENGTH:
                     result.append(part[:_MAX_SUBTITLE_SEGMENT_LENGTH])
                     part = part[_MAX_SUBTITLE_SEGMENT_LENGTH:]
@@ -1093,10 +1093,10 @@ def _build_timed_subtitle_entries_from_alignment(
     alignment: dict,
 ) -> List[dict]:
     """
-    使用 ElevenLabs 字符级对齐时间戳生成字幕条目，比按字符比例估算更精准。
+     ElevenLabs , . 
 
-    走两路指针：sentence 字符序列 vs alignment.characters 序列，
-    匹配相同字符（忽略空白），用首字符 start 与尾字符 start+duration 作为字幕区间。
+    : sentence  vs alignment.characters , 
+     () ,  start  start+duration . 
     """
     sentences = _split_narration_to_sentences(narration_text)
     if not sentences:
@@ -1114,14 +1114,14 @@ def _build_timed_subtitle_entries_from_alignment(
 
     for sent in sentences:
         target = sent
-        # 跳过对齐序列开头的空白字符
+        # Backend logic
         while align_idx < n and not chars[align_idx].strip():
             align_idx += 1
         if align_idx >= n:
             break
 
         sent_start_idx = align_idx
-        # 在对齐序列中匹配该句子的字符（按非空白字符逐个对齐）
+        # Backend logic
         ti = 0
         i = align_idx
         last_match_idx = align_idx
@@ -1134,13 +1134,13 @@ def _build_timed_subtitle_entries_from_alignment(
             if not ach.strip():
                 i += 1
                 continue
-            # 不区分大小写匹配，宽松一点处理标点变体
+            # Backend logic
             if tch == ach or tch.lower() == ach.lower():
                 last_match_idx = i
                 i += 1
                 ti += 1
             else:
-                # 对齐序列里如果出现额外字符（如规范化插入），跳过它
+                # Backend logic
                 i += 1
 
         sent_end_idx = last_match_idx
@@ -1162,9 +1162,9 @@ def _build_timed_subtitle_entries(
     page_duration: float,
 ) -> List[dict]:
     """
-    将一页的旁白文本拆分为按时间均匀分配的字幕条目。
+    . 
 
-    每个条目的时长与其字符数成正比，实现"跟读"效果。
+    Thời lượng của mỗi mục tỷ lệ thuận với số ký tự của nó, thực hiện"đọc theo"hiệu quả. 
     """
     sentences = _split_narration_to_sentences(narration_text)
     if not sentences:
@@ -1177,7 +1177,7 @@ def _build_timed_subtitle_entries(
     entries = []
     t = page_start
     for sent in sentences:
-        # 按字符比例分配时长，至少 0.8 秒
+        # Backend logic
         seg_duration = page_duration * len(sent) / total_chars
         entries.append({
             'start': t,
@@ -1186,15 +1186,15 @@ def _build_timed_subtitle_entries(
         })
         t += seg_duration
 
-    # 修正最后一条对齐到页面结束时间
+    # Backend logic
     if entries:
         entries[-1]['end'] = page_start + page_duration
 
     return entries
 
 
-# macOS / Linux / Windows 已知 CJK 字体文件 → libass 友好的 Latin 家族名。
-# 顺序即优先级。fontsdir 用对应文件所在目录。
+# Backend logic
+# Backend logic
 _CJK_FONT_FILE_CANDIDATES: List[Tuple[str, str]] = [
     # macOS
     ('/System/Library/Fonts/PingFang.ttc', 'PingFang SC'),
@@ -1217,16 +1217,16 @@ _CJK_FONT_FILE_CANDIDATES: List[Tuple[str, str]] = [
 
 def _resolve_cjk_font_file() -> Optional[Tuple[str, str]]:
     """
-    解析当前系统可用的 CJK 字体文件。
+     CJK . 
 
-    返回 (font_file_path, font_family_name)；找不到时 None。
-    优先扫已知路径（避免 fc-list 在 macOS 上返回本地化名字导致 libass 找不到字体）。
+     (font_file_path, font_family_name);  None. 
+     ( fc-list  macOS  libass ) . 
     """
     for path, family in _CJK_FONT_FILE_CANDIDATES:
         if os.path.exists(path):
             return path, family
 
-    # fc-match 路径回退；强制 LC_ALL=C 拿 Latin 家族名
+    # Backend logic
     try:
         env = {**os.environ, 'LC_ALL': 'C', 'LANG': 'C'}
         result = subprocess.run(
@@ -1246,7 +1246,7 @@ def _resolve_cjk_font_file() -> Optional[Tuple[str, str]]:
 
 
 def _detect_cjk_font() -> str:
-    """返回 ASS Style 用的 CJK 字体家族名（libass 能查到的 Latin 名）。"""
+    """ Backend docstring """
     resolved = _resolve_cjk_font_file()
     if resolved:
         return resolved[1]
@@ -1254,7 +1254,7 @@ def _detect_cjk_font() -> str:
 
 
 def _detect_cjk_font_dir() -> Optional[str]:
-    """返回检测到的 CJK 字体文件所在目录，作为 ass filter 的 fontsdir。"""
+    """ Backend docstring """
     resolved = _resolve_cjk_font_file()
     if resolved:
         return os.path.dirname(resolved[0])
@@ -1269,29 +1269,29 @@ def generate_ass_subtitle(
     font_size: int = 0,
 ) -> None:
     """
-    生成 ASS 字幕文件（带半透明底栏，CJK 字体）。
+     ASS  (, CJK ) . 
 
     Args:
-        subtitle_entries: 字幕条目列表，每项含 start/end/text
-        output_path: 输出 ASS 文件路径
-        width: 视频宽度
-        height: 视频高度
-        font_size: 字幕字号，0 表示自动按分辨率计算
+        subtitle_entries: ,  start/end/text
+        output_path:  ASS 
+        width: 
+        height: 
+        font_size: , 0 
     """
     if font_size <= 0:
         font_size = max(28, int(height / 25))  # 1080p → 43
 
     font_name = _detect_cjk_font()
-    margin_v = max(40, int(height / 18))  # 底部边距
+    margin_v = max(40, int(height / 18))  # Backend logic
     outline = max(2, int(font_size / 16))
     shadow = 1
-    spacing = 1  # 字间距
+    spacing = 1  # Backend logic
 
-    # ASS 颜色格式：&HAABBGGRR（注意是 BGR 顺序）
-    # PrimaryColour: 白色 &H00FFFFFF
-    # OutlineColour: 深灰 &H00202020 (轮廓)
-    # BackColour:    半透明黑 &H96000000 (阴影/背景)
-    # BorderStyle=3 表示使用 BackColour 作为背景框
+    # Backend logic
+    # Backend logic
+    # Backend logic
+    # Backend logic
+    # Backend logic
 
     header = f"""[Script Info]
 Title: Narration Subtitles
@@ -1320,10 +1320,10 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def _strip_invisible_unicode(text: str, keep_newlines: bool = False) -> str:
     """
-    去除不可见 Unicode 控制类字符，避免在 ASS 解析或 TTS alignment 中产生干扰。
+     Unicode ,  ASS  TTS alignment . 
 
-    过滤所有 Cc/Cf/Co/Cs/Cn 类，以及行/段分隔符 U+2028/U+2029。
-    keep_newlines=True 时保留 \n / \r / \t（用于 TTS 输入，保留语义换行）。
+     Cc/Cf/Co/Cs/Cn , / U+2028/U+2029. 
+    keep_newlines=True  \n / \r / \t ( TTS , ) . 
     """
     out = []
     for ch in text:
@@ -1341,27 +1341,27 @@ def _strip_invisible_unicode(text: str, keep_newlines: bool = False) -> str:
 
 def _sanitize_ass_dialogue_text(text: str) -> str:
     """
-    清洗旁白文本，避免被 libass 当成 ASS override 标签解析。
+    ,  libass  ASS override . 
 
-    libass 在 Dialogue Text 字段里会特殊解析：
-      - `{...}` 是内联 override 块，会被吞或错渲染；
-      - `\\N` `\\h` `\\n` 等反斜杠序列是 libass 转义；
-      - 不可见控制字符（ZWSP / BOM / LRE 等）也可能干扰解析或字体 shaping。
+    libass  Dialogue Text : 
+      - `{...}` là nội tuyến override khối , sẽ bị mất hoặc kết xuất sai; 
+      - `\\N` `\\h` `\\n` và các chuỗi dấu gạch chéo ngược là libass escape; 
+      -  (ZWSP / BOM / LRE )  shaping. 
 
-    旁白偶尔出现这些字符时，整段对白会被错误解析、变成视觉上的"乱码/方块"。
-    先剥掉控制字符，再把 `\\` `{` `}` 替换成全角等价字符。
+    Khi lời thuyết minh đôi lúc xuất hiện các ký tự này, toàn bộ lời thoại sẽ bị phân tích sai, trở thành hiển thị trực quan"lỗi phông chữ/ô vuông". 
+    loại bỏ ký tự điều khiển trước, sau đó đem `\\` `{` `}` thay thế bằng ký tự toàn giác tương đương. 
     """
     cleaned = _strip_invisible_unicode(text, keep_newlines=False)
     return (
         cleaned
-        .replace('\\', '＼')
-        .replace('{', '｛')
-        .replace('}', '｝')
+        .replace('\\', '')
+        .replace('{', '')
+        .replace('}', '')
     )
 
 
 def _escape_ffmpeg_filter_value(value: str) -> str:
-    """转义 FFmpeg filter 参数值，避免路径被误解析为额外选项。"""
+    """ Backend docstring """
     escaped = value.replace('\\', '/')
     for old, new in (
         (':', '\\:'),
@@ -1382,7 +1382,7 @@ def burn_subtitles(
     ffmpeg_path: str = 'ffmpeg',
     idle_timeout: float = _FFMPEG_IDLE_TIMEOUT_SECONDS,
 ) -> None:
-    """将 ASS 字幕烧录到视频中"""
+    """ Backend docstring """
     escaped_sub = _escape_ffmpeg_filter_value(subtitle_path)
 
     ass_args = f"ass=filename='{escaped_sub}'"
@@ -1407,7 +1407,7 @@ def burn_subtitles(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 视频合成
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -1418,7 +1418,7 @@ def mux_video_audio(
     ffmpeg_path: str = 'ffmpeg',
     idle_timeout: float = _FFMPEG_IDLE_TIMEOUT_SECONDS,
 ) -> None:
-    """将视频和音频合并为一个 MP4 文件"""
+    """ Backend docstring """
     cmd = [
         ffmpeg_path, '-y',
         '-i', video_path,
@@ -1440,30 +1440,30 @@ def composite_video(
     idle_timeout: float = _FFMPEG_IDLE_TIMEOUT_SECONDS,
 ) -> None:
     """
-    使用 FFmpeg concat demuxer 将多个视频片段拼接为最终 MP4。
+     FFmpeg concat demuxer  MP4. 
 
     Args:
-        clip_paths: 各页合并后的视频片段路径列表
-        output_path: 最终输出 MP4 路径
-        fps: 帧率（确保拼接后一致）
-        ffmpeg_path: ffmpeg 路径
-        idle_timeout: 连续无输出多久视为卡死
+        clip_paths: 
+        output_path:  MP4 
+        fps:  () 
+        ffmpeg_path: ffmpeg 
+        idle_timeout: 
     """
     if len(clip_paths) == 1:
-        # 单片段直接复制
+        # Backend logic
         shutil.copy2(clip_paths[0], output_path)
         return
 
-    # 创建 concat 列表文件 — 使用绝对路径并验证文件确实存在于临时目录
+    # Backend logic
     concat_file = output_path + '.concat.txt'
     try:
         with open(concat_file, 'w') as f:
             for path in clip_paths:
-                # 安全检查：路径不能包含换行符（防止 concat 文件注入）
+                # Backend logic
                 safe_path = os.path.abspath(path)
                 if '\n' in safe_path or '\r' in safe_path:
                     raise ValueError(f"Invalid clip path contains newline: {safe_path}")
-                # 转义单引号
+                # Backend logic
                 escaped = safe_path.replace("'", "''")
                 f.write(f"file '{escaped}'\n")
 
@@ -1490,7 +1490,7 @@ def composite_video(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 完整流水线
+# Backend logic
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -1511,29 +1511,29 @@ def generate_narration_video(
     speed: float = 1.0,
 ) -> None:
     """
-    完整的播报视频生成流水线。
+    . 
 
     Args:
-        pages_data: 页面数据列表，每项包含:
-            - image_path: str  幻灯片图片路径
-            - narration_text: str | None  旁白文本
-            - page_index: int  页码（从 0 开始）
-        output_path: 最终 MP4 输出路径
-        voice: TTS 语音
-        rate: 语速
-        width: 视频宽度
-        height: 视频高度
-        fps: 帧率
-        enable_ken_burns: 是否启用 Ken Burns 动效（默认关闭）
-        ffmpeg_path: ffmpeg 路径
-        progress_callback: 进度回调 (step, message, percent)
-        silent_duration: 无旁白页面的静音时长（秒），0 表示使用默认值
-        fail_fast: 是否在缺少有效旁白音频时立即失败
+        pages_data: , :
+            - image_path: str  
+            - narration_text: str | None  
+            - page_index: int   ( 0 ) 
+        output_path:  MP4 
+        voice: TTS 
+        rate: 
+        width: 
+        height: 
+        fps: 
+        enable_ken_burns:  Ken Burns  () 
+        ffmpeg_path: ffmpeg 
+        progress_callback:  (step, message, percent)
+        silent_duration:  () , 0 
+        fail_fast: 
     """
     if not pages_data:
         raise ValueError("No pages to process")
 
-    # 检查 ffmpeg
+    # Backend logic
     if not check_ffmpeg_available(ffmpeg_path):
         raise RuntimeError(
             "FFmpeg is not installed or not found in PATH. "
@@ -1543,9 +1543,9 @@ def generate_narration_video(
     requires_subtitles = any((page.get('narration_text') or '').strip() for page in pages_data)
     if requires_subtitles and not check_ffmpeg_ass_filter_available(ffmpeg_path):
         raise RuntimeError(
-            "当前 FFmpeg 不支持 ASS 字幕烧录（缺少 libass / ass filter）。"
-            "视频导出需要安装带 libass 的 FFmpeg。"
-            "请安装或重装支持 ASS 字幕的 FFmpeg 后重试。"
+            "hiện tại FFmpeg không hỗ trợ ASS gắn phụ đề (thiếu libass / ass filter) . "
+            "Xuất video cần cài đặt bản có libass FFmpeg. "
+            "Vui lòng cài đặt hoặc cài lại bản hỗ trợ ASS có phụ đề FFmpeg rồi thử lại. "
         )
 
     if silent_duration <= 0:
@@ -1560,16 +1560,16 @@ def generate_narration_video(
         subtitle_entries: List[dict] = []
         cumulative_time = 0.0
 
-        # ── Phase A: TTS 音频生成 ──
-        # 先统一生成所有 TTS 音频，获取每页实际时长
+        # Backend logic
+        # Backend logic
         page_durations: List[float] = []
         audio_paths: List[Optional[str]] = []
         alignments: List[Optional[dict]] = []
         silent_page_indexes: List[int] = []
 
-        # 整段合成快路径：ElevenLabs 且至少 2 页有 narration 时，按字符上限拆批
-        # 一批一合成 + 切片回单页，解决"逐页冷启动"导致的页间割裂感。
-        # 失败（alignment 缺失 / 某页未对齐 / API 错）直接 raise，fail-fast，不回退。
+        # Backend logic
+        # Backend logic
+        # Backend logic
         narration_indexes = [
             idx for idx, p in enumerate(pages_data)
             if (p.get('narration_text') or '').strip()
@@ -1611,7 +1611,7 @@ def generate_narration_video(
                                 speed=speed,
                             )
                         else:
-                            # edge-tts 用 rate 字符串：speed=1.1 → "+10%"
+                            # Backend logic
                             effective_rate = rate
                             if abs(speed - 1.0) > 1e-3:
                                 pct = int(round((speed - 1.0) * 100))
@@ -1622,7 +1622,7 @@ def generate_narration_video(
                     except Exception as e:
                         if fail_fast:
                             raise RuntimeError(
-                                f"第 {page_idx + 1} 页旁白语音生成失败，当前项目未开启“允许返回半成品”，已停止导出: {e}"
+                                f" {page_idx + 1} , "", : {e}"
                             ) from e
 
                         logger.warning(f"TTS failed for page {page_idx}: {e}, using silent clip")
@@ -1633,7 +1633,7 @@ def generate_narration_video(
             else:
                 if fail_fast:
                     raise RuntimeError(
-                        f"第 {page_idx + 1} 页缺少旁白文本，当前项目未开启“允许返回半成品”，无法导出视频。"
+                        f" {page_idx + 1} , "", . "
                     )
                 silent_page_indexes.append(page_idx + 1)
 
@@ -1644,18 +1644,18 @@ def generate_narration_video(
             if progress_callback:
                 pct = int(20 + (i + 1) / total * 30)  # 20-50%
                 if audio_path:
-                    message = f"已生成第 {i+1}/{total} 页音频"
+                    message = f"Đã tạo trang {i+1}/{total} trang âm thanh"
                 else:
-                    message = f"第 {i+1}/{total} 页无有效语音，改为静音片段"
+                    message = f"trang {i+1}/{total} trang không có giọng đọc hợp lệ, chuyển thành đoạn âm thanh tĩnh"
                 progress_callback("TTS", message, pct)
 
         if fail_fast and silent_page_indexes:
-            pages = '、'.join(str(idx) for idx in silent_page_indexes)
+            pages = ', '.join(str(idx) for idx in silent_page_indexes)
             raise RuntimeError(
-                f"以下页面没有可用旁白语音：第 {pages} 页。当前项目未开启“允许返回半成品”，已停止导出。"
+                f":  {pages} . "", . "
             )
 
-        # ── Phase B: 视频片段 + 字幕条目 ──
+        # Backend logic
         for i, page in enumerate(pages_data):
             image_path = page['image_path']
             narration = page.get('narration_text')
@@ -1665,7 +1665,7 @@ def generate_narration_video(
             audio_path = audio_paths[i]
             alignment = alignments[i]
 
-            # 整片头/尾的静音 padding 与画面淡入/淡出
+            # Backend logic
             is_first = (i == 0)
             is_last = (i == total - 1)
             leading_pad = _LEADING_PAD_SECONDS if is_first else 0.0
@@ -1683,7 +1683,7 @@ def generate_narration_video(
 
             display_duration = audio_duration + leading_pad + trailing_pad
 
-            # 收集字幕条目（字幕仅覆盖真实语音区间，避开首/末静音）
+            # Backend logic
             sub_start = cumulative_time + leading_pad
             if narration and narration.strip() and audio_paths[i]:
                 if alignment:
@@ -1721,7 +1721,7 @@ def generate_narration_video(
                 mux_video_audio(video_clip, audio_path, muxed_path, ffmpeg_path=ffmpeg_path)
                 muxed_clips.append(muxed_path)
             else:
-                # 静音片段（含无声音轨以保证 concat 兼容）
+                # Backend logic
                 silent_path = os.path.join(tmp_dir, f'silent_{i:03d}.mp4')
                 create_silent_clip(
                     image_path, silent_path, duration=display_duration,
@@ -1735,19 +1735,19 @@ def generate_narration_video(
 
             if progress_callback:
                 pct = int(50 + (i + 1) / total * 30)  # 50-80%
-                progress_callback("视频", f"已生成第 {i+1}/{total} 页视频片段", pct)
+                progress_callback("Video", f"Đã tạo trang {i+1}/{total} đoạn video trang", pct)
 
-        # ── Phase C: 拼接视频 ──
+        # Backend logic
         if progress_callback:
-            progress_callback("合成", "正在拼接视频…", 82)
+            progress_callback("Tổng hợp", "Đang ghép nối video...", 82)
 
         raw_video = os.path.join(tmp_dir, 'raw_composite.mp4')
         composite_video(muxed_clips, raw_video, fps=fps, ffmpeg_path=ffmpeg_path)
 
-        # ── Phase D: 烧录字幕 ──
+        # Backend logic
         if subtitle_entries:
             if progress_callback:
-                progress_callback("字幕", "正在烧录字幕…", 88)
+                progress_callback("Phụ đề", "Đang gắn phụ đề vào video...", 88)
 
             ass_path = os.path.join(tmp_dir, 'subtitles.ass')
             generate_ass_subtitle(subtitle_entries, ass_path, width=width, height=height)
@@ -1756,9 +1756,9 @@ def generate_narration_video(
             shutil.copy2(raw_video, output_path)
 
         if progress_callback:
-            progress_callback("完成", "视频导出完成", 100)
+            progress_callback("Hoàn tất", "Hoàn tất xuất video", 100)
 
     finally:
-        # 清理临时目录
+        # Backend logic
         if os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir, ignore_errors=True)

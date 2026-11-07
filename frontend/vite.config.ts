@@ -34,13 +34,13 @@ function gitValue(command: string): string {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // 从项目根目录读取 .env 文件（相对于 frontend 目录的上一级）
+  // Logic
   const envDir = path.resolve(__dirname, '..')
 
-  // 使用 loadEnv 加载环境变量（第三个参数为空字符串表示加载所有变量，不仅仅是 VITE_ 前缀的）
+  // Logic
   const env = loadEnv(mode, envDir, '')
 
-  // 端口：优先读 env，否则按 worktree 目录名自动计算
+  // Logic
   const backendPort = env.BACKEND_PORT || String(computeWorktreePort(5011))
   const frontendPort = Number(env.FRONTEND_PORT) || computeWorktreePort(3011)
   const backendUrl = `http://localhost:${backendPort}`
@@ -64,32 +64,32 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: frontendPort,
-      host: true, // 监听所有地址
+      host: true, // 
       watch: {
-        usePolling: true, // WSL 环境下需要启用轮询
+        usePolling: true, // WSL 
       },
       hmr: {
-        overlay: true, // 显示错误覆盖层
+        overlay: true, // 
       },
       proxy: {
-        // API 请求代理到后端（端口从环境变量 BACKEND_PORT 读取）
+        // Logic
         '/api': {
           target: backendUrl,
           changeOrigin: true,
         },
-        // 文件服务代理到后端
+        // Logic
         '/files': {
           target: backendUrl,
           changeOrigin: true,
         },
-        // 健康检查代理到后端
+        // Logic
         '/health': {
           target: backendUrl,
           changeOrigin: true,
         },
       },
     },
-    // Vitest 测试配置
+    // Logic
     test: {
       globals: true,
       environment: 'jsdom',

@@ -1,41 +1,51 @@
 import i18n from '@/i18n';
 
-type NestedRecord = Record<string, unknown>;
-type Translations = { zh: NestedRecord; en: NestedRecord };
+type NestedRecord = { [key: string]: string | NestedRecord };
+type Translations<T extends NestedRecord> = { vi?: T; zh?: T; en: T };
 
-function getNestedValue(obj: NestedRecord, path: string): string | undefined {
-  let current: unknown = obj;
-  for (const key of path.split('.')) {
-    if (current && typeof current === 'object' && key in current) {
-      current = (current as NestedRecord)[key];
-    } else {
-      return undefined;
+function getByPath(obj: unknown, path: string): unknown {
+  return path.split('.').reduce((acc: unknown, key) => {
+    if (acc && typeof acc === 'object' && key in (acc as Record<string, unknown>)) {
+      return (acc as Record<string, unknown>)[key];
     }
-  }
-  return typeof current === 'string' ? current : undefined;
+    return undefined;
+  }, obj);
+}
+
+function interpolate(str: string, params?: Record<string, unknown>): string {
+  if (!params) return str;
+  return str.replace(/\{\{(\w+)\}\}/g, (_, k) =>
+    params[k] !== undefined ? String(params[k]) : `{{${k}}}`
+  );
 }
 
 /**
- * Non-React translation helper for stores/utils.
- * Same pattern as useT but without React hooks.
+ * Non-React translation helper (for stores, utils, api, etc.)
+ *
+ * Usage:
+ * ```ts
+ * const storeI18n = {
+ *   vi: { loadError: 'Tải thất bại' },
+ *   en: { loadError: 'Failed to load' },
+ * };
+ * const t = getT(storeI18n);
+ * t('loadError');
+ * ```
  */
-export function getT<T extends Translations>(translations: T) {
-  return (key: string, params?: Record<string, string | number>): string => {
-    const lang = i18n.language?.startsWith('zh') ? 'zh' : 'en';
-    const dict = translations[lang] || translations['zh'];
-    const localValue = getNestedValue(dict, key);
-
-    if (localValue !== undefined) {
-      let text = localValue;
-      if (params) {
-        Object.entries(params).forEach(([k, v]) => {
-          text = text.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
-        });
-      }
-      return text;
+export function getT<T extends NestedRecord>(translations: Translations<T>) {
+  return (key: string, params?: Record<string, unknown>): string => {
+    const isEn = i18n.language?.startsWith('en');
+    const dict = isEn ? translations.en : (translations.vi ?? translations.zh ?? translations.en);
+    const val = getByPath(dict, key);
+    if (typeof val === 'string') {
+      return interpolate(val, params);
     }
-
-    // Fallback to global i18n
-    return i18n.t(key, params as any);
+    if (!isEn) {
+      const fallback = getByPath(translations.en, key);
+      if (typeof fallback === 'string') {
+        return interpolate(fallback, params);
+      }
+    }
+    return i18n.t(key, params) as string;
   };
 }

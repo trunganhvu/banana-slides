@@ -95,7 +95,7 @@ export function SettingsField({
     );
   }
 
-  // switch 类型 - 开关切换
+  // Component logic
   if (field.type === "switch") {
     const isEnabled = Boolean(value);
     return (

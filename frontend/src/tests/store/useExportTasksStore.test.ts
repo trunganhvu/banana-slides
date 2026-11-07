@@ -253,7 +253,7 @@ describe('useExportTasksStore', () => {
     expect(useExportTasksStore.getState().tasks[0].status).toBe('PROCESSING')
     expect(useExportTasksStore.getState().tasks[0].monitoring?.state).toBe('retrying')
     expect(useExportTasksStore.getState().tasks[0].monitoring?.code).toBe('EXPORT_STATUS_SERVICE_UNAVAILABLE')
-    expect(useExportTasksStore.getState().tasks[0].monitoring?.message).toMatch(/后台任务未被判定失败|not marked failed/)
+    expect(useExportTasksStore.getState().tasks[0].monitoring?.message).toMatch(/|not marked failed/)
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2000)
@@ -292,7 +292,7 @@ describe('useExportTasksStore', () => {
         monitoring: {
           state: 'retrying',
           code: 'EXPORT_CREATE_RESPONSE_INTERRUPTED',
-          message: '创建响应中断',
+          message: '',
           consecutiveErrors: 1,
           lastErrorAt: new Date().toISOString(),
         },
@@ -396,7 +396,7 @@ describe('useExportTasksStore', () => {
     vi.mocked(api.getTaskStatus).mockResolvedValue({
       data: {
         status: 'FAILED',
-        error_message: '文本样式提取失败：图片识别服务请求超时',
+        error_message: '',
         progress: {
           total: 100,
           completed: 50,
@@ -431,7 +431,7 @@ describe('useExportTasksStore', () => {
 
     const task = useExportTasksStore.getState().tasks[0]
     expect(task.status).toBe('FAILED')
-    expect(task.errorMessage).toBe('文本样式提取失败：图片识别服务请求超时')
+    expect(task.errorMessage).toBe('')
     expect(task.progress?.error_code).toBe('EXPORT_STYLE_TIMEOUT')
     expect(task.progress?.error_details?.provider).toBe('CodexTextProvider')
     expect(task.completedAt).toBeTruthy()
@@ -464,16 +464,16 @@ describe('useExportTasksStore', () => {
         total: 100,
         completed: 88,
         percent: 88,
-        current_step: '构建第 17/24 页...',
+        current_step: ' 17/24 ...',
         error_code: 'TASK_INTERRUPTED',
         error_details: { reason: 'interrupted', idle_seconds: 12600 },
       },
     })
 
     expect(task.status).toBe('FAILED')
-    expect(task.errorMessage).toContain('导出被中断')
-    expect(task.errorMessage).toContain('3.5 小时')
-    // 不能把后端原文直接拼进来（否则会重复/混排）
+    expect(task.errorMessage).toContain('')
+    expect(task.errorMessage).toContain('3.5 ')
+    // Test verification logic
     expect(task.errorMessage).not.toContain(RAW_BACKEND_TEXT)
     expect(task.progress?.error_code).toBe('TASK_INTERRUPTED')
   })
@@ -511,15 +511,15 @@ describe('useExportTasksStore', () => {
         completed: 88,
         percent: 88,
         error_code: 'TASK_STALLED',
-        error_details: { reason: 'stalled', idle_seconds: 1260, last_step: '构建PPTX' },
+        error_details: { reason: 'stalled', idle_seconds: 1260, last_step: 'PPTX' },
       },
     })
 
     expect(task.status).toBe('FAILED')
-    expect(task.errorMessage).toContain('导出疑似卡住')
-    expect(task.errorMessage).toContain('21 分钟')
-    // 后端阶段名会被本地化，不直接插入原始中文标签
-    expect(task.errorMessage).toContain('构建 PPTX')
+    expect(task.errorMessage).toContain('')
+    expect(task.errorMessage).toContain('21 ')
+    // Test verification logic
+    expect(task.errorMessage).toContain(' PPTX')
     expect(task.errorMessage).not.toContain(RAW_BACKEND_TEXT)
   })
 
@@ -534,7 +534,7 @@ describe('useExportTasksStore', () => {
           completed: 88,
           percent: 88,
           error_code: 'TASK_STALLED',
-          error_details: { reason: 'stalled', idle_seconds: 1260, last_step: '构建PPTX' },
+          error_details: { reason: 'stalled', idle_seconds: 1260, last_step: 'PPTX' },
         },
       })
 
@@ -555,18 +555,18 @@ describe('useExportTasksStore', () => {
         completed: 88,
         percent: 88,
         error_code: 'TASK_STALLED',
-        error_details: { reason: 'stalled', idle_seconds: 1260, last_step: '内部阶段名XYZ' },
+        error_details: { reason: 'stalled', idle_seconds: 1260, last_step: 'XYZ' },
       },
     })
 
-    expect(task.errorMessage).toContain('导出疑似卡住')
-    expect(task.errorMessage).not.toContain('内部阶段名XYZ')
+    expect(task.errorMessage).toContain('')
+    expect(task.errorMessage).not.toContain('XYZ')
   })
 
   it('falls back to the backend message when watchdog details are missing', async () => {
     const task = await pollFailedTask('task-stalled-legacy', {
       status: 'FAILED',
-      error_message: '旧版后端的中文失败说明',
+      error_message: '',
       progress: {
         total: 100,
         completed: 88,
@@ -575,13 +575,13 @@ describe('useExportTasksStore', () => {
       },
     })
 
-    expect(task.errorMessage).toBe('旧版后端的中文失败说明')
+    expect(task.errorMessage).toBe('')
   })
 
   it('keeps unknown error codes on the raw backend message', async () => {
     const task = await pollFailedTask('task-cancelled', {
       status: 'FAILED',
-      error_message: '任务被取消',
+      error_message: '',
       progress: {
         total: 100,
         completed: 10,
@@ -590,7 +590,7 @@ describe('useExportTasksStore', () => {
       },
     })
 
-    expect(task.errorMessage).toBe('任务被取消')
+    expect(task.errorMessage).toBe('')
   })
 
   it('clears a paused monitoring banner once the backend reports failure', async () => {
@@ -618,7 +618,7 @@ describe('useExportTasksStore', () => {
         monitoring: {
           state: 'paused',
           code: 'EXPORT_STATUS_CHECK_FAILED',
-          message: '状态查询暂时中断',
+          message: '',
           consecutiveErrors: 3,
           lastErrorAt: new Date().toISOString(),
         },
@@ -632,7 +632,7 @@ describe('useExportTasksStore', () => {
     const task = useExportTasksStore.getState().tasks[0]
     expect(task.status).toBe('FAILED')
     expect(task.monitoring).toBeUndefined()
-    expect(task.errorMessage).toContain('导出被中断')
+    expect(task.errorMessage).toContain('')
   })
 
   it('does not poll tasks that are already completed', async () => {

@@ -255,9 +255,9 @@ function createTray() {
   tray.setToolTip('Banana Slides');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: '显示主窗口', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { label: 'Hiển thị cửa sổ chính', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
     { type: 'separator' },
-    { label: '退出', click: () => { isQuitting = true; app.quit(); } },
+    { label: 'Thoát', click: () => { isQuitting = true; app.quit(); } },
   ]);
   tray.setContextMenu(contextMenu);
   tray.on('double-click', () => { mainWindow?.show(); mainWindow?.focus(); });
@@ -291,10 +291,10 @@ async function installDownloadedUpdate() {
 async function showDownloadedUpdateDialog(checkResult) {
   const result = await dialog.showMessageBox(mainWindow, {
     type: 'info',
-    title: '更新已就绪',
-    message: `新版本 v${checkResult.update.version} 已下载完成`,
-    detail: '重启 Banana Slides 即可完成更新。',
-    buttons: ['重启并更新', '稍后重启'],
+    title: 'Bản cập nhật đã sẵn sàng',
+    message: `Phiên bản mới v${checkResult.update.version} đã tải xuống hoàn tất`,
+    detail: 'Khởi động lại Banana Slides để hoàn tất cập nhật. ',
+    buttons: ['Khởi động lại và cập nhật', 'Khởi động lại sau'],
     defaultId: 0,
     cancelId: 1,
   });
@@ -312,14 +312,14 @@ async function showManualUpdateDialog() {
     }
 
     if (checkResult.update) {
-      const primaryAction = checkResult.canAutoUpdate ? '下载更新' : '前往下载';
+      const primaryAction = checkResult.canAutoUpdate ? 'Tải bản cập nhật' : 'Đi tới trang tải xuống';
       const releaseNotes = checkResult.update.notes.trim();
       const result = await dialog.showMessageBox(mainWindow, {
         type: 'info',
-        title: '发现新版本',
-        message: `新版本 v${checkResult.update.version} 可用`,
+        title: 'Phát hiện phiên bản mới',
+        message: `Phiên bản mới v${checkResult.update.version} khả dụng`,
         ...(releaseNotes ? { detail: releaseNotes.substring(0, 300) } : {}),
-        buttons: [primaryAction, '查看完整更新日志', '稍后更新'],
+        buttons: [primaryAction, 'Xem toàn bộ nhật ký cập nhật', 'Cập nhật sau'],
         defaultId: 0,
         cancelId: 2,
       });
@@ -340,15 +340,15 @@ async function showManualUpdateDialog() {
 
     await dialog.showMessageBox(mainWindow, {
       type: 'info',
-      title: '检查更新',
-      message: '当前已是最新版本',
+      title: 'Kiểm tra cập nhật',
+      message: 'Hiện tại đã là phiên bản mới nhất',
     });
   } catch (error) {
     log.error('[main] Failed to check for updates:', error);
     await dialog.showMessageBox(mainWindow, {
       type: 'error',
-      title: '检查更新失败',
-      message: '无法连接更新服务，请检查网络后重试',
+      title: 'Kiểm tra cập nhật thất bại',
+      message: 'Không thể kết nối tới dịch vụ cập nhật, vui lòng kiểm tra mạng rồi thử lại',
     });
   }
 }
@@ -359,78 +359,78 @@ function createAppMenu() {
     ...(isMac ? [{
       label: app.name,
       submenu: [
-        { label: '关于 Banana Slides', role: 'about' },
+        { label: 'Giới thiệu Banana Slides', role: 'about' },
         { type: 'separator' },
-        { label: '隐藏', role: 'hide' },
-        { label: '隐藏其他', role: 'hideOthers' },
-        { label: '全部显示', role: 'unhide' },
+        { label: 'Ẩn', role: 'hide' },
+        { label: 'Ẩn các cửa sổ khác', role: 'hideOthers' },
+        { label: 'Hiển thị tất cả', role: 'unhide' },
         { type: 'separator' },
-        { label: '退出', role: 'quit' },
+        { label: 'Thoát', role: 'quit' },
       ],
     }] : []),
     {
-      label: '文件',
+      label: 'Tệp',
       submenu: [
         ...(!isMac ? [
           { type: 'separator' },
-          { label: '退出', role: 'quit' },
+          { label: 'Thoát', role: 'quit' },
         ] : [
-          { label: '关闭窗口', role: 'close' },
+          { label: 'Đóng cửa sổ', role: 'close' },
         ]),
       ],
     },
     {
-      label: '编辑',
+      label: 'Chỉnh sửa',
       submenu: [
-        { label: '撤销', role: 'undo' },
-        { label: '重做', role: 'redo' },
+        { label: 'Hoàn tác', role: 'undo' },
+        { label: 'Làm lại', role: 'redo' },
         { type: 'separator' },
-        { label: '剪切', role: 'cut' },
-        { label: '复制', role: 'copy' },
-        { label: '粘贴', role: 'paste' },
-        { label: '全选', role: 'selectAll' },
+        { label: 'Cắt', role: 'cut' },
+        { label: 'Sao chép', role: 'copy' },
+        { label: 'Dán', role: 'paste' },
+        { label: 'Chọn tất cả', role: 'selectAll' },
       ],
     },
     {
-      label: '视图',
+      label: 'Hiển thị',
       submenu: [
-        { label: '放大', role: 'zoomIn', accelerator: 'CmdOrCtrl+=' },
-        { label: '缩小', role: 'zoomOut', accelerator: 'CmdOrCtrl+-' },
-        { label: '重置缩放', role: 'resetZoom', accelerator: 'CmdOrCtrl+0' },
+        { label: 'Phóng to', role: 'zoomIn', accelerator: 'CmdOrCtrl+=' },
+        { label: 'Thu nhỏ', role: 'zoomOut', accelerator: 'CmdOrCtrl+-' },
+        { label: 'Đặt lại thu phóng', role: 'resetZoom', accelerator: 'CmdOrCtrl+0' },
         { type: 'separator' },
-        { label: '全屏', role: 'togglefullscreen' },
+        { label: 'Toàn màn hình', role: 'togglefullscreen' },
         { type: 'separator' },
-        { label: '重新加载', role: 'reload' },
-        { label: '强制重新加载', role: 'forceReload' },
-        { label: '开发者工具', role: 'toggleDevTools' },
+        { label: 'Tải lại', role: 'reload' },
+        { label: 'Tải lại bắt buộc', role: 'forceReload' },
+        { label: 'Công cụ nhà phát triển', role: 'toggleDevTools' },
       ],
     },
     {
-      label: '窗口',
+      label: 'Cửa sổ',
       submenu: [
-        { label: '最小化', role: 'minimize' },
+        { label: 'Thu nhỏ', role: 'minimize' },
         ...(isMac ? [
           { type: 'separator' },
-          { label: '前置全部窗口', role: 'front' },
+          { label: 'Đưa tất cả cửa sổ lên trước', role: 'front' },
         ] : [
-          { label: '关闭', role: 'close' },
+          { label: 'Đóng', role: 'close' },
         ]),
       ],
     },
     {
-      label: '帮助',
+      label: 'Trợ giúp',
       submenu: [
         {
-          label: '检查更新...',
+          label: 'Kiểm tra cập nhật...',
           click: showManualUpdateDialog,
         },
         { type: 'separator' },
         {
-          label: '关于',
+          label: 'Giới thiệu',
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: '关于 Banana Slides',
+              title: 'Giới thiệu Banana Slides',
               message: `Banana Slides v${app.getVersion()}`,
               detail: 'AI-Native Presentation Generator',
             });
@@ -501,7 +501,7 @@ function setupIPC() {
   });
   ipcMain.handle('choose-data-storage-directory', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
-      title: '选择数据存储位置',
+      title: 'Chọn vị trí lưu trữ dữ liệu',
       defaultPath: activeDataRoot,
       properties: ['openDirectory', 'createDirectory'],
     });
@@ -538,7 +538,7 @@ function setupIPC() {
     return { success: true, restarting: true };
   });
 
-  // 原生下载对话框：前端传入绝对 URL + 建议文件名
+  // Logic
   ipcMain.handle('download-file', async (_, { url, filename }) => {
     const currentWindow = mainWindow;
     if (!currentWindow || currentWindow.isDestroyed()) return { success: false };
@@ -546,7 +546,7 @@ function setupIPC() {
     const downloadUrl = createUniqueDownloadUrl(url);
     const { filePath: savePath, canceled } = await dialog.showSaveDialog(currentWindow, {
       defaultPath: filename || 'download',
-      filters: [{ name: '所有文件', extensions: [ext, '*'] }],
+      filters: [{ name: 'Tất cả tệp', extensions: [ext, '*'] }],
     });
     if (canceled || !savePath) return { success: false, canceled: true };
     if (currentWindow.isDestroyed()) return { success: false };
@@ -564,18 +564,18 @@ function setupIPC() {
       log.error('[main] Download failed:', { url: downloadUrl, savePath, ...result });
       if (!currentWindow.isDestroyed()) {
         const localizedError = {
-          interrupted: '下载被中断，请重试。',
-          timeout: '下载超时，请重试。',
-          missing: '目标文件没有写入。',
-          empty: '目标文件为空。',
-          failed: '文件复制或下载失败。',
-          cancelled: '下载已取消。',
+          interrupted: 'Tải xuống bị gián đoạn, Vui lòng thử lại. ',
+          timeout: 'Tải xuống quá thời gian chờ, Vui lòng thử lại. ',
+          missing: 'Tệp đích chưa được ghi. ',
+          empty: 'Tệp đích bị trống. ',
+          failed: 'Sao chép hoặc tải tệp thất bại. ',
+          cancelled: 'Đã hủy tải xuống. ',
         }[result.state];
         await dialog.showMessageBox(currentWindow, {
           type: 'error',
-          title: '保存失败',
-          message: '文件没有保存成功',
-          detail: `${localizedError || result.error || '下载失败'}\n\n目标位置：${savePath}`,
+          title: 'Lưu thất bại',
+          message: 'Tệp chưa được lưu thành công',
+          detail: `${localizedError || result.error || 'Tải xuống thất bại'}\n\nVị trí đích: ${savePath}`,
         });
       }
     } else {
@@ -593,10 +593,10 @@ async function selectRecoveryDataRoot(startupError) {
     if (!skipErrorDialog) {
       const choice = await dialog.showMessageBox(parentWindow, {
         type: 'error',
-        title: '无法访问数据存储位置',
-        message: 'Banana Slides 无法访问已配置的数据存储位置。',
+        title: 'Không thể truy cập vị trí lưu trữ dữ liệu',
+        message: 'Banana Slides Không thể truy cập vị trí lưu trữ dữ liệu đã cấu hình. ',
         detail: error.message,
-        buttons: ['选择其他位置', '退出'],
+        buttons: ['Chọn vị trí khác', 'Thoát'],
         defaultId: 0,
         cancelId: 1,
         noLink: true,
@@ -606,11 +606,11 @@ async function selectRecoveryDataRoot(startupError) {
     skipErrorDialog = false;
 
     const selection = await dialog.showOpenDialog(parentWindow, {
-      title: '选择数据存储位置',
+      title: 'Chọn vị trí lưu trữ dữ liệu',
       properties: ['openDirectory', 'createDirectory'],
     });
     if (selection.canceled || !selection.filePaths[0]) {
-      error = new Error('尚未选择可用的数据存储位置。');
+      error = new Error('Chưa chọn vị trí lưu trữ dữ liệu khả dụng. ');
       continue;
     }
     try {
@@ -618,10 +618,10 @@ async function selectRecoveryDataRoot(startupError) {
       if (!inspection.hasDatabase) {
         const confirmation = await dialog.showMessageBox(parentWindow, {
           type: 'warning',
-          title: '确认使用新的数据位置',
-          message: '所选目录中没有 Banana Slides 数据库。',
-          detail: '继续后将把此位置作为新的空数据目录使用。应用不会移动或删除原目录中的任何数据。',
-          buttons: ['使用此位置', '重新选择'],
+          title: 'Xác nhận sử dụng vị trí dữ liệu mới',
+          message: 'Trong thư mục đã chọn không có Banana Slides cơ sở dữ liệu. ',
+          detail: 'Sau khi tiếp tục sẽ sử dụng vị trí này làm thư mục dữ liệu trống mới. Ứng dụng sẽ không di chuyển hoặc xóa bất kỳ dữ liệu nào trong thư mục gốc. ',
+          buttons: ['Sử dụng vị trí này', 'Chọn lại'],
           defaultId: 1,
           cancelId: 1,
           noLink: true,
@@ -689,7 +689,7 @@ async function bootstrap() {
   } catch (err) {
     log.error('[main] Startup failed:', err);
     if (splashWindow) splashWindow.close();
-    dialog.showErrorBox('启动失败', `后端服务启动失败：${err.message}`);
+    dialog.showErrorBox('Khởi chạy thất bại', `Khởi động dịch vụ backend thất bại: ${err.message}`);
     app.quit();
   }
 }

@@ -15,53 +15,53 @@ class Settings(db.Model):
     __tablename__ = 'settings'
 
     id = db.Column(db.Integer, primary_key=True, default=1)
-    ai_provider_format = db.Column(db.String(20), nullable=True)   # AI提供商格式: openai, gemini (NULL=use .env)
-    api_base_url = db.Column(db.String(500), nullable=True)        # API基础URL
-    api_key = db.Column(db.String(500), nullable=True)             # API密钥
-    image_resolution = db.Column(db.String(20), nullable=True)     # 图像清晰度: 1K, 2K, 4K (NULL=use .env)
-    image_aspect_ratio = db.Column(db.String(10), nullable=True)   # 图像比例: 16:9, 4:3, 1:1 (NULL=use .env)
-    image_quality = db.Column(db.String(10), nullable=True)        # 图像质量档位: auto/low/medium/high/xhigh/max (NULL=use .env)
-    max_description_workers = db.Column(db.Integer, nullable=True)  # 描述生成最大工作线程数 (NULL=use .env)
-    max_image_workers = db.Column(db.Integer, nullable=True)        # 图像生成最大工作线程数 (NULL=use .env)
+    ai_provider_format = db.Column(db.String(20), nullable=True)   # Backend logic
+    api_base_url = db.Column(db.String(500), nullable=True)        # Backend logic
+    api_key = db.Column(db.String(500), nullable=True)             # Backend logic
+    image_resolution = db.Column(db.String(20), nullable=True)     # Backend logic
+    image_aspect_ratio = db.Column(db.String(10), nullable=True)   # Backend logic
+    image_quality = db.Column(db.String(10), nullable=True)        # Backend logic
+    max_description_workers = db.Column(db.Integer, nullable=True)  # Backend logic
+    max_image_workers = db.Column(db.Integer, nullable=True)        # Backend logic
 
-    # 新增：大模型与 MinerU 相关可视化配置（可在设置页中编辑）
-    text_model = db.Column(db.String(100), nullable=True)  # 文本大模型名称（覆盖 Config.TEXT_MODEL）
-    image_model = db.Column(db.String(100), nullable=True)  # 图片大模型名称（覆盖 Config.IMAGE_MODEL）
-    mineru_api_base = db.Column(db.String(255), nullable=True)  # MinerU 服务地址（覆盖 Config.MINERU_API_BASE）
-    mineru_token = db.Column(db.String(500), nullable=True)  # MinerU API Token（覆盖 Config.MINERU_TOKEN）
-    image_caption_model = db.Column(db.String(100), nullable=True)  # 图片识别模型（覆盖 Config.IMAGE_CAPTION_MODEL）
-    output_language = db.Column(db.String(10), nullable=True)  # 输出语言偏好（zh, en, ja, auto）(NULL=use .env)
+    # Backend logic
+    text_model = db.Column(db.String(100), nullable=True)  # Backend logic
+    image_model = db.Column(db.String(100), nullable=True)  # Backend logic
+    mineru_api_base = db.Column(db.String(255), nullable=True)  # Backend logic
+    mineru_token = db.Column(db.String(500), nullable=True)  # Backend logic
+    image_caption_model = db.Column(db.String(100), nullable=True)  # Backend logic
+    output_language = db.Column(db.String(10), nullable=True)  # Backend logic
     
-    # 推理模式配置（分别控制文本和图像生成）
-    enable_text_reasoning = db.Column(db.Boolean, nullable=False, default=False)  # 文本生成是否开启推理
+    # Backend logic
+    enable_text_reasoning = db.Column(db.Boolean, nullable=False, default=False)  # Backend logic
     text_max_output_tokens = db.Column(db.Integer, nullable=True)  # NULL = environment/default 32768
-    text_thinking_budget = db.Column(db.Integer, nullable=False, default=1024)  # 文本推理思考负载 (1-8192)
-    enable_image_reasoning = db.Column(db.Boolean, nullable=False, default=False)  # 图像生成是否开启推理
-    image_thinking_budget = db.Column(db.Integer, nullable=False, default=1024)  # 图像推理思考负载 (1-8192)
-    enable_image_quality_control = db.Column(db.Boolean, nullable=False, default=False)  # 生成图片落库前是否开启视觉质检
+    text_thinking_budget = db.Column(db.Integer, nullable=False, default=1024)  # Backend logic
+    enable_image_reasoning = db.Column(db.Boolean, nullable=False, default=False)  # Backend logic
+    image_thinking_budget = db.Column(db.Integer, nullable=False, default=1024)  # Backend logic
+    enable_image_quality_control = db.Column(db.Boolean, nullable=False, default=False)  # Backend logic
     
-    # 描述生成模式: streaming / parallel (NULL=默认 streaming)
+    # Backend logic
     description_generation_mode = db.Column(db.String(20), nullable=True)
 
-    # 描述额外字段配置: JSON 数组如 ["配图与素材", "版式与重点"] (NULL=默认 DEFAULT_EXTRA_FIELDS)
+    # Backend logic
     description_extra_fields = db.Column(db.Text, nullable=True)
-    image_prompt_extra_fields = db.Column(db.Text, nullable=True)  # JSON array: 哪些额外字段传入文生图 prompt
+    image_prompt_extra_fields = db.Column(db.Text, nullable=True)  # Backend logic
 
-    # 百度 API 配置
-    baidu_api_key = db.Column(db.String(500), nullable=True)  # 百度 API Key
+    # Backend logic
+    baidu_api_key = db.Column(db.String(500), nullable=True)  # Backend logic
 
-    # ElevenLabs TTS 配置
+    # Backend logic
     elevenlabs_enabled = db.Column(db.Boolean, nullable=False, default=False)
     elevenlabs_api_key = db.Column(db.String(500), nullable=True)
     elevenlabs_voice_id = db.Column(db.String(100), nullable=True)
 
-    # 每种模型类型的提供商配置（source 可选 gemini/openai/lazyllm厂商名，NULL=使用全局配置）
-    text_model_source = db.Column(db.String(50), nullable=True)           # 文本模型提供商 (gemini, openai, qwen, doubao, deepseek, ...)
-    image_model_source = db.Column(db.String(50), nullable=True)          # 图片模型提供商
-    image_caption_model_source = db.Column(db.String(50), nullable=True)  # 图片识别模型提供商
+    # Backend logic
+    text_model_source = db.Column(db.String(50), nullable=True)           # Backend logic
+    image_model_source = db.Column(db.String(50), nullable=True)          # Backend logic
+    image_caption_model_source = db.Column(db.String(50), nullable=True)  # Backend logic
     lazyllm_api_keys = db.Column(db.Text, nullable=True)                  # JSON: {"qwen": "key1", "doubao": "key2", ...}
 
-    # Per-model API 凭证（当 source 为 gemini/openai 时使用，NULL=使用全局 api_key/api_base_url）
+    # Backend logic
     text_api_key = db.Column(db.String(500), nullable=True)
     text_api_base_url = db.Column(db.String(500), nullable=True)
     image_api_key = db.Column(db.String(500), nullable=True)
@@ -86,16 +86,26 @@ class Settings(db.Model):
         v = getattr(self, attr)
         return v if v is not None else defaults.get(attr)
 
-    # 字段契约：页面文字（逐字上屏）/ 配图与素材（放什么）/ 版式与重点（怎么排）/ 演讲者备注（怎么讲）
-    DEFAULT_EXTRA_FIELDS = ['配图与素材', '版式与重点', '演讲者备注']
-    DEFAULT_IMAGE_PROMPT_FIELDS = ['配图与素材', '版式与重点']  # 演讲者备注默认不传入图片生成
+    # Backend logic
+    DEFAULT_EXTRA_FIELDS = ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình']
+    DEFAULT_IMAGE_PROMPT_FIELDS = ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm']  # Backend logic
 
-    # 旧字段名 → 新字段名。存量数据不迁移，靠此映射保持行为不回退
+    # Mapping legacy and multilingual field names to canonical Vietnamese names
     LEGACY_FIELD_EQUIV = {
-        '视觉元素': '配图与素材',
-        '视觉焦点': '版式与重点',
-        '排版布局': '版式与重点',
-        '排版建议': '版式与重点',
+        '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+        '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+        '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+        '\u89c6\u89c9\u5143\u7d20': 'Hình ảnh & Tư liệu',
+        '\u89c6\u89c9\u7126\u70b9': 'Bố cục & Trọng tâm',
+        '\u6392\u7248\u5e03\u5c40': 'Bố cục & Trọng tâm',
+        '\u6392\u7248\u5efa\u8bae': 'Bố cục & Trọng tâm',
+        'Images & Materials': 'Hình ảnh & Tư liệu',
+        'Layout & Focus': 'Bố cục & Trọng tâm',
+        'Speaker Notes': 'Ghi chú thuyết trình',
+        'Yếu tố thị giác': 'Hình ảnh & Tư liệu',
+        'Tiêu điểm thị giác': 'Bố cục & Trọng tâm',
+        'Bố cục trình bày': 'Bố cục & Trọng tâm',
+        'Gợi ý bố cục': 'Bố cục & Trọng tâm',
     }
 
     def get_description_extra_fields(self):

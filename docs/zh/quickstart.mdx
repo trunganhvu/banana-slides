@@ -1,21 +1,21 @@
 ---
-title: "快速开始"
-description: "立即体验或在本地部署 Banana Slides"
+title: ""
+description: " Banana Slides"
 ---
 
-## 在线 Demo
+# Config
 
-无需安装，直接体验：[bananaslides.online](https://bananaslides.online/)
+[bananaslides.online](https://bananaslides.online/)
 
 ---
 
-## 自托管部署
+# Config
 
-### 第一步：安装 Docker
+# Config
 
 <Tabs>
   <Tab title="Windows / macOS">
-    下载并安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)，安装完成后启动它，确保系统托盘（Windows）或菜单栏（macOS）中出现 Docker 图标。
+     [Docker Desktop](https://www.docker.com/products/docker-desktop/)WindowsmacOS Docker 
   </Tab>
   <Tab title="Linux">
     ```bash
@@ -24,9 +24,9 @@ description: "立即体验或在本地部署 Banana Slides"
   </Tab>
 </Tabs>
 
-### 第二步：一键下载并启动
+# Config
 
-新建一个目录，进入后执行以下命令，自动下载配置文件并启动服务：
+
 
 ```bash
 mkdir banana-slides && cd banana-slides && \
@@ -35,36 +35,36 @@ curl -O https://raw.githubusercontent.com/Anionex/banana-slides/main/.env.exampl
 cp .env.example .env
 ```
 
-然后编辑 `.env` 文件，填入你的 API 密钥（详见[配置说明](/zh/configuration)），再启动：
+ `.env`  API [](/zh/configuration)
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
 
 <Tip>
-  推荐使用 [AIHubMix](https://api.inferera.com/?aff=17EC) 获取 API 密钥，同时支持 Gemini 和 OpenAI 格式，且能稳定进行高并发生图。
+   [AIHubMix](https://api.inferera.com/?aff=17EC)  API  Gemini  OpenAI 
 </Tip>
 
-### 第三步：访问应用
+# Config
 
-浏览器打开 [http://localhost:3011](http://localhost:3011)，即可开始使用。
+ [http://localhost:3011](http://localhost:3011)
 
 <Note>
-  默认端口为 3011（前端）和 5011（后端）。如需修改，在 `.env` 中设置 `FRONTEND_PORT` 和 `BACKEND_PORT`。
+   3011 5011 `.env`  `FRONTEND_PORT`  `BACKEND_PORT`
 </Note>
 
 ---
 
-## 更新
+# Config
 
-在应用内进入 **设置 → 关于 → 检查更新**，可以根据当前版本 SHA 判断是否已有可用更新；源码运行时也会用当前 Git SHA 参与判断。
+ ** →  → ** SHA  Git SHA 
 
 ```bash
 docker compose -f docker-compose.prod.yml pull && \
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-## 查看日志
+# Config
 
 ```bash
 docker logs -f --tail 100 banana-slides-backend
@@ -72,27 +72,27 @@ docker logs -f --tail 100 banana-slides-backend
 
 ---
 
-## 从源码部署
+# Config
 
-<Accordion title="展开查看源码部署步骤">
+<Accordion title="">
 
-### 环境要求
+# Config
 
 - Python 3.10+
-- [uv](https://github.com/astral-sh/uv) 包管理器
-- Node.js 16+ 和 npm
+- [uv](https://github.com/astral-sh/uv) 
+- Node.js 16+  npm
 
-### 后端
+# Config
 
 ```bash
 git clone https://github.com/Anionex/banana-slides
 cd banana-slides
-cp .env.example .env  # 编辑 .env 填入 API 密钥
+cp .env.example .env  #  .env  API 
 cd backend
 uv run alembic upgrade head && uv run python app.py
 ```
 
-### 前端
+# Config
 
 ```bash
 cd frontend

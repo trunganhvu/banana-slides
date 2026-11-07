@@ -18,7 +18,7 @@ depends_on = None
 
 
 def _column_exists(table_name: str, column_name: str) -> bool:
-    """检查列是否存在"""
+    """ Backend docstring """
     bind = op.get_bind()
     inspector = inspect(bind)
     columns = [col['name'] for col in inspector.get_columns(table_name)]
@@ -53,4 +53,3 @@ def downgrade() -> None:
     op.drop_column('settings', 'mineru_api_base')
     op.drop_column('settings', 'image_model')
     op.drop_column('settings', 'text_model')
-

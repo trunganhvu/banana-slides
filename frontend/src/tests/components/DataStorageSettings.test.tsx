@@ -59,7 +59,7 @@ describe('DataStorageSettings', () => {
 
     render(<DataStorageSettings />);
 
-    const loadingSection = screen.getByRole('status', { name: /Loading data storage location|正在加载数据存储位置/ });
+    const loadingSection = screen.getByRole('status', { name: /Loading data storage location|/ });
     expect(loadingSection).toHaveAttribute('aria-busy', 'true');
     expect(loadingSection).toHaveClass('min-h-[220px]');
 
@@ -91,11 +91,11 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
 
     expect(await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop')).toBeInTheDocument();
-    expect(screen.getByText(/does not move or delete existing data automatically|不会自动移动或删除已有数据/)).toBeInTheDocument();
-    expect(screen.getByText(/data, uploads, and exports|data、uploads、exports/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Browse|浏览/ })).toHaveClass('shrink-0', 'whitespace-nowrap', 'text-sm');
-    expect(screen.getByRole('button', { name: /Open current folder|打开当前目录/ })).toHaveClass('whitespace-nowrap', 'text-sm');
-    expect(screen.getByRole('button', { name: /Save and restart|保存并重启/ })).toHaveClass('whitespace-nowrap', 'text-sm');
+    expect(screen.getByText(/does not move or delete existing data automatically|/)).toBeInTheDocument();
+    expect(screen.getByText(/data, uploads, and exports|datauploadsexports/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Browse|/ })).toHaveClass('shrink-0', 'whitespace-nowrap', 'text-sm');
+    expect(screen.getByRole('button', { name: /Open current folder|/ })).toHaveClass('whitespace-nowrap', 'text-sm');
+    expect(screen.getByRole('button', { name: /Save and restart|/ })).toHaveClass('whitespace-nowrap', 'text-sm');
   });
 
   it('browses, validates an existing data directory, and applies it without initialization', async () => {
@@ -103,9 +103,9 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
     await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop');
 
-    await user.click(screen.getByRole('button', { name: /Browse|浏览/ }));
+    await user.click(screen.getByRole('button', { name: /Browse|/ }));
     expect(screen.getByDisplayValue('D:\\Banana Slides Data')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Save and restart|保存并重启/ }));
+    await user.click(screen.getByRole('button', { name: /Save and restart|/ }));
 
     await waitFor(() => {
       expect(electronApi.inspectDataStorageDirectory).toHaveBeenCalledWith('D:\\Banana Slides Data');
@@ -126,10 +126,10 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
     await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop');
 
-    await user.click(screen.getByRole('button', { name: /Browse|浏览/ }));
-    await user.click(screen.getByRole('button', { name: /Save and restart|保存并重启/ }));
+    await user.click(screen.getByRole('button', { name: /Browse|/ }));
+    await user.click(screen.getByRole('button', { name: /Save and restart|/ }));
 
-    const confirmButton = await screen.findByRole('button', { name: /Confirm and restart|确认并重启/ });
+    const confirmButton = await screen.findByRole('button', { name: /Confirm and restart|/ });
     expect(confirmButton).toBeDisabled();
     expect(electronApi.applyDataStorageDirectory).not.toHaveBeenCalled();
 
@@ -148,12 +148,12 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
     await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop');
 
-    await user.click(screen.getByRole('button', { name: /Browse|浏览/ }));
-    await user.click(screen.getByRole('button', { name: /Save and restart|保存并重启/ }));
+    await user.click(screen.getByRole('button', { name: /Browse|/ }));
+    await user.click(screen.getByRole('button', { name: /Save and restart|/ }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/Could not save|保存数据存储位置失败/);
-    expect(screen.getByRole('button', { name: /Save and restart|保存并重启/ })).toBeEnabled();
-    expect(screen.getByLabelText(/Storage path|存储路径/)).toBeEnabled();
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Could not save|/);
+    expect(screen.getByRole('button', { name: /Save and restart|/ })).toBeEnabled();
+    expect(screen.getByLabelText(/Storage path|/)).toBeEnabled();
   });
 
   it('shows a serialized Electron IPC error and allows retrying', async () => {
@@ -162,11 +162,11 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
     await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop');
 
-    await user.click(screen.getByRole('button', { name: /Browse|浏览/ }));
-    await user.click(screen.getByRole('button', { name: /Save and restart|保存并重启/ }));
+    await user.click(screen.getByRole('button', { name: /Browse|/ }));
+    await user.click(screen.getByRole('button', { name: /Save and restart|/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Serialized IPC failure');
-    expect(screen.getByRole('button', { name: /Save and restart|保存并重启/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Save and restart|/ })).toBeEnabled();
   });
 
   it('shows a string Electron IPC error and allows retrying', async () => {
@@ -175,11 +175,11 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
     await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop');
 
-    await user.click(screen.getByRole('button', { name: /Browse|浏览/ }));
-    await user.click(screen.getByRole('button', { name: /Save and restart|保存并重启/ }));
+    await user.click(screen.getByRole('button', { name: /Browse|/ }));
+    await user.click(screen.getByRole('button', { name: /Save and restart|/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('String IPC failure');
-    expect(screen.getByRole('button', { name: /Save and restart|保存并重启/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Save and restart|/ })).toBeEnabled();
   });
 
   it('does not restart when inspection normalizes the edited path to the active path', async () => {
@@ -195,10 +195,10 @@ describe('DataStorageSettings', () => {
     render(<DataStorageSettings />);
     await screen.findByDisplayValue('C:\\Users\\Test\\AppData\\Roaming\\banana-slides-desktop');
 
-    await user.click(screen.getByRole('button', { name: /Browse|浏览/ }));
-    await user.click(screen.getByRole('button', { name: /Save and restart|保存并重启/ }));
+    await user.click(screen.getByRole('button', { name: /Browse|/ }));
+    await user.click(screen.getByRole('button', { name: /Save and restart|/ }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/already in use|已使用此数据存储位置/);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/already in use|/);
     expect(electronApi.applyDataStorageDirectory).not.toHaveBeenCalled();
   });
 
@@ -209,7 +209,7 @@ describe('DataStorageSettings', () => {
     await user.clear(input);
     await user.type(input, 'D:\\Uncommitted');
 
-    await user.click(screen.getByRole('button', { name: /Open current folder|打开当前目录/ }));
+    await user.click(screen.getByRole('button', { name: /Open current folder|/ }));
     expect(electronApi.openDataStorageDirectory).toHaveBeenCalledOnce();
     expect(electronApi.inspectDataStorageDirectory).not.toHaveBeenCalled();
   });

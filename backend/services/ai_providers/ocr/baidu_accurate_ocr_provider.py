@@ -1,8 +1,8 @@
 """
-百度通用文字识别（高精度含位置版）OCR Provider
-提供多场景、多语种、高精度的整图文字检测和识别服务，支持返回文字位置信息
+ () OCR Provider
+, , , 
 
-API文档: https://ai.baidu.com/ai-doc/OCR/1k3h7y3db
+API: https://ai.baidu.com/ai-doc/OCR/1k3h7y3db
 """
 import logging
 import base64
@@ -16,66 +16,66 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 logger = logging.getLogger(__name__)
 
 
-# 支持的语言类型
+# Backend logic
 LanguageType = Literal[
-    'auto_detect',  # 自动检测语言
-    'CHN_ENG',      # 中英文混合
-    'ENG',          # 英文
-    'JAP',          # 日语
-    'KOR',          # 韩语
-    'FRE',          # 法语
-    'SPA',          # 西班牙语
-    'POR',          # 葡萄牙语
-    'GER',          # 德语
-    'ITA',          # 意大利语
-    'RUS',          # 俄语
-    'DAN',          # 丹麦语
-    'DUT',          # 荷兰语
-    'MAL',          # 马来语
-    'SWE',          # 瑞典语
-    'IND',          # 印尼语
-    'POL',          # 波兰语
-    'ROM',          # 罗马尼亚语
-    'TUR',          # 土耳其语
-    'GRE',          # 希腊语
-    'HUN',          # 匈牙利语
-    'THA',          # 泰语
-    'VIE',          # 越南语
-    'ARA',          # 阿拉伯语
-    'HIN',          # 印地语
+    'auto_detect',  # Backend logic
+    'CHN_ENG',      # Backend logic
+    'ENG',          # Backend logic
+    'JAP',          # Backend logic
+    'KOR',          # Backend logic
+    'FRE',          # Backend logic
+    'SPA',          # Backend logic
+    'POR',          # Backend logic
+    'GER',          # Backend logic
+    'ITA',          # Backend logic
+    'RUS',          # Backend logic
+    'DAN',          # Backend logic
+    'DUT',          # Backend logic
+    'MAL',          # Backend logic
+    'SWE',          # Backend logic
+    'IND',          # Backend logic
+    'POL',          # Backend logic
+    'ROM',          # Backend logic
+    'TUR',          # Backend logic
+    'GRE',          # Backend logic
+    'HUN',          # Backend logic
+    'THA',          # Backend logic
+    'VIE',          # Backend logic
+    'ARA',          # Backend logic
+    'HIN',          # Backend logic
 ]
 
 
 class BaiduAccurateOCRProvider:
     """
-    百度高精度OCR Provider - 通用文字识别（高精度含位置版）
+    OCR Provider -  () 
     
-    特点:
-    - 高精度文字识别
-    - 支持25种语言
-    - 返回文字位置信息（支持行级别和字符级别）
-    - 支持图片朝向检测
-    - 支持段落输出
+    :
+    - 
+    - 25
+    -  () 
+    - 
+    - 
     """
 
     def __init__(self, api_key: str):
         """
-        初始化百度高精度OCR Provider
+        OCR Provider
 
         Args:
-            api_key: 百度API Key（BCEv3格式：bce-v3/ALTAK-...）或Access Token
+            api_key: API Key (BCEv3: bce-v3/ALTAK-...) Access Token
         """
         self.api_key = api_key
         self.api_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate"
 
         if api_key.startswith('bce-v3/'):
-            logger.info("✅ 初始化百度高精度OCR Provider (使用BCEv3 API Key)")
+            logger.info("✅ Khởi tạo Baidu độ chính xác caoOCR Provider (Sử dụngBCEv3 API Key)")
         else:
-            logger.info("✅ 初始化百度高精度OCR Provider (使用Access Token)")
+            logger.info("✅ Khởi tạo Baidu độ chính xác caoOCR Provider (Sử dụngAccess Token)")
     
     @retry(
-        stop=stop_after_attempt(3),  # 最多重试3次
-        wait=wait_exponential(multiplier=0.5, min=1, max=5),  # 指数避让: 1s, 2s, 4s
+        stop=stop_after_attempt(3),  # Backend logic
+        wait=wait_exponential(multiplier=0.5, min=1, max=5),  # Backend logic
         retry=retry_if_exception_type((requests.exceptions.RequestException, Exception)),
         reraise=True
     )
@@ -93,63 +93,63 @@ class BaiduAccurateOCRProvider:
         eng_granularity: Optional[Literal['word', 'letter']] = None,
     ) -> Dict[str, Any]:
         """
-        识别图片中的文字（高精度含位置版）
+         () 
         
         Args:
-            image_path: 图片路径
-            language_type: 识别语言类型，默认中英文混合
-            recognize_granularity: 是否定位单字符位置，big=不定位，small=定位
-            detect_direction: 是否检测图像朝向
-            vertexes_location: 是否返回文字外接多边形顶点位置
-            paragraph: 是否输出段落信息
-            probability: 是否返回每一行的置信度
-            char_probability: 是否返回单字符置信度（需要recognize_granularity=small）
-            multidirectional_recognize: 是否开启行级别的多方向文字识别
-            eng_granularity: 英文单字符结果维度（word/letter），当recognize_granularity=small时生效
+            image_path: 
+            language_type: , 
+            recognize_granularity: , big=, small=
+            detect_direction: 
+            vertexes_location: 
+            paragraph: 
+            probability: 
+            char_probability:  (recognize_granularity=small) 
+            multidirectional_recognize: 
+            eng_granularity:  (word/letter) , recognize_granularity=small
             
         Returns:
-            识别结果字典，包含:
-            - log_id: 唯一日志ID
-            - words_result_num: 识别结果数
-            - words_result: 识别结果数组
-                - words: 识别的文字
-                - location: 位置信息 {left, top, width, height}
-                - chars: 单字符结果（当recognize_granularity=small时）
-                - probability: 置信度（当probability=true时）
-                - vertexes_location: 外接多边形顶点（当vertexes_location=true时）
-            - direction: 图像方向（当detect_direction=true时）
-            - paragraphs_result: 段落结果（当paragraph=true时）
-            - image_size: 原始图片尺寸
+            , :
+            - log_id: ID
+            - words_result_num: 
+            - words_result: 
+                - words: 
+                - location:  {left, top, width, height}
+                - chars:  (recognize_granularity=small) 
+                - probability:  (probability=true) 
+                - vertexes_location:  (vertexes_location=true) 
+            - direction:  (detect_direction=true) 
+            - paragraphs_result:  (paragraph=true) 
+            - image_size: 
         """
-        logger.info(f"🔍 开始高精度OCR识别: {image_path}")
+        logger.info(f"🔍 Bắt đầu độ chính xác caoOCRnhận diện: {image_path}")
         
         try:
-            # 读取图片并转为base64
+            # Backend logic
             original_width, original_height = 0, 0
             with Image.open(image_path) as img:
-                # 获取原始图片尺寸
+                # Backend logic
                 original_width, original_height = img.size
-                logger.info(f"📏 图片尺寸: {original_width}x{original_height}")
+                logger.info(f"📏 Kích thước ảnh: {original_width}x{original_height}")
                 
-                # 转换为RGB模式
+                # Backend logic
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
                 
-                # 压缩图片(如果太大) - 最长边不超过8192px，最短边至少15px
+                # Backend logic
                 max_size = 8192
                 min_size = 15
                 width, height = img.size
                 
                 if width < min_size or height < min_size:
-                    logger.warning(f"⚠️ 图片太小: {width}x{height}, 最短边需要至少{min_size}px")
+                    logger.warning(f"⚠️ Ảnh quá nhỏ: {width}x{height}, cạnh ngắn nhất cần tối thiểu{min_size}px")
                 
                 if width > max_size or height > max_size:
                     ratio = min(max_size / width, max_size / height)
                     new_size = (int(width * ratio), int(height * ratio))
                     img = img.resize(new_size, Image.Resampling.LANCZOS)
-                    logger.info(f"✂️ 压缩图片: {img.size}")
+                    logger.info(f"✂️ Nén ảnh: {img.size}")
                 
-                # 转为base64
+                # Backend logic
                 buffer = io.BytesIO()
                 img.save(buffer, format='JPEG', quality=95)
                 image_bytes = buffer.getvalue()
@@ -157,26 +157,26 @@ class BaiduAccurateOCRProvider:
                 
                 # URL encode
                 image_encoded = urllib.parse.quote(image_base64)
-                logger.info(f"📦 图片编码完成: base64={len(image_base64)} bytes")
+                logger.info(f"📦 Hoàn tất mã hóa ảnh: base64={len(image_base64)} bytes")
             
-            # 构建请求头
+            # Backend logic
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json',
             }
             
-            # 选择认证方式
+            # Backend logic
             if self.api_key.startswith('bce-v3/'):
-                # 使用BCEv3签名认证 (Authorization头部)
+                # Backend logic
                 headers['Authorization'] = f'Bearer {self.api_key}'
                 url = self.api_url
-                logger.info("🔐 使用BCEv3签名认证")
+                logger.info("🔐 Sử dụngBCEv3xác thực chữ ký")
             else:
-                # 使用Access Token (URL参数)
+                # Backend logic
                 url = f"{self.api_url}?access_token={self.api_key}"
-                logger.info("🔐 使用Access Token认证")
+                logger.info("🔐 Sử dụngAccess Tokenxác thực")
             
-            # 构建表单数据
+            # Backend logic
             form_data = {
                 'image': image_encoded,
                 'language_type': language_type,
@@ -194,23 +194,23 @@ class BaiduAccurateOCRProvider:
             if recognize_granularity == 'small' and eng_granularity:
                 form_data['eng_granularity'] = eng_granularity
             
-            # 转换为URL编码的表单数据
+            # Backend logic
             data = '&'.join([f"{k}={v}" for k, v in form_data.items()])
             
-            logger.info("🌐 发送请求到百度高精度OCR API...")
+            logger.info("🌐 Gửi yêu cầu tới Baidu độ chính xác caoOCR API...")
             response = requests.post(url, headers=headers, data=data, timeout=60)
             response.raise_for_status()
             
             result = response.json()
             
-            # 检查错误
+            # Backend logic
             if 'error_code' in result:
                 error_msg = result.get('error_msg', 'Unknown error')
                 error_code = result.get('error_code')
-                logger.error(f"❌ 百度API错误: [{error_code}] {error_msg}")
+                logger.error(f"❌ BaiduAPILỗi: [{error_code}] {error_msg}")
                 raise Exception(f"Baidu API error [{error_code}]: {error_msg}")
             
-            # 解析结果
+            # Backend logic
             log_id = result.get('log_id', '')
             words_result_num = result.get('words_result_num', 0)
             words_result = result.get('words_result', [])
@@ -218,9 +218,9 @@ class BaiduAccurateOCRProvider:
             paragraphs_result_num = result.get('paragraphs_result_num', 0)
             paragraphs_result = result.get('paragraphs_result', [])
             
-            logger.info(f"✅ 高精度OCR识别成功! log_id={log_id}, 识别到 {words_result_num} 行文字")
+            logger.info(f"✅ độ chính xác caoOCRnhận diện thành công! log_id={log_id}, nhận diện được {words_result_num} dòng văn bản")
             
-            # 解析文字行信息
+            # Backend logic
             text_lines = []
             for line in words_result:
                 line_info = {
@@ -229,7 +229,7 @@ class BaiduAccurateOCRProvider:
                     'bbox': self._location_to_bbox(line.get('location', {})),
                 }
                 
-                # 单字符结果
+                # Backend logic
                 if 'chars' in line:
                     line_info['chars'] = []
                     for char in line['chars']:
@@ -242,11 +242,11 @@ class BaiduAccurateOCRProvider:
                             char_info['probability'] = char['char_prob']
                         line_info['chars'].append(char_info)
                 
-                # 置信度
+                # Backend logic
                 if 'probability' in line:
                     line_info['probability'] = line['probability']
                 
-                # 外接多边形顶点
+                # Backend logic
                 if 'vertexes_location' in line:
                     line_info['vertexes_location'] = line['vertexes_location']
                 
@@ -258,7 +258,7 @@ class BaiduAccurateOCRProvider:
                 
                 text_lines.append(line_info)
             
-            # 解析段落信息
+            # Backend logic
             paragraphs = []
             if paragraphs_result:
                 for para in paragraphs_result:
@@ -274,22 +274,22 @@ class BaiduAccurateOCRProvider:
             return {
                 'log_id': log_id,
                 'words_result_num': words_result_num,
-                'words_result': words_result,  # 原始结果
-                'text_lines': text_lines,  # 解析后的文字行
+                'words_result': words_result,  # Backend logic
+                'text_lines': text_lines,  # Backend logic
                 'direction': direction,
                 'paragraphs_result_num': paragraphs_result_num,
-                'paragraphs_result': paragraphs_result,  # 原始段落结果
-                'paragraphs': paragraphs,  # 解析后的段落
+                'paragraphs_result': paragraphs_result,  # Backend logic
+                'paragraphs': paragraphs,  # Backend logic
                 'image_size': (original_width, original_height),
             }
             
         except Exception as e:
-            logger.error(f"❌ 高精度OCR识别失败: {str(e)}")
+            logger.error(f"❌ độ chính xác caoOCRnhận diện thất bại: {str(e)}")
             raise
     
     def _location_to_bbox(self, location: Dict[str, int]) -> List[int]:
         """
-        将location格式转换为bbox格式 [x0, y0, x1, y1]
+        locationbbox [x0, y0, x1, y1]
         
         Args:
             location: {left, top, width, height}
@@ -309,27 +309,27 @@ class BaiduAccurateOCRProvider:
     
     def get_full_text(self, result: Dict[str, Any], separator: str = '\n') -> str:
         """
-        从识别结果中提取完整文本
+        
         
         Args:
-            result: recognize()返回的结果
-            separator: 行分隔符，默认换行
+            result: recognize()
+            separator: , 
             
         Returns:
-            完整的文本字符串
+            
         """
         text_lines = result.get('text_lines', [])
         return separator.join([line.get('text', '') for line in text_lines])
     
     def get_text_with_positions(self, result: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        获取带位置信息的文字列表
+        
         
         Args:
-            result: recognize()返回的结果
+            result: recognize()
             
         Returns:
-            文字位置列表，每项包含 text 和 bbox
+            ,  text  bbox
         """
         text_lines = result.get('text_lines', [])
         return [
@@ -345,29 +345,28 @@ def create_baidu_accurate_ocr_provider(
     api_key: Optional[str] = None
 ) -> Optional[BaiduAccurateOCRProvider]:
     """
-    创建百度高精度OCR Provider实例
+    OCR Provider
 
     Args:
-        api_key: 百度API Key（BCEv3格式或Access Token），如果不提供则从Flask config或环境变量读取
+        api_key: API Key (BCEv3Access Token) , Flask config
 
     Returns:
-        BaiduAccurateOCRProvider实例，如果api_key不可用则返回None
+        BaiduAccurateOCRProvider, api_keyNone
     """
     from config import Config
 
     if not api_key:
-        # 优先从 Flask config 读取（数据库设置），然后从 Config（含 env 回退）
+        # Backend logic
         try:
             from flask import current_app
             api_key = current_app.config.get('BAIDU_API_KEY')
         except RuntimeError:
-            pass  # 不在 Flask 上下文中
+            pass  # Backend logic
         if not api_key:
             api_key = Config.BAIDU_API_KEY
 
     if not api_key:
-        logger.warning("⚠️ 未配置百度API Key, 跳过百度高精度OCR")
+        logger.warning("⚠️ Chưa cấu hình BaiduAPI Key, bỏ qua Baidu độ chính xác caoOCR")
         return None
 
     return BaiduAccurateOCRProvider(api_key)
-

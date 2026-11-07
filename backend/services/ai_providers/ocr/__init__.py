@@ -1,4 +1,4 @@
-"""OCR相关的AI Provider"""
+""" Backend docstring """
 
 from services.ai_providers.ocr.baidu_table_ocr_provider import (
     BaiduTableOCRProvider,
@@ -15,4 +15,3 @@ __all__ = [
     'BaiduAccurateOCRProvider',
     'create_baidu_accurate_ocr_provider',
 ]
-

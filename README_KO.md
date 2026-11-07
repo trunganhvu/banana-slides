@@ -16,7 +16,7 @@
 <!-- /readme:intro -->
 
 <!-- readme:languages -->
-<p><a href="README.md#gh-light-mode-only"><img src="./assets/buttons/language-zh-selected-ko-light.svg" alt="简体中文" width="86" height="24"></a><a href="README.md#gh-dark-mode-only"><img src="./assets/buttons/language-zh-selected-ko-dark.svg" alt="简体中文" width="86" height="24"></a><a href="README_EN.md#gh-light-mode-only"><img src="./assets/buttons/language-en-selected-ko-light.svg" alt="English" width="82" height="24"></a><a href="README_EN.md#gh-dark-mode-only"><img src="./assets/buttons/language-en-selected-ko-dark.svg" alt="English" width="82" height="24"></a><a href="README_PT-BR.md#gh-light-mode-only"><img src="./assets/buttons/language-pt-br-selected-ko-light.svg" alt="Português" width="98" height="24"></a><a href="README_PT-BR.md#gh-dark-mode-only"><img src="./assets/buttons/language-pt-br-selected-ko-dark.svg" alt="Português" width="98" height="24"></a><a href="README_JA.md#gh-light-mode-only"><img src="./assets/buttons/language-ja-selected-ko-light.svg" alt="日本語" width="72" height="24"></a><a href="README_JA.md#gh-dark-mode-only"><img src="./assets/buttons/language-ja-selected-ko-dark.svg" alt="日本語" width="72" height="24"></a><a href="README_KO.md#gh-light-mode-only"><img src="./assets/buttons/language-ko-selected-ko-light.svg" alt="한국어" width="72" height="24"></a><a href="README_KO.md#gh-dark-mode-only"><img src="./assets/buttons/language-ko-selected-ko-dark.svg" alt="한국어" width="72" height="24"></a></p>
+<p><a href="README.md#gh-light-mode-only"><img src="./assets/buttons/language-zh-selected-ko-light.svg" alt="" width="86" height="24"></a><a href="README.md#gh-dark-mode-only"><img src="./assets/buttons/language-zh-selected-ko-dark.svg" alt="" width="86" height="24"></a><a href="README_EN.md#gh-light-mode-only"><img src="./assets/buttons/language-en-selected-ko-light.svg" alt="English" width="82" height="24"></a><a href="README_EN.md#gh-dark-mode-only"><img src="./assets/buttons/language-en-selected-ko-dark.svg" alt="English" width="82" height="24"></a><a href="README_PT-BR.md#gh-light-mode-only"><img src="./assets/buttons/language-pt-br-selected-ko-light.svg" alt="Português" width="98" height="24"></a><a href="README_PT-BR.md#gh-dark-mode-only"><img src="./assets/buttons/language-pt-br-selected-ko-dark.svg" alt="Português" width="98" height="24"></a><a href="README_JA.md#gh-light-mode-only"><img src="./assets/buttons/language-ja-selected-ko-light.svg" alt="" width="72" height="24"></a><a href="README_JA.md#gh-dark-mode-only"><img src="./assets/buttons/language-ja-selected-ko-dark.svg" alt="" width="72" height="24"></a><a href="README_KO.md#gh-light-mode-only"><img src="./assets/buttons/language-ko-selected-ko-light.svg" alt="한국어" width="72" height="24"></a><a href="README_KO.md#gh-dark-mode-only"><img src="./assets/buttons/language-ko-selected-ko-dark.svg" alt="한국어" width="72" height="24"></a></p>
 <!-- /readme:languages -->
 
 <!-- readme:actions -->
@@ -51,7 +51,7 @@
 <p>
   <a href="https://trendshift.io/repositories/22056#gh-light-mode-only"><img src="https://trendshift.io/api/badge/repositories/22056" alt="Anionex%2Fbanana-slides | Trendshift" width="244" height="54"></a><a href="https://trendshift.io/repositories/22056#gh-dark-mode-only"><img src="./assets/badge-trendshift-dark.svg" alt="Anionex%2Fbanana-slides | Trendshift" width="244" height="54"></a>
   &nbsp;
-  <a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-light-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=neutral" alt="Featured｜HelloGitHub" width="244" height="54"></a><a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-dark-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=dark" alt="Featured｜HelloGitHub" width="244" height="54"></a>
+  <a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-light-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=neutral" alt="FeaturedHelloGitHub" width="244" height="54"></a><a href="https://hellogithub.com/repository/Anionex/banana-slides#gh-dark-mode-only"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&amp;claim_uid=CtDTm2jbUHhVGBr&amp;theme=dark" alt="FeaturedHelloGitHub" width="244" height="54"></a>
 </p>
 
 <p>
@@ -95,7 +95,7 @@
 
 <p><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/readme/section-rule-dark.svg"><source media="(prefers-color-scheme: light)" srcset="./assets/readme/section-rule-light.svg"><img src="./assets/readme/section-rule-light.svg" alt="" width="838" height="20"></picture></p>
 
-<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"><img src="./assets/huoshan.png" alt="火山引擎" width="160"></a></p>
+<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"><img src="./assets/huoshan.png" alt="" width="160"></a></p>
 
 <p>본 프로젝트를 후원해 주신 <a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">화산엔진</a>에 감사드립니다! 해외 주요 공식 API와 비교하여 가격이 더 저렴하고 가성비가 높으며, 생성 효과가 비슷합니다. 중국 내에서 직접 연결이 가능하여 특수한 네트워크 환경이 필요하지 않습니다. 구독 후에는 Banana Slides뿐만 아니라 일상적인 용도 및 기타 호환 도구에서도 사용할 수 있습니다. </p>
 
@@ -165,9 +165,9 @@
 
 | | |
 |:---:|:---:|
-| <img src="https://github.com/user-attachments/assets/d58ce3f7-bcec-451d-a3b9-ca3c16223644" width="500" alt="案例3"> | <img src="https://github.com/user-attachments/assets/c64cd952-2cdf-4a92-8c34-0322cbf3de4e" width="500" alt="案例2"> |
+| <img src="https://github.com/user-attachments/assets/d58ce3f7-bcec-451d-a3b9-ca3c16223644" width="500" alt="3"> | <img src="https://github.com/user-attachments/assets/c64cd952-2cdf-4a92-8c34-0322cbf3de4e" width="500" alt="2"> |
 | **소프트웨어 개발 모범 사례** | **DeepSeek-V3.2 기술 시연** |
-| <img src="https://github.com/user-attachments/assets/383eb011-a167-4343-99eb-e1d0568830c7" width="500" alt="案例4"> | <img src="https://github.com/user-attachments/assets/1a63afc9-ad05-4755-8480-fc4aa64987f1" width="500" alt="案例1"> |
+| <img src="https://github.com/user-attachments/assets/383eb011-a167-4343-99eb-e1d0568830c7" width="500" alt="4"> | <img src="https://github.com/user-attachments/assets/1a63afc9-ad05-4755-8480-fc4aa64987f1" width="500" alt="1"> |
 | **밀키트 지능형 생산 라인 장비 연구 개발 및 산업화** | **돈의 진화: 조개껍데기에서 지폐까지의 여정** |
 
 </div>
@@ -193,7 +193,7 @@
 - **이미지 자동 저장**: 문서에서 분석된 이미지는 참고 파일이 프로젝트와 연결된 후 자동으로 프로젝트 소재 라이브러리에 저장되어 추후 바로 재사용할 수 있습니다.
 - **스타일 참고**: 참고 이미지나 템플릿을 업로드하여 PPT 스타일을 맞춤 설정할 수 있습니다.
 
-<img width="1920" height="1080" alt="文件解析与素材处理" src="https://github.com/user-attachments/assets/8cda1fd2-2369-4028-b310-ea6604183936" />
+<img width="1920" height="1080" alt="" src="https://github.com/user-attachments/assets/8cda1fd2-2369-4028-b310-ea6604183936" />
 
 <!-- i18n:editing -->
 ### 3. "Vibe" 스타일 자연어 수정
@@ -210,7 +210,7 @@
 - **완벽한 최적화**: 기본 16:9 비율로 제공되어 레이아웃을 별도로 수정할 필요 없이 바로 발표가 가능합니다.
 
 <img width="1000" alt="image" src="https://github.com/user-attachments/assets/3e54bbba-88be-4f69-90a1-02e875c25420" />
-<img width="1748" height="538" alt="PPT与PDF导出" src="https://github.com/user-attachments/assets/647eb9b1-d0b6-42cb-a898-378ebe06c984" />
+<img width="1748" height="538" alt="PPTPDF" src="https://github.com/user-attachments/assets/647eb9b1-d0b6-42cb-a898-378ebe06c984" />
 
 <!-- i18n:editable-pptx -->
 ### 5. 자유롭게 편집 가능한 pptx 내보내기 (Beta 업데이트 중)
@@ -256,7 +256,7 @@
 <!-- i18n:usage -->
 ## 📦 사용 방법
 
-<a name="-使用方法#gh-light-mode-only"></a><a name="-使用方法#gh-dark-mode-only"></a>
+<a name="-#gh-light-mode-only"></a><a name="-#gh-dark-mode-only"></a>
 
 <!-- i18n:one-click -->
 ### (신규) 애플리케이션 템플릿을 사용하여 원클릭 배포
@@ -302,55 +302,55 @@ cp .env.example .env
 > **이 프로젝트의 대규모 언어 모델 API는 AIHubMix 플랫폼 형식을 기준으로 합니다. 이전 비용을 줄이려면 [AIHubMix(바로 가기)](https://api.inferera.com/?aff=17EC)에서 API 키를 발급받는 것을 권장합니다.**<br>
 > **안내: Google nano banana pro 모델의 API 비용이 높으므로 호출 비용에 유의하세요.**
 ```env
-# AI Provider格式配置 (gemini / openai / volcengine / vertex)
+# Config
 AI_PROVIDER_FORMAT=gemini
 
-# Gemini 格式配置（当 AI_PROVIDER_FORMAT=gemini 时使用）
+# Config
 GOOGLE_API_KEY=your-api-key-here
 GOOGLE_API_BASE=https://generativelanguage.googleapis.com
-# 代理示例: https://api.inferera.com/gemini
+# Config
 
-# OpenAI 格式配置（当 AI_PROVIDER_FORMAT=openai 时使用）
+# Config
 OPENAI_API_KEY=your-api-key-here
 OPENAI_API_BASE=https://api.openai.com/v1
-# 代理示例: https://api.inferera.com/v1
+# Config
 
-# 商汤日日新 U1 图片模型（保留旧 Provider，图片走 OpenAI 兼容路径）
-# 推荐：文本继续用 Gemini，只让图片走商汤
+# Config
+# Config
 # IMAGE_MODEL_SOURCE=openai
 # IMAGE_API_KEY=your-sensenova-api-key
 # IMAGE_API_BASE=https://token.sensenova.cn/v1
 # IMAGE_MODEL=sensenova-u1.5-lite
 
-# 火山方舟 Agent Plans 配置（当 AI_PROVIDER_FORMAT=volcengine 时使用）
-# 注意: Agent Plan 需使用专属 API Key 与模型名 (doubao-seed-2.1-turbo / doubao-seedream-5.0-lite)
+# Config
+# Config
 VOLCENGINE_API_KEY=your-volcengine-api-key-here
 VOLCENGINE_API_BASE=https://ark.cn-beijing.volces.com/api/plan/v3
 
-# Vertex AI 配置（AI_PROVIDER_FORMAT=vertex）
-# 需要 GCP 项目和服务账户密钥
+# Config
+# Config
 # VERTEX_PROJECT_ID=your-gcp-project-id
 # VERTEX_LOCATION=global
 # GOOGLE_APPLICATION_CREDENTIALS=./gcp-service-account.json
 
-# Lazyllm 格式配置（当 AI_PROVIDER_FORMAT=lazyllm 时使用）
-# 选择文本生成和图片生成使用的厂商
-TEXT_MODEL_SOURCE=deepseek        # 文本生成模型厂商
-IMAGE_MODEL_SOURCE=doubao         # 图片编辑模型厂商
-IMAGE_CAPTION_MODEL_SOURCE=qwen   # 图片描述模型厂商
+# Config
+# Config
+TEXT_MODEL_SOURCE=deepseek        # 
+IMAGE_MODEL_SOURCE=doubao         # 
+IMAGE_CAPTION_MODEL_SOURCE=qwen   # 
 
-# 各厂商 API Key（只需配置你要使用的厂商）
-DOUBAO_API_KEY=your-doubao-api-key            # 火山引擎/豆包
+# Config
+DOUBAO_API_KEY=your-doubao-api-key            # /
 DEEPSEEK_API_KEY=your-deepseek-api-key        # DeepSeek
-QWEN_API_KEY=your-qwen-api-key                # 阿里云/通义千问
-GLM_API_KEY=your-glm-api-key                  # 智谱 GLM
-SILICONFLOW_API_KEY=your-siliconflow-api-key  # 硅基流动
-SENSENOVA_API_KEY=your-sensenova-api-key      # 商汤日日新
-# U1 生图请优先使用上面的 IMAGE_MODEL_SOURCE=openai 配置；此 Key 用于旧 LazyLLM 路径
+QWEN_API_KEY=your-qwen-api-key                # /
+GLM_API_KEY=your-glm-api-key                  #  GLM
+SILICONFLOW_API_KEY=your-siliconflow-api-key  # 
+SENSENOVA_API_KEY=your-sensenova-api-key      # 
+# Config
 MINIMAX_API_KEY=your-minimax-api-key          # MiniMax
-KIMI_API_KEY=your-kimi-api-key                # 月之暗面 Kimi
-PPIO_API_KEY=your-ppio-api-key                # PPIO 派欧云
-AIPING_API_KEY=your-aiping-api-key            # AIPing 爱拼
+KIMI_API_KEY=your-kimi-api-key                #  Kimi
+PPIO_API_KEY=your-ppio-api-key                # PPIO 
+AIPING_API_KEY=your-aiping-api-key            # AIPing 
 ...
 ```
 > Banana Slides에는 중국 내 공급업체가 사용하는 LazyLLM 온라인 공급업체 SDK가 명시적으로 포함되어 있습니다.
@@ -391,7 +391,7 @@ Google Cloud Vertex AI에서는 GCP 서비스 계정을 통해 Gemini 모델을 
 Docker Hub에 미리 빌드된 프런트엔드 및 백엔드 이미지가 제공되며, 메인 브랜치의 최신 버전과 동기화됩니다. 로컬 빌드 단계를 건너뛰고 빠르게 배포할 수 있습니다.
 
 ```bash
-# 使用预构建镜像启动（无需从头构建）
+# Config
 docker compose -f docker-compose.prod.yml up -d
 ```
 이미지 이름:
@@ -409,7 +409,7 @@ docker compose up -d
 > [!TIP]
 > 네트워크 문제가 발생하면 `.env` 파일에서 미러 설정의 주석을 해제한 뒤 시작 명령을 다시 실행하세요.
 > ```env
-> # 在 .env 文件中取消以下注释即可使用国内镜像源
+> #  .env 
 > DOCKER_REGISTRY=docker.1ms.run/
 > GHCR_REGISTRY=ghcr.nju.edu.cn/
 > APT_MIRROR=mirrors.aliyun.com
@@ -425,13 +425,13 @@ docker compose up -d
 4. **로그 확인**
 
 ```bash
-# 查看后端日志（最后 200 行）
+# Config
 docker logs --tail 200 banana-slides-backend
 
-# 实时查看后端日志（最后 100 行）
+# Config
 docker logs -f --tail 100 banana-slides-backend
 
-# 查看前端日志（最后 100 行）
+# Config
 docker logs --tail 100 banana-slides-frontend
 ```
 5. **서비스 중지**
@@ -471,7 +471,7 @@ docker compose up -d
 - Node.js 16+ 및 npm
 - [FFmpeg](https://ffmpeg.org/) - 해설 영상 내보내기에 필수이며, `libass` / `ass` 자막 필터 지원이 포함되어야 함
 - 유효한 Google Gemini API 키
-- (선택 사항) [LibreOffice](https://www.libreoffice.org/) - 「PPT 리노베이션」 기능을 사용하여 PPTX 파일을 업로드할 때 필요하며, PPTX를 PDF로 변환하는 데 사용됩니다. **가급적 로컬에서 PPTX를 PDF로 변환한 후 업로드하는 것을 권장합니다.** 이유: LibreOffice는 서버 측 렌더링 시 글꼴(예: 맑은 고딕, Calibri 등) 부족으로 인해 레이아웃이 어긋날 수 있으며, 일부 특수 효과를 완벽하게 복원하지 못할 수 있습니다. PDF 파일을 업로드하는 경우에는 LibreOffice가 필요하지 않습니다. Docker 사용자가 컨테이너 내에서 PPTX 업로드를 지원해야 하는 경우 다음을 실행할 수 있습니다:
+- (선택 사항) [LibreOffice](https://www.libreoffice.org/) - PPT 리노베이션 기능을 사용하여 PPTX 파일을 업로드할 때 필요하며, PPTX를 PDF로 변환하는 데 사용됩니다. **가급적 로컬에서 PPTX를 PDF로 변환한 후 업로드하는 것을 권장합니다.** 이유: LibreOffice는 서버 측 렌더링 시 글꼴(예: 맑은 고딕, Calibri 등) 부족으로 인해 레이아웃이 어긋날 수 있으며, 일부 특수 효과를 완벽하게 복원하지 못할 수 있습니다. PDF 파일을 업로드하는 경우에는 LibreOffice가 필요하지 않습니다. Docker 사용자가 컨테이너 내에서 PPTX 업로드를 지원해야 하는 경우 다음을 실행할 수 있습니다:
   ```bash
   docker exec -it banana-slides-backend bash -c "apt-get update && apt-get install -y libreoffice-impress && rm -rf /var/lib/apt/lists/*"
   ```
@@ -495,7 +495,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 프로젝트 루트 디렉터리에서 실행:
 ```bash
-# macOS（Homebrew）
+# Config
 brew install ffmpeg-full
 brew unlink ffmpeg 2>/dev/null || true
 brew link --overwrite --force ffmpeg-full
@@ -504,7 +504,7 @@ brew link --overwrite --force ffmpeg-full
 sudo apt-get update
 sudo apt-get install -y ffmpeg libass9
 
-# 然后安装 Python 依赖
+# Config
 uv sync
 ```
 
@@ -515,7 +515,7 @@ uv sync
 환경 변수 템플릿 복사:
 ```bash
 cp .env.example .env
-# 然后按照前述方法，打开编辑 `.env` 文件，配置你的 API 密钥
+# Config
 ```
 
 <!-- i18n:frontend -->
@@ -625,7 +625,7 @@ DeepWiki에서 직접 질문하실 수도 있습니다.
 <img width="240" alt="image" src="https://github.com/user-attachments/assets/fd7a286d-711b-445e-aecf-43e3fe356473" />
 
 프로젝트에 무상 후원을 보내주신 다음 분들께 감사드립니다:
-> @雅俗共赏、@曹峥、@以年观日、@John、@胡yun星Ethan, @azazo1、@刘聪NLP、@🍟、@苍何、@万瑾、@biubiu、@law、@方源、@寒松Falcon、@刘星宇&小陀螺AIGC
+> @@@@John@yunEthan, @azazo1@NLP@🍟@@@biubiu@law@@Falcon@&AIGC
 > 후원 목록에 대해 궁금한 점이 있으시면 <a href="mailto:davidyang042@gmail.com">작성자에게 문의해 주세요</a>.
 
 <!-- i18n:statistics -->
@@ -649,7 +649,7 @@ DeepWiki에서 직접 질문하실 수도 있습니다.
 
 <p><strong>Banana Slides</strong></p>
 
-<p><a href="README.md">简体中文</a> · <a href="README_EN.md">English</a> · <a href="README_PT-BR.md">Português</a> · <a href="README_JA.md">日本語</a> · <a href="README_KO.md">한국어</a></p>
+<p><a href="README.md"></a> · <a href="README_EN.md">English</a> · <a href="README_PT-BR.md">Português</a> · <a href="README_JA.md"></a> · <a href="README_KO.md">한국어</a></p>
 
 <p><a href="https://bananaslides.online/">온라인 데모</a> · <a href="https://docs.bananaslides.online/">문서</a> · <a href="https://github.com/Anionex/banana-slides/releases/tag/v0.9.0-rc.7">데스크톱 RC7</a> · <a href="https://github.com/Anionex/banana-slides#-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95">배포 방법</a> · <a href="https://x.com/anion_ex">anion_ex</a> · <a href="#user-content-community">WeChat 그룹</a></p>
 
@@ -665,7 +665,7 @@ DeepWiki에서 직접 질문하실 수도 있습니다.
 
 
 
-<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">火山引擎</a></p>
+<p><a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides"></a></p>
 
 <p>본 프로젝트를 후원해 주신 <a href="https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides">화산엔진</a>에 감사드립니다! 해외 주요 공식 API와 비교하여 가격이 더 저렴하고 가성비가 높으며, 생성 효과가 비슷합니다. 중국 내에서 직접 연결이 가능하여 특수한 네트워크 환경이 필요하지 않습니다. 구독 후에는 Banana Slides뿐만 아니라 일상적인 용도 및 기타 호환 도구에서도 사용할 수 있습니다. </p>
 

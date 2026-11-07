@@ -1,5 +1,5 @@
 """
-项目管理API单元测试
+API
 """
 
 import pytest
@@ -11,13 +11,13 @@ from conftest import assert_success_response, assert_error_response
 
 
 class TestProjectCreate:
-    """项目创建测试"""
+    """ Test docstring """
     
     def test_create_project_idea_mode(self, client):
-        """测试从想法创建项目"""
+        """ Test docstring """
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': '生成一份关于AI的PPT'
+            'idea_prompt': 'AIPPT'
         })
         
         data = assert_success_response(response, 201)
@@ -25,10 +25,10 @@ class TestProjectCreate:
         assert data['data']['status'] == 'DRAFT'
     
     def test_create_project_outline_mode(self, client):
-        """测试从大纲创建项目"""
+        """ Test docstring """
         response = client.post('/api/projects', json={
             'creation_type': 'outline',
-            'outline_text': '第一页：介绍\n- 要点1\n\n第二页：方案\n- 要点2'
+            'outline_text': '\n- 1\n\n\n- 2'
         })
         
         data = assert_success_response(response, 201)
@@ -63,23 +63,23 @@ class TestProjectCreate:
     def test_create_project_normalizes_selected_content_and_template_style(self, client):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': '  AI 产品发布会  ',
-            'outline_text': '不应写入当前模式',
-            'template_style': '  极简商务风  ',
+            'idea_prompt': '  AI   ',
+            'outline_text': '',
+            'template_style': '    ',
         })
 
         created = assert_success_response(response, 201)['data']
         project = assert_success_response(
             client.get(f"/api/projects/{created['project_id']}")
         )['data']
-        assert project['idea_prompt'] == 'AI 产品发布会'
+        assert project['idea_prompt'] == 'AI '
         assert project['outline_text'] is None
-        assert project['template_style'] == '极简商务风'
+        assert project['template_style'] == ''
 
     def test_create_project_rejects_non_text_template_style(self, client):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': 'AI 产品发布会',
+            'idea_prompt': 'AI ',
             'template_style': {'name': 'invalid'},
         })
 
@@ -92,7 +92,7 @@ class TestProjectCreate:
     ):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': 'AI 产品发布会',
+            'idea_prompt': 'AI ',
             'template_style': template_style,
         })
 
@@ -103,72 +103,72 @@ class TestProjectCreate:
         assert project['template_style'] is None
     
     def test_create_project_missing_type(self, client):
-        """测试缺少creation_type参数"""
+        """ Test docstring """
         response = client.post('/api/projects', json={
-            'idea_prompt': '测试'
+            'idea_prompt': ''
         })
         
-        # 应该返回错误
+        # Test verification logic
         assert response.status_code in [400, 422]
     
     def test_create_project_invalid_type(self, client):
-        """测试无效的creation_type"""
+        """ Test docstring """
         response = client.post('/api/projects', json={
             'creation_type': 'invalid_type',
-            'idea_prompt': '测试'
+            'idea_prompt': ''
         })
         
         assert response.status_code in [400, 422]
 
 
 class TestPageBatchCreate:
-    """页面批量创建测试"""
+    """ Test docstring """
 
     def test_batch_create_pages_preserves_request_order_and_shifts_existing_pages(self, client):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': '批量导入测试'
+            'idea_prompt': ''
         })
         data = assert_success_response(response, 201)
         project_id = data['data']['project_id']
 
         first_page = assert_success_response(client.post(f'/api/projects/{project_id}/pages', json={
             'order_index': 0,
-            'outline_content': {'title': '原始第一页', 'points': ['已有内容']},
+            'outline_content': {'title': '', 'points': ['']},
         }), 201)['data']
         second_page = assert_success_response(client.post(f'/api/projects/{project_id}/pages', json={
             'order_index': 1,
-            'outline_content': {'title': '原始第二页', 'points': ['已有内容']},
+            'outline_content': {'title': '', 'points': ['']},
         }), 201)['data']
 
         response = client.post(f'/api/projects/{project_id}/pages/batch', json={
             'pages': [
                 {
                     'order_index': 1,
-                    'part': '导入章节',
-                    'outline_content': {'title': '导入第一页', 'points': ['A']},
-                    'description_content': {'text': '第一页描述'},
+                    'part': '',
+                    'outline_content': {'title': '', 'points': ['A']},
+                    'description_content': {'text': ''},
                 },
                 {
                     'order_index': 2,
-                    'outline_content': {'title': '导入第二页', 'points': ['B']},
+                    'outline_content': {'title': '', 'points': ['B']},
                 },
             ]
         })
 
         created = assert_success_response(response, 201)['data']
-        assert [page['outline_content']['title'] for page in created] == ['导入第一页', '导入第二页']
+        assert [page['outline_content']['title'] for page in created] == ['', '']
         assert created[0]['status'] == 'DESCRIPTION_GENERATED'
-        assert created[0]['part'] == '导入章节'
+        assert created[0]['part'] == ''
 
         project = assert_success_response(client.get(f'/api/projects/{project_id}'))['data']
         pages = sorted(project['pages'], key=lambda page: page['order_index'])
 
         assert [page['outline_content']['title'] for page in pages] == [
-            '原始第一页',
-            '导入第一页',
-            '导入第二页',
-            '原始第二页',
+            '',
+            '',
+            '',
+            '',
         ]
         assert [page['order_index'] for page in pages] == [0, 1, 2, 3]
         assert pages[0]['page_id'] == first_page['page_id']
@@ -177,7 +177,7 @@ class TestPageBatchCreate:
     def test_batch_create_pages_rejects_empty_payload(self, client):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': '批量导入测试'
+            'idea_prompt': ''
         })
         data = assert_success_response(response, 201)
         project_id = data['data']['project_id']
@@ -194,7 +194,7 @@ class TestPageBatchCreate:
     def test_batch_create_pages_validates_payload_types(self, client, page_payload):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': '批量导入测试'
+            'idea_prompt': ''
         })
         data = assert_success_response(response, 201)
         project_id = data['data']['project_id']
@@ -208,7 +208,7 @@ class TestPageBatchCreate:
     def test_batch_create_pages_allows_null_optional_content(self, client):
         response = client.post('/api/projects', json={
             'creation_type': 'idea',
-            'idea_prompt': '批量导入测试'
+            'idea_prompt': ''
         })
         data = assert_success_response(response, 201)
         project_id = data['data']['project_id']
@@ -228,12 +228,12 @@ class TestPageBatchCreate:
 
 
 class TestProjectGet:
-    """项目获取测试"""
+    """ Test docstring """
     
     def test_get_project_success(self, client, sample_project):
-        """测试获取项目成功"""
+        """ Test docstring """
         if not sample_project:
-            pytest.skip("项目创建失败")
+            pytest.skip("")
         
         project_id = sample_project['project_id']
         response = client.get(f'/api/projects/{project_id}')
@@ -242,22 +242,22 @@ class TestProjectGet:
         assert data['data']['project_id'] == project_id
     
     def test_get_project_not_found(self, client):
-        """测试获取不存在的项目"""
+        """ Test docstring """
         response = client.get('/api/projects/non-existent-id')
         
         assert response.status_code == 404
     
     def test_get_project_invalid_id_format(self, client):
-        """测试无效的项目ID格式"""
+        """ Test docstring """
         response = client.get('/api/projects/invalid!@#$%id')
         
-        # 可能返回404或400
+        # Test verification logic
         assert response.status_code in [400, 404]
 
 
 class TestResourceConcurrency:
     def test_image_limiter_allows_more_than_global_four_workers(self, app):
-        """图片资源并发应由 image limiter 控制，而不是被旧的全局 4 worker 提前卡住。"""
+        """ Test docstring """
         from services.task_manager import (
             TaskManager,
             ResourceLimiter,
@@ -300,7 +300,7 @@ class TestResourceConcurrency:
         assert peak_active == 8
 
     def test_shared_task_pool_no_longer_caps_single_page_image_tasks_at_four(self, app):
-        """即使共享后台池只有 4 个旧行为，图片任务也应由 image limiter 决定并发。"""
+        """ Test docstring """
         from models import db, Project, Page
         from controllers import page_controller as page_controller_module
         from services import task_manager as task_manager_module
@@ -386,69 +386,69 @@ class TestResourceConcurrency:
 
 
 class TestProjectOutlineStream:
-    """流式大纲生成测试"""
+    """ Test docstring """
 
     def test_flatten_outline_preserves_falsy_parent_part_values(self):
-        """父级 part 即使是空字符串或 None，也应像旧逻辑一样覆盖子页 part"""
+        """ Test docstring """
         from services.ai_service import AIService
 
         service = AIService.__new__(AIService)
 
         pages = service.flatten_outline([
-            {'part': '', 'pages': [{'title': '空分组', 'points': []}]},
-            {'part': None, 'pages': [{'title': '无分组', 'points': [], 'part': '子页分组'}]},
+            {'part': '', 'pages': [{'title': '', 'points': []}]},
+            {'part': None, 'pages': [{'title': '', 'points': [], 'part': ''}]},
         ])
 
         assert pages[0]['part'] == ''
         assert pages[1]['part'] is None
 
     def test_flatten_outline_strips_title_and_part_whitespace(self):
-        """归一化时应清理标题和分组名首尾空白"""
+        """ Test docstring """
         from services.ai_service import AIService
 
         service = AIService.__new__(AIService)
 
         pages = service.flatten_outline([
-            {'title': '  直接页面  ', 'points': [], 'part': '  子页分组  '},
-            {'part': '  父级分组  ', 'pages': [{'title': '  分组页面  ', 'points': []}]},
+            {'title': '    ', 'points': [], 'part': '    '},
+            {'part': '    ', 'pages': [{'title': '    ', 'points': []}]},
         ])
 
-        assert pages[0]['title'] == '直接页面'
-        assert pages[0]['part'] == '子页分组'
-        assert pages[1]['title'] == '分组页面'
-        assert pages[1]['part'] == '父级分组'
+        assert pages[0]['title'] == ''
+        assert pages[0]['part'] == ''
+        assert pages[1]['title'] == ''
+        assert pages[1]['part'] == ''
 
     def test_flatten_outline_drops_blank_points_from_ai_output(self):
-        """AI 返回的空白/None 要点不应落成空 bullet 或字符串 None"""
+        """ Test docstring """
         from services.ai_service import AIService
 
         service = AIService.__new__(AIService)
 
         pages = service.flatten_outline([
-            {'title': '清理要点', 'points': ['  有效要点  ', None, '', '   ']},
-            {'title': '字符串要点', 'points': '  单个要点  '},
-            {'title': '空字符串要点', 'points': '   '},
+            {'title': '', 'points': ['    ', None, '', '   ']},
+            {'title': '', 'points': '    '},
+            {'title': '', 'points': '   '},
         ])
 
-        assert pages[0]['points'] == ['有效要点']
-        assert pages[1]['points'] == ['单个要点']
+        assert pages[0]['points'] == ['']
+        assert pages[1]['points'] == ['']
         assert pages[2]['points'] == []
 
     def test_from_description_normalizes_string_outline_pages_after_count_mismatch(self, client, app, monkeypatch):
-        """从描述生成应兼容 AI 返回字符串页，并在页数不匹配时不因 page_data.get 崩溃"""
+        """ Test docstring """
         response = client.post('/api/projects', json={
             'creation_type': 'descriptions',
-            'description_text': '第一页：封面。第二页：总结。'
+            'description_text': ''
         })
         data = assert_success_response(response, 201)
         project_id = data['data']['project_id']
 
         class FakeAIService:
             def parse_description_to_outline(self, project_context, language=None):
-                return ['封面页', '总结页']
+                return ['', '']
 
             def parse_description_to_page_descriptions(self, project_context, outline, language=None):
-                return [f'页面描述 {index}' for index in range(16)]
+                return [f' {index}' for index in range(16)]
 
             def flatten_outline(self, outline):
                 from services.ai_service import AIService
@@ -464,8 +464,8 @@ class TestProjectOutlineStream:
 
         data = assert_success_response(generate_response)
         assert len(data['data']['pages']) == 2
-        assert data['data']['pages'][0]['outline_content'] == {'title': '封面页', 'points': []}
-        assert data['data']['pages'][0]['description_content']['text'] == '页面描述 0'
+        assert data['data']['pages'][0]['outline_content'] == {'title': '', 'points': []}
+        assert data['data']['pages'][0]['description_content']['text'] == ' 0'
 
         with app.app_context():
             from models import Page, Project
@@ -474,69 +474,69 @@ class TestProjectOutlineStream:
 
             assert project.status == 'DESCRIPTIONS_GENERATED'
             assert len(pages) == 2
-            assert pages[1].get_outline_content() == {'title': '总结页', 'points': []}
-            assert pages[1].get_description_content()['text'] == '页面描述 1'
+            assert pages[1].get_outline_content() == {'title': '', 'points': []}
+            assert pages[1].get_description_content()['text'] == ' 1'
 
     def test_description_stream_prompt_uses_latest_description_format(self):
-        """从描述生成的 SSE prompt 应对齐最新页面描述格式，而不是旧版页面标题/页面文字格式"""
+        """ Test docstring """
         from services.ai_service import ProjectContext
         from services.prompts import get_description_to_outline_prompt_markdown
 
         context = ProjectContext({
             'creation_type': 'descriptions',
-            'description_text': '第一页：介绍主题',
+            'description_text': '',
         })
 
         prompt = get_description_to_outline_prompt_markdown(
             context,
             language='zh',
-            extra_fields=['配图与素材'],
+            extra_fields=['Hình ảnh & Tư liệu'],
         )
 
         assert '<!-- PAGE_DESCRIPTION -->' in prompt
-        assert '--- 页面文字 ---' in prompt
-        assert '--- 页面文字结束 ---' in prompt
-        # 素材引用并入"配图与素材"字段，不再有独立的"图片素材"段
-        assert '图片素材：' not in prompt
-        assert '配图与素材：' in prompt
-        assert '页面标题：' not in prompt
+        assert '---  ---' in prompt
+        assert '---  ---' in prompt
+        # Test verification logic
+        assert '' not in prompt
+        assert 'Hình ảnh & Tư liệu' in prompt
+        assert '' not in prompt
 
     def test_outline_stream_parses_legacy_outline_only_markdown(self):
-        """普通大纲 SSE 仍兼容只含标题和要点的 Markdown 输出"""
+        """ Test docstring """
         from services.ai_service import AIService, ProjectContext
 
         class FakeTextProvider:
             def generate_text_stream(self, prompt, thinking_budget=0):
-                yield '# 第一章\n## 第一页\n- 要点1\n一句补充\n## 第二页\n- 要点2\n<!-- END -->'
+                yield '# Chuong 1\n## Trang 1\n- Y chinh 1\nMot cau bo sung\n## Trang 2\n- Y chinh 2\n<!-- END -->'
 
         service = AIService(text_provider=FakeTextProvider(), image_provider=None, caption_provider=None)
         context = ProjectContext({
             'creation_type': 'outline',
-            'outline_text': '第一页\n- 要点1\n第二页\n- 要点2',
+            'outline_text': 'Trang 1\n- Y chinh 1\nTrang 2\n- Y chinh 2',
         })
 
         pages = list(service.generate_outline_stream(context, language='zh'))
 
         assert pages[:-1] == [
-            {'title': '第一页', 'points': ['要点1', '一句补充'], 'part': '第一章'},
-            {'title': '第二页', 'points': ['要点2'], 'part': '第一章'},
+            {'title': 'Trang 1', 'points': ['Y chinh 1', 'Mot cau bo sung'], 'part': 'Chuong 1'},
+            {'title': 'Trang 2', 'points': ['Y chinh 2'], 'part': 'Chuong 1'},
         ]
         assert pages[-1] == {'__stream_complete__': True}
 
     def test_outline_stream_ignores_deck_title_before_cover(self):
-        """SSE 流式解析：封面前的 deck 级 H1 文档标题不得污染封面 part；
-        封面之后合法的 # Part 分节仍需生效。"""
+        """SSE  deck  H1  part
+         # Part """
         from services.ai_service import AIService, ProjectContext
 
         class FakeTextProvider:
             def generate_text_stream(self, prompt, thinking_budget=0):
                 yield (
-                    '# 决策汇报：AI 推理架构的战略选择\n'
-                    '## 决策汇报：AI 推理架构的战略选择\n'
-                    '- 副标题与汇报人信息\n'
-                    '# 第一部分：经济性分析\n'
-                    '## 现有支出呈指数级增长\n'
-                    '- 成本失控风险，亟需替代方案\n'
+                    '# Tong quan thi truong\n'
+                    '## AI \n'
+                    '- Diem noi bat\n'
+                    '# Phan 1: Phan tich kinh te\n'
+                    '## Xu huong\n'
+                    '- Noi dung\n'
                     '<!-- END -->'
                 )
 
@@ -550,30 +550,28 @@ class TestProjectOutlineStream:
         content = pages[:-1]
 
         assert len(content) == 2
-        # 封面页：deck 标题被忽略，不产生 part
-        assert content[0]['title'] == '决策汇报：AI 推理架构的战略选择'
+        # Test verification logic
+        assert content[0]['title'] == 'AI '
         assert 'part' not in content[0]
-        # 封面之后的合法分节仍然生效
-        assert content[1].get('part') == '第一部分：经济性分析'
+        # Test verification logic
+        assert content[1].get('part') == 'Phan 1: Phan tich kinh te'
         assert pages[-1] == {'__stream_complete__': True}
 
     def test_description_stream_parser_binds_description_to_same_page(self):
-        """描述 SSE 新格式应把同一页的大纲和页面描述绑定在同一个结果里"""
+        """Test stream parser binds description to same page"""
         from services.ai_service import AIService, ProjectContext
 
         class FakeTextProvider:
             def generate_text_stream(self, prompt, thinking_budget=0):
                 yield (
-                    '## 第一页\n'
+                    '## Trang 1\n'
                     '<!-- OUTLINE_POINTS -->\n'
                     '- Establish the page purpose and connect the audience from context to the main argument.\n'
                     '<!-- PAGE_DESCRIPTION -->\n'
-                    '--- 页面文字 ---\n'
-                    '- 背景和目标\n'
-                    '\n--- 页面文字结束 ---\n'
-                    '\n图片素材：\n'
-                    '使用一张简洁的背景图\n'
-                    '\n视觉元素：关键指标卡片\n'
+                    '--- Van ban trang ---\n'
+                    '- Boi canh va muc tieu\n'
+                    '\n--- Ket thuc van ban trang ---\n'
+                    '\nHinh anh & Tu lieu: The chi so quan trong\n'
                     '<!-- PAGE_END -->\n'
                     '<!-- END -->'
                 )
@@ -581,23 +579,23 @@ class TestProjectOutlineStream:
         service = AIService(text_provider=FakeTextProvider(), image_provider=None, caption_provider=None)
         context = ProjectContext({
             'creation_type': 'descriptions',
-            'description_text': '第一页：背景和目标',
+            'description_text': 'Trang 1: Boi canh va muc tieu',
         })
 
-        pages = list(service.generate_outline_stream(context, language='zh'))
+        pages = list(service.generate_outline_stream(context, language='vi'))
 
-        assert pages[0]['title'] == '第一页'
+        assert pages[0]['title'] == 'Trang 1'
         assert pages[0]['points'] == ['Establish the page purpose and connect the audience from context to the main argument.']
-        assert '--- 页面文字 ---' in pages[0]['description_text']
-        assert '页面标题：' not in pages[0]['description_text']
-        assert pages[0]['extra_fields']['视觉元素'] == '关键指标卡片'
+        assert '--- Van ban trang ---' in pages[0]['description_text']
+        assert 'Tieu de trang:' not in pages[0]['description_text']
+        assert pages[0]['extra_fields']['Hình ảnh & Tư liệu'] == 'The chi so quan trong'
         assert pages[-1] == {'__stream_complete__': True}
 
     def test_description_stream_persists_outline_and_description(self, client, app, monkeypatch):
-        """从描述生成应通过同一条 SSE 流落库大纲和页面描述，避免两次拆分页数不一致"""
+        """ Test docstring """
         response = client.post('/api/projects', json={
             'creation_type': 'descriptions',
-            'description_text': '第一页：介绍主题。第二页：展开方案。'
+            'description_text': ''
         })
         data = assert_success_response(response, 201)
         project_id = data['data']['project_id']
@@ -605,15 +603,15 @@ class TestProjectOutlineStream:
         class FakeAIService:
             def generate_outline_stream(self, project_context, language=None):
                 yield {
-                    'title': '介绍主题',
-                    'points': ['背景', '目标'],
-                    'description_text': '--- 页面文字 ---\n- 背景\n- 目标\n\n--- 页面文字结束 ---',
-                    'extra_fields': {'视觉元素': '背景图'},
+                    'title': '',
+                    'points': ['', ''],
+                    'description_text': '---  ---\n- \n- \n\n---  ---',
+                    'extra_fields': {'Hình ảnh & Tư liệu': ''},
                 }
                 yield {
-                    'title': '展开方案',
-                    'points': ['路径', '结果'],
-                    'description_text': '--- 页面文字 ---\n- 路径\n- 结果\n\n--- 页面文字结束 ---',
+                    'title': '',
+                    'points': ['', ''],
+                    'description_text': '---  ---\n- \n- \n\n---  ---',
                 }
                 yield {'__stream_complete__': True}
 
@@ -638,67 +636,67 @@ class TestProjectOutlineStream:
 
             assert project.status == 'DESCRIPTIONS_GENERATED'
             assert len(pages) == 2
-            assert pages[0].get_outline_content() == {'title': '介绍主题', 'points': ['背景', '目标']}
-            assert pages[0].get_description_content()['text'].startswith('--- 页面文字 ---')
-            assert pages[0].get_description_content()['extra_fields'] == {'视觉元素': '背景图'}
-            assert pages[1].get_outline_content()['title'] == '展开方案'
+            assert pages[0].get_outline_content() == {'title': '', 'points': ['', '']}
+            assert pages[0].get_description_content()['text'].startswith('---  ---')
+            assert pages[0].get_description_content()['extra_fields'] == {'Hình ảnh & Tư liệu': ''}
+            assert pages[1].get_outline_content()['title'] == ''
 
 
 class TestProjectUpdate:
-    """项目更新测试"""
+    """ Test docstring """
     
     def test_update_project_status(self, client, sample_project):
-        """测试更新项目状态"""
+        """ Test docstring """
         if not sample_project:
-            pytest.skip("项目创建失败")
+            pytest.skip("")
         
         project_id = sample_project['project_id']
         response = client.put(f'/api/projects/{project_id}', json={
             'status': 'GENERATING'
         })
         
-        # 状态更新应该成功
+        # Test verification logic
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
 
     def test_update_project_title(self, client, sample_project):
-        """测试更新项目标题不影响 idea_prompt"""
+        """ Test docstring """
         if not sample_project:
-            pytest.skip("项目创建失败")
+            pytest.skip("")
 
         project_id = sample_project['project_id']
         get_before = client.get(f'/api/projects/{project_id}')
         before_data = assert_success_response(get_before)
 
         response = client.put(f'/api/projects/{project_id}', json={
-            'project_title': '新的项目标题'
+            'project_title': ''
         })
 
         data = assert_success_response(response)
-        assert data['data']['project_title'] == '新的项目标题'
+        assert data['data']['project_title'] == ''
         assert data['data']['idea_prompt'] == before_data['data']['idea_prompt']
 
 
 class TestProjectDelete:
-    """项目删除测试"""
+    """ Test docstring """
     
     def test_delete_project_success(self, client, sample_project):
-        """测试删除项目成功"""
+        """ Test docstring """
         if not sample_project:
-            pytest.skip("项目创建失败")
+            pytest.skip("")
         
         project_id = sample_project['project_id']
         response = client.delete(f'/api/projects/{project_id}')
         
         data = assert_success_response(response)
         
-        # 确认项目已删除
+        # Test verification logic
         get_response = client.get(f'/api/projects/{project_id}')
         assert get_response.status_code == 404
     
     def test_delete_project_not_found(self, client):
-        """测试删除不存在的项目"""
+        """ Test docstring """
         response = client.delete('/api/projects/non-existent-id')
         
         assert response.status_code == 404

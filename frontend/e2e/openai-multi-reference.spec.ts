@@ -223,11 +223,11 @@ test.describe('OpenAI native multi-reference generation', () => {
     }, createdProjectId)
     await page.goto(`/project/${createdProjectId}/preview`)
 
-    const generateButton = page.getByRole('button', { name: /批量生成图片|Generate Images/i })
+    const generateButton = page.getByRole('button', { name: /|Generate Images/i })
     await expect(generateButton).toBeVisible()
     await generateButton.click()
 
-    const confirmOneK = page.getByRole('button', { name: /仍然生成|Generate Anyway/i })
+    const confirmOneK = page.getByRole('button', { name: /|Generate Anyway/i })
     const needsConfirmation = await confirmOneK
       .waitFor({ state: 'visible', timeout: 5_000 })
       .then(() => true)

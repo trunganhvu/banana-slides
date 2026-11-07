@@ -3,12 +3,12 @@ import { Modal, Markdown, Loading, useToast } from '@/components/shared';
 import { useT } from '@/hooks/useT';
 import { getReferenceFile, type ReferenceFile } from '@/api/endpoints';
 
-// FilePreviewModal 组件自包含翻译
+// Component logic
 const filePreviewI18n = {
   zh: {
     filePreview: {
-      title: "文件预览", loading: "加载文件内容中...",
-      notParsed: "文件尚未解析完成，无法预览", loadFailed: "加载文件内容失败"
+      title: "File Preview", loading: "Loading file content...",
+      notParsed: "File not yet parsed, cannot preview", loadFailed: "Failed to load file content"
     }
   },
   en: {
@@ -34,7 +34,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const { show } = useToast();
   
-  // 使用 ref 保存函数引用，避免依赖项变化导致无限循环
+  // Component logic
   const onCloseRef = useRef(onClose);
   const showRef = useRef(show);
   
@@ -58,7 +58,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
         if (response.data?.file) {
           const fileData = response.data.file;
           
-          // 检查文件是否已解析完成
+          // Component logic
           if (fileData.parse_status !== 'completed') {
             showRef.current({
               message: t('filePreview.notParsed'),
@@ -85,7 +85,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     };
 
     loadFile();
-  }, [fileId]); // 只依赖 fileId
+  }, [fileId]); // Updated
 
   return (
     <Modal
@@ -110,4 +110,3 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     </Modal>
   );
 };
-

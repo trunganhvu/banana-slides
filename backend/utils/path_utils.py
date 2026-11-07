@@ -70,15 +70,15 @@ def convert_mineru_path_to_local(
     upload_folder: Optional[Union[os.PathLike, str]] = None,
 ) -> Optional[Path]:
     """
-    将 /files/mineru/{extract_id}/{rel_path} 格式的路径转换为本地文件系统路径
+     /files/mineru/{extract_id}/{rel_path} 
     
     Args:
-        mineru_path: MinerU URL 路径，格式为 /files/mineru/{extract_id}/{rel_path}
-        project_root: 项目根目录路径（如果为 None，则自动计算）
-        upload_folder: 上传根目录；传入时优先于 project_root/uploads
+        mineru_path: MinerU URL ,  /files/mineru/{extract_id}/{rel_path}
+        project_root:  ( None, ) 
+        upload_folder: ;  project_root/uploads
         
     Returns:
-        本地文件系统路径（Path 对象），如果转换失败则返回 None
+         (Path ) ,  None
     """
     try:
         if not mineru_path.startswith('/files/mineru/'):
@@ -105,19 +105,19 @@ def find_mineru_file_with_prefix(
     upload_folder: Optional[Union[os.PathLike, str]] = None,
 ) -> Optional[Path]:
     """
-    查找 MinerU 文件，支持前缀匹配
+     MinerU , 
     
-    首先尝试直接路径匹配，如果失败则尝试前缀匹配。
-    前缀匹配逻辑：如果文件名看起来像是一个前缀+扩展名（前缀长度 >= 5），
-    则在目录中查找以该前缀开头的文件。
+    , . 
+    : + ( >= 5) , 
+    . 
     
     Args:
-        mineru_path: MinerU URL 路径，格式为 /files/mineru/{extract_id}/{rel_path}
-        project_root: 项目根目录路径（如果为 None，则自动计算）
-        upload_folder: 上传根目录；传入时优先于 project_root/uploads
+        mineru_path: MinerU URL ,  /files/mineru/{extract_id}/{rel_path}
+        project_root:  ( None, ) 
+        upload_folder: ;  project_root/uploads
         
     Returns:
-        找到的文件路径（Path 对象），如果未找到则返回 None
+         (Path ) ,  None
     """
     # First try direct path conversion
     local_path = convert_mineru_path_to_local(mineru_path, project_root, upload_folder)
@@ -141,17 +141,17 @@ def find_mineru_file_with_prefix(
 
 def find_file_with_prefix(file_path: Path) -> Optional[Path]:
     """
-    查找文件，支持前缀匹配
+    , 
     
-    首先检查文件是否存在，如果不存在则尝试前缀匹配。
-    前缀匹配逻辑：如果文件名看起来像是一个前缀+扩展名（前缀长度 >= 5），
-    则在目录中查找以该前缀开头的文件。
+    , . 
+    : + ( >= 5) , 
+    . 
     
     Args:
-        file_path: 要查找的文件路径（Path 对象）
+        file_path:  (Path ) 
         
     Returns:
-        找到的文件路径（Path 对象），如果未找到则返回 None
+         (Path ) ,  None
     """
     # Direct file matching
     if file_path.exists() and file_path.is_file():

@@ -35,16 +35,18 @@
 !frontend/public/**/*.heif
 !frontend/public/**/*.avif
 
-# 保留测试fixtures
+# Keep test fixtures
 !e2e/fixtures/*.png
 
-# 保留项目模板图片
+# Keep project template images
 !template*.png
 
-# 忽略临时文档，但保留项目文档
+# Ignore temporary markdown files, but keep project docs
 *.md
 !README.md
 !README_*.md
+!AGENTS.md
+!AGENT_HANDOFF.md
 !docs/readme-i18n.md
 /.cache/readme-i18n/
 !skills/**/*.md
@@ -74,9 +76,9 @@ uploads/
 !assets/readme/lucide-icons.json
 !assets/readme/LUCIDE-LICENSE.txt
 
-# 镜像源配置脚本的备份文件
+# Backup files from mirror configuration scripts
 *.orig
-# 本地备份目录（保存测试文件等）
+# Local backup directory (for test files, etc.)
 _local_backup/
 !CLA.md 
 !CONTRIBUTING.md
@@ -85,19 +87,19 @@ banana_slides.egg-info/
 dist/
 build/
 
-# 本地 ML 模型（RMBG 等）
+# Local ML models (RMBG, etc.)
 /models/
 
-# macOS 元数据
+# macOS metadata
 .DS_Store
-# Claude Code 本地配置与截图
+# Claude Code local config and screenshots
 .claude/
-# 本地录制的宣传片 / 截屏素材（体积大，不入库）
+# Locally recorded promo videos / screen captures (large files, not tracked)
 videos/
-# Playwright 运行产物与一次性抓取脚本
+# Playwright test artifacts and one-off capture scripts
 test-results/
 frontend/cap-real.mjs
-# 本地设计稿草案（未定稿，不入库）
+# Local design mockups (drafts, not tracked)
 /banana-slides-landing.html
 /design-mockup.html
 /design-system-proposal.html

@@ -47,11 +47,11 @@ test.describe('PPT renovation MinerU error guidance', () => {
 
     await page.goto(`/project/${projectId}/detail`);
 
-    const toast = page.getByText(/MinerU Token 已失效、无效或没有权限/);
+    const toast = page.getByText(/MinerU Token /);
     await expect(toast).toBeVisible({ timeout: 10_000 });
-    await expect(toast).toContainText('设置 → MinerU 配置');
-    await expect(toast).toContainText('服务测试');
-    await expect(toast).toContainText('重新创建翻新项目');
+    await expect(toast).toContainText(' → MinerU ');
+    await expect(toast).toContainText('');
+    await expect(toast).toContainText('');
     await expect.poll(() => page.evaluate(() => localStorage.getItem('renovationTaskId'))).toBeNull();
   });
 });

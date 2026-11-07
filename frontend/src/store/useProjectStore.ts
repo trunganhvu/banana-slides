@@ -13,34 +13,34 @@ import { getT } from '@/utils/i18nHelper';
 const storeI18n = {
   zh: {
     store: {
-      createFailed: '创建项目失败',
-      createNoId: '项目创建失败：未返回项目ID',
-      syncFailed: '同步项目失败',
-      projectNotFound: '项目不存在，可能已被删除',
-      requestFailed: '请求失败',
-      requestFailedStatus: '请求失败: {{status}}',
-      networkError: '网络错误，请检查后端服务是否启动',
-      updateOrderFailed: '更新顺序失败',
-      newPage: '新页面',
-      addPageFailed: '添加页面失败',
-      deletePageFailed: '删除页面失败',
-      taskStartFailed: '任务启动失败',
-      taskFailed: '任务失败',
-      unknownTaskStatus: '未知任务状态: {{status}}',
-      taskQueryFailed: '任务查询失败',
-      generateOutlineFailed: '生成大纲失败',
-      generateFromDescFailed: '从描述生成失败',
-      projectIdMissing: '项目ID不存在',
-      noTaskId: '未收到任务ID',
-      generateDescFailed: '生成描述失败',
-      generateDescTimeout: '生成描述失败：轮询超时',
-      startGenerationFailed: '启动生成任务失败',
-      regenerateFailed: '重新生成失败',
-      batchGenerateFailed: '批量生成失败',
-      editImageFailed: '编辑图片失败',
-      exportLinkFailed: '导出链接获取失败',
-      exportFailed: '导出失败',
-      exportEditableFailed: '导出可编辑PPTX失败',
+      createFailed: 'Tạo dự án thất bại',
+      createNoId: 'Tạo dự án thất bại: Máy chủ không trả về ID dự án',
+      syncFailed: 'Đồng bộ dự án thất bại',
+      projectNotFound: 'Dự án không tồn tại, có thể đã bị xóa',
+      requestFailed: 'Yêu cầu thất bại',
+      requestFailedStatus: 'Yêu cầu thất bại: {{status}}',
+      networkError: 'Lỗi kết nối mạng, vui lòng kiểm tra xem dịch vụ backend đã chạy chưa',
+      updateOrderFailed: 'Cập nhật thứ tự thất bại',
+      newPage: 'Trang mới',
+      addPageFailed: 'Thêm trang thất bại',
+      deletePageFailed: 'Xóa trang thất bại',
+      taskStartFailed: 'Khởi động tác vụ thất bại',
+      taskFailed: 'Tác vụ thất bại',
+      unknownTaskStatus: 'Trạng thái tác vụ không xác định: {{status}}',
+      taskQueryFailed: 'Truy vấn tác vụ thất bại',
+      generateOutlineFailed: 'Tạo dàn ý thất bại',
+      generateFromDescFailed: 'Tạo từ mô tả thất bại',
+      projectIdMissing: 'ID dự án không tồn tại',
+      noTaskId: 'Không nhận được ID tác vụ',
+      generateDescFailed: 'Tạo mô tả thất bại',
+      generateDescTimeout: 'Tạo mô tả thất bại: Hết thời gian chờ',
+      startGenerationFailed: 'Khởi động tác vụ tạo thất bại',
+      regenerateFailed: 'Tạo lại thất bại',
+      batchGenerateFailed: 'Tạo hàng loạt thất bại',
+      editImageFailed: 'Chỉnh sửa ảnh thất bại',
+      exportLinkFailed: 'Lấy liên kết xuất thất bại',
+      exportFailed: 'Xuất thất bại',
+      exportEditableFailed: 'Xuất PPTX có thể chỉnh sửa thất bại',
     }
   },
   en: {
@@ -78,8 +78,8 @@ const storeI18n = {
 };
 const t = getT(storeI18n);
 
-// 清理旧原型遗留的 per-project localStorage key（交接文档 §3：旧 demo 数据不迁移）。
-// 模块加载时执行一次，把废弃的模板相关 key 直接删除。
+// Project store logic
+// Project store logic
 (function cleanupLegacyTemplateLocalStorageKeys() {
   if (typeof window === 'undefined' || !window.localStorage) return;
   const legacyPrefixes = ['template_mode_', 'template_assets_', 'page_template_assign_'];
@@ -92,31 +92,50 @@ const t = getT(storeI18n);
       }
     }
     toRemove.forEach((key) => localStorage.removeItem(key));
+
+    // Also migrate any legacy Chinese extra fields in localStorage
+    const rawFields = localStorage.getItem('banana-available-extra-fields');
+    if (rawFields) {
+      const arr = JSON.parse(rawFields);
+      if (Array.isArray(arr)) {
+        const fieldMap: Record<string, string> = {
+          '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+          '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+          '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+          '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
+          '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
+          '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
+          '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
+        };
+        const updated = [...new Set(arr.map((item: string) => fieldMap[item] || item))];
+        localStorage.setItem('banana-available-extra-fields', JSON.stringify(updated));
+      }
+    }
   } catch {
-    // localStorage 不可用时静默跳过
+    // Project store logic
   }
 })();
 
 interface ProjectState {
-  // 状态
+  // Project store logic
   currentProject: Project | null;
   isGlobalLoading: boolean;
-  // 有页面改动正在防抖队列中或写回后端（用于「保存中/已保存」提示）
+  // Project store logic
   isSavingPages: boolean;
   activeTaskId: string | null;
   taskProgress: { total: number; completed: number } | null;
   error: string | null;
-  // 每个页面的生成任务ID映射 (pageId -> taskId)
+  // Project store logic
   pageGeneratingTasks: Record<string, string>;
-  // 警告消息
+  // Project store logic
   warningMessage: string | null;
-  // 流式大纲生成中
+  // Project store logic
   isOutlineStreaming: boolean;
-  // 正在流式生成大纲的项目。任务仍可在后台完成，但只能更新自己的项目。
+  // Project store logic
   outlineStreamingProjectIds: string[];
-  // 流式描述生成中
+  // Project store logic
   isDescriptionStreaming: boolean;
-  // 项目模板库（per-page template）
+  // Project store logic
   templateAssets: TemplateAsset[];
 
   // Actions
@@ -124,23 +143,23 @@ interface ProjectState {
   setGlobalLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
-  // 项目操作
+  // Project store logic
   initializeProject: (type: 'idea' | 'outline' | 'description' | 'blank', content: string, templateImage?: File, templateStyle?: string, referenceFileIds?: string[], aspectRatio?: string) => Promise<void>;
   syncProject: (projectId?: string) => Promise<void>;
   
-  // 页面操作
+  // Project store logic
   updatePageLocal: (pageId: string, data: any) => void;
   saveAllPages: () => Promise<void>;
   reorderPages: (newOrder: string[]) => Promise<void>;
   addNewPage: () => Promise<void>;
   deletePageById: (pageId: string) => Promise<void>;
   
-  // 异步任务
+  // Project store logic
   startAsyncTask: (apiCall: () => Promise<any>) => Promise<void>;
   pollTask: (taskId: string) => Promise<void>;
   pollImageTask: (taskId: string, pageIds: string[]) => void;
 
-  // 生成操作
+  // Project store logic
   generateOutline: () => Promise<void>;
   generateOutlineStream: (lockPageCount?: boolean) => Promise<{ complete: boolean; active: boolean } | undefined>;
   generateFromDescription: () => Promise<void>;
@@ -159,12 +178,12 @@ interface ProjectState {
     }
   ) => Promise<void>;
   
-  // 导出
+  // Project store logic
   exportPPTX: (pageIds?: string[]) => Promise<void>;
   exportPDF: (pageIds?: string[]) => Promise<void>;
   exportEditablePPTX: (filename?: string, pageIds?: string[]) => Promise<void>;
 
-  // 每页模板（per-page template）
+  // Project store logic
   loadTemplateAssets: (projectId: string) => Promise<TemplateAsset[]>;
   uploadTemplateAsset: (projectId: string, file: File, opts?: { userLabel?: string; bindToPageId?: string }) => Promise<TemplateAsset>;
   uploadTemplatePdf: (projectId: string, file: File) => Promise<string>;
@@ -180,43 +199,43 @@ interface ProjectState {
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => {
-  // 把一页的字段分发到各自的后端端点
+  // Project store logic
   const savePageFields = async (projectId: string, pageId: string, data: any) => {
     const promises: Promise<any>[] = [];
 
-    // 如果更新的是 description_content，使用专门的端点
+    // Project store logic
     if (data.description_content) {
       promises.push(api.updatePageDescription(projectId, pageId, data.description_content));
     }
 
-    // 如果更新的是 outline_content，使用专门的端点
+    // Project store logic
     if (data.outline_content) {
       promises.push(api.updatePageOutline(projectId, pageId, data.outline_content));
     }
 
-    // 如果更新的是 narration_text，使用专门的端点
-    // （通用端点只接受 part，narration 走这里才能真正落库）
+    // Project store logic
+    // Project store logic
     if ('narration_text' in data) {
       promises.push(api.updatePageNarration(projectId, pageId, data.narration_text ?? ''));
     }
 
-    // 如果更新的是 part 字段，使用通用端点
+    // Project store logic
     if ('part' in data) {
       promises.push(api.updatePage(projectId, pageId, { part: data.part }));
     }
 
-    // 如果没有特定的内容更新，使用通用端点
+    // Project store logic
     if (promises.length === 0) {
       await api.updatePage(projectId, pageId, data);
     } else {
-      // 并行执行所有更新请求
+      // Project store logic
       await Promise.all(promises);
     }
   };
 
-  // 待写回后端的页面改动：pageId -> 合并后的字段。
-  // 防抖计时器是全局共享的，所以这里必须累积而不是覆盖参数，
-  // 否则 1s 内连续编辑多个字段（或切页后继续编辑）会丢掉先前的改动。
+  // Project store logic
+  // Project store logic
+  // Project store logic
   const pendingPageUpdates = new Map<string, { projectId: string; data: any }>();
 
   const flushPageUpdates = async () => {
@@ -229,11 +248,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         entries.map(([pageId, { projectId, data }]) => savePageFields(projectId, pageId, data))
       );
 
-      // API调用成功后，同步项目状态以更新updated_at
-      // 图片生成期间 poll 已在 2s 同步，跳过以避免并发竞态
-      // 用户可能在防抖窗口内切走了项目，此时同步会把当前项目覆盖成旧项目
-      // 队列可能混着多个项目的改动（防抖窗口内切了项目），所以要看整个队列里
-      // 有没有当前项目的写回，而不是只看第一条
+      // Project store logic
+      // Project store logic
+      // Project store logic
+      // Project store logic
+      // Project store logic
       const { syncProject, pageGeneratingTasks, currentProject } = get();
       const touchedCurrentProject =
         !!currentProject && entries.some(([, update]) => update.projectId === currentProject.id);
@@ -241,11 +260,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         await syncProject(currentProject!.id);
       }
     } catch (error: any) {
-      console.error('保存页面失败:', error);
-      // 可以在这里添加错误提示，但为了避免频繁提示，暂时只记录日志
-      // 如果需要，可以通过事件系统或toast通知用户
+      console.error('Lưu trang thất bại:', error);
+      // Project store logic
+      // Project store logic
     } finally {
-      // 队列可能在本次 flush 期间又被写入，只有排空时才算保存结束
+      // Project store logic
       if (pendingPageUpdates.size === 0) set({ isSavingPages: false });
     }
   };
@@ -258,13 +277,13 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       projectId,
       data: { ...(existing?.data ?? {}), ...data },
     });
-    // 逐字输入时避免重复 set 触发无谓的重渲染
+    // Project store logic
     if (!get().isSavingPages) set({ isSavingPages: true });
     debouncedFlushPageUpdates();
   };
 
   return {
-  // 初始状态
+  // Project store logic
   currentProject: null,
   isGlobalLoading: false,
   isSavingPages: false,
@@ -283,7 +302,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
   setGlobalLoading: (loading) => set({ isGlobalLoading: loading }),
   setError: (error) => set({ error }),
 
-  // 初始化项目
+  // Project store logic
   initializeProject: async (type, content, templateImage, templateStyle, referenceFileIds, aspectRatio) => {
     set({ isGlobalLoading: true, error: null });
     try {
@@ -291,7 +310,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       const normalizedContent = typeof content === 'string' ? content.trim() : '';
 
       if (type === 'blank') {
-        // 空白项目没有任何文本内容，必须显式声明类型
+        // Project store logic
         request.creation_type = 'blank';
       } else if (type === 'idea') {
         request.idea_prompt = normalizedContent;
@@ -301,17 +320,17 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         request.description_text = normalizedContent;
       }
 
-      // 添加风格描述（如果有）
+      // Project store logic
       if (templateStyle && templateStyle.trim()) {
         request.template_style = templateStyle.trim();
       }
 
-      // 添加画面比例（如果有）
+      // Project store logic
       if (aspectRatio) {
         request.image_aspect_ratio = aspectRatio;
       }
 
-      // 1. 创建项目
+      // Project store logic
       const response = await api.createProject(request);
       const projectId = response.data?.project_id;
 
@@ -319,35 +338,35 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         throw new Error(t('store.createNoId'));
       }
 
-      // 2. 关联参考文件到项目（在生成之前，确保 AI 能读取参考文件）
+      // Project store logic
       if (referenceFileIds && referenceFileIds.length > 0) {
         try {
           await Promise.all(
             referenceFileIds.map(fileId => api.associateFileToProject(fileId, projectId))
           );
-          devLog(`[初始化项目] 已关联 ${referenceFileIds.length} 个参考文件`);
+          devLog(`[Khởi tạo dự án] Đã liên kết ${referenceFileIds.length} tệp tham khảo`);
         } catch (error) {
-          console.warn('[初始化项目] 关联参考文件失败:', error);
+          console.warn('[Khởi tạo dự án] Liên kết tệp tham khảo thất bại:', error);
         }
       }
 
-      // 3. 如果有模板图片，上传模板
+      // Project store logic
       if (templateImage) {
         try {
           await api.uploadTemplate(projectId, templateImage);
         } catch (error) {
-          console.warn('模板上传失败:', error);
-          // 模板上传失败不影响项目创建，继续执行
+          console.warn('Tải lên mẫu thất bại:', error);
+          // Project store logic
         }
       }
 
-      // 4. 获取完整项目信息。大纲/描述入口的 AI 生成由大纲页的 SSE 流程接管。
+      // Project store logic
       const projectResponse = await api.getProject(projectId);
       const project = normalizeProject(projectResponse.data);
 
       if (project) {
         set({ currentProject: project });
-        // 保存到 localStorage
+        // Project store logic
         localStorage.setItem('currentProjectId', project.id!);
       }
     } catch (error: any) {
@@ -358,11 +377,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 同步项目数据
+  // Project store logic
   syncProject: async (projectId?: string) => {
     const { currentProject } = get();
 
-    // 如果没有提供 projectId，尝试从 currentProject 或 localStorage 获取
+    // Project store logic
     let targetProjectId = projectId;
     if (!targetProjectId) {
       if (currentProject?.id) {
@@ -373,7 +392,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
 
     if (!targetProjectId) {
-      console.warn('syncProject: 没有可用的项目ID');
+      console.warn('syncProject: Không có ID dự án khả dụng');
       return;
     }
 
@@ -381,29 +400,29 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       const response = await api.getProject(targetProjectId);
       if (response.data) {
         const project = normalizeProject(response.data);
-        devLog('[syncProject] 同步项目数据:', {
+        devLog('[syncProject] Đồng bộ dữ liệu dự án:', {
           projectId: project.id,
           pagesCount: project.pages?.length || 0,
           status: project.status
         });
         set({ currentProject: project });
-        // 确保 localStorage 中保存了项目ID
+        // Project store logic
         localStorage.setItem('currentProjectId', project.id!);
       }
     } catch (error: any) {
-      // 提取更详细的错误信息
+      // Project store logic
       let errorMessage = t('store.syncFailed');
       let shouldClearStorage = false;
       
       if (error.response) {
-        // 服务器返回了错误响应
+        // Project store logic
         const errorData = error.response.data;
         if (error.response.status === 404) {
-          // 404错误：项目不存在，清除localStorage
+          // Project store logic
           errorMessage = errorData?.error?.message || t('store.projectNotFound');
           shouldClearStorage = true;
         } else if (errorData?.error?.message) {
-          // 从后端错误格式中提取消息
+          // Project store logic
           errorMessage = errorData.error.message;
         } else if (errorData?.message) {
           errorMessage = errorData.message;
@@ -413,17 +432,17 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           errorMessage = t('store.requestFailedStatus', { status: error.response.status });
         }
       } else if (error.request) {
-        // 请求已发送但没有收到响应
+        // Project store logic
         errorMessage = t('store.networkError');
       } else if (error.message) {
-        // 其他错误
+        // Project store logic
         errorMessage = error.message;
       }
       
-      // 如果项目不存在，清除localStorage并重置当前项目
-      // 不显示错误toast，因为这通常是自动同步时发现的过期项目ID
+      // Project store logic
+      // Project store logic
       if (shouldClearStorage) {
-        console.warn('[syncProject] 项目不存在，清除localStorage');
+        console.warn('[syncProject] Dự án không tồn tại, xóa localStorage');
         localStorage.removeItem('currentProjectId');
         set({ currentProject: null });
       } else {
@@ -432,7 +451,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 本地更新页面（乐观更新）
+  // Project store logic
   updatePageLocal: (pageId, data) => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -448,29 +467,29 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       },
     });
 
-    // 防抖后调用API
+    // Project store logic
     debouncedUpdatePage(currentProject.id, pageId, data);
   },
 
-  // 立即保存所有页面的更改（用于保存按钮）
-  // 等待防抖完成，然后同步项目状态以确保updated_at更新
+  // Project store logic
+  // Project store logic
   saveAllPages: async () => {
     const { currentProject } = get();
     if (!currentProject) return;
 
-    // 等待防抖延迟时间（1秒）+ 额外时间确保API调用完成
+    // Project store logic
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // 同步项目状态，这会从后端获取最新的updated_at
+    // Project store logic
     await get().syncProject(currentProject.id);
   },
 
-  // 重新排序页面
+  // Project store logic
   reorderPages: async (newOrder) => {
     const { currentProject } = get();
     if (!currentProject) return;
 
-    // 乐观更新
+    // Project store logic
     const reorderedPages = newOrder
       .map((id) => currentProject.pages.find((p) => p.id === id))
       .filter(Boolean) as any[];
@@ -486,12 +505,12 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       await api.updatePagesOrder(currentProject.id, newOrder);
     } catch (error: any) {
       set({ error: error.message || t('store.updateOrderFailed') });
-      // 失败后重新同步
+      // Project store logic
       await get().syncProject();
     }
   },
 
-  // 添加新页面
+  // Project store logic
   addNewPage: async () => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -511,7 +530,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 删除页面
+  // Project store logic
   deletePageById: async (pageId) => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -524,66 +543,66 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 启动异步任务
+  // Project store logic
   startAsyncTask: async (apiCall) => {
-    devLog('[异步任务] 启动异步任务...');
+    devLog('[Tác vụ bất đồng bộ] Bắt đầu tác vụ...');
     set({ isGlobalLoading: true, error: null });
     try {
       const response = await apiCall();
-      devLog('[异步任务] API响应:', response);
+      devLog('[Tác vụ bất đồng bộ] Phản hồi API:', response);
       
-      // task_id 在 response.data 中
+      // Project store logic
       const taskId = response.data?.task_id;
       if (taskId) {
-        devLog('[异步任务] 收到task_id:', taskId, '开始轮询...');
+        devLog('[Tác vụ bất đồng bộ] Nhận được task_id:', taskId, 'bắt đầu truy vấn...');
         set({ activeTaskId: taskId });
         await get().pollTask(taskId);
       } else {
-        console.warn('[异步任务] 响应中没有task_id，可能是同步操作:', response);
-        // 同步操作完成后，刷新项目数据
+        console.warn('[Tác vụ bất đồng bộ] Phản hồi không có task_id:', response);
+        // Project store logic
         await get().syncProject();
         set({ isGlobalLoading: false });
       }
     } catch (error: any) {
-      console.error('[异步任务] 启动失败:', error);
+      console.error('[Tác vụ bất đồng bộ] Khởi động thất bại:', error);
       set({ error: error.message || t('store.taskStartFailed'), isGlobalLoading: false });
       throw error;
     }
   },
 
-  // 轮询任务状态
+  // Project store logic
   pollTask: async (taskId) => {
-    devLog(`[轮询] 开始轮询任务: ${taskId}`);
+    devLog(`[Truy vấn] Bắt đầu truy vấn tác vụ: ${taskId}`);
     const { currentProject } = get();
     if (!currentProject) {
-      console.warn('[轮询] 没有当前项目，停止轮询');
+      console.warn('[Truy vấn] Không có dự án hiện tại, dừng truy vấn');
       return;
     }
     const projectId = currentProject.id!;
 
     const poll = async () => {
       try {
-        devLog(`[轮询] 查询任务状态: ${taskId}`);
+        devLog(`[Truy vấn] Kiểm tra trạng thái tác vụ: ${taskId}`);
         const response = await api.getTaskStatus(projectId, taskId);
         const task = response.data;
         
         if (!task) {
-          console.warn('[轮询] 响应中没有任务数据');
+      console.warn('[Polling] Không có dự án hiện tại, dừng polling');
           return;
         }
 
-        // 更新进度
+        // Project store logic
         if (task.progress) {
           set({ taskProgress: task.progress });
         }
 
-        devLog(`[轮询] Task ${taskId} 状态: ${task.status}`, task);
+        devLog(`[Polling] Task ${taskId} trạng thái: ${task.status}`, task);
 
-        // 检查任务状态
+        // Project store logic
         if (task.status === 'COMPLETED') {
-          devLog(`[轮询] Task ${taskId} 已完成，刷新项目数据`);
+          devLog(`[Polling] Task ${taskId} đã hoàn tất, Làm mới dữ liệu dự án`);
           
-          // 如果是导出可编辑PPTX任务，检查是否有下载链接
+          // Project store logic
           if (task.task_type === 'EXPORT_EDITABLE_PPTX' && task.progress) {
             const progress = typeof task.progress === 'string' 
               ? JSON.parse(task.progress) 
@@ -591,13 +610,13 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             
             const downloadUrl = progress?.download_url;
             if (downloadUrl) {
-              devLog('[导出可编辑PPTX] 从任务响应中获取下载链接:', downloadUrl);
-              // 延迟一下，确保状态更新完成后再打开下载链接
+              devLog('[Xuất tệp có thể chỉnh sửaPPTX] Lấy liên kết tải xuống từ phản hồi tác vụ:', downloadUrl);
+              // Project store logic
               setTimeout(() => {
                 triggerDownload(downloadUrl);
               }, 500);
             } else {
-              console.warn('[导出可编辑PPTX] 任务完成但没有下载链接');
+              console.warn('[Xuất tệp có thể chỉnh sửaPPTX] Tác vụ hoàn tất nhưng không có liên kết tải xuống');
             }
           }
           
@@ -606,10 +625,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             taskProgress: null, 
             isGlobalLoading: false 
           });
-          // 刷新项目数据
+          // Project store logic
           await get().syncProject();
         } else if (task.status === 'FAILED') {
-          console.error(`[轮询] Task ${taskId} 失败:`, task.error_message || task.error);
+          console.error(`[Polling] Task ${taskId} thất bại:`, task.error_message || task.error);
           set({ 
             error: normalizeErrorMessage(task.error_message || task.error || t('store.taskFailed')),
             activeTaskId: null,
@@ -617,12 +636,12 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             isGlobalLoading: false
           });
         } else if (task.status === 'PENDING' || task.status === 'PROCESSING') {
-          // 继续轮询（PENDING 或 PROCESSING）
-          devLog(`[轮询] Task ${taskId} 处理中，2秒后继续轮询...`);
+          // Project store logic
+          devLog(`[Polling] Task ${taskId} Đang xử lý, 2giây sau sẽ tiếp tục polling...`);
           setTimeout(poll, 2000);
         } else {
-          // 未知状态，停止轮询
-          console.warn(`[轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
+          // Project store logic
+          console.warn(`[Polling] Task ${taskId} Trạng thái không xác định: ${task.status}, dừng polling`);
           set({ 
             error: `${t('store.unknownTaskStatus', { status: task.status })}`,
             activeTaskId: null,
@@ -631,7 +650,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           });
         }
       } catch (error: any) {
-        console.error('任务轮询错误:', error);
+      console.error('Lưu trang thất bại:', error);
         set({ 
           error: normalizeErrorMessage(error.message || t('store.taskQueryFailed')),
           activeTaskId: null,
@@ -643,7 +662,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     await poll();
   },
 
-  // 生成大纲（同步操作，不需要轮询）
+  // Project store logic
   generateOutline: async () => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -651,16 +670,16 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set({ isGlobalLoading: true, error: null });
     try {
       const response = await api.generateOutline(currentProject.id!);
-      devLog('[生成大纲] API响应:', response);
+      devLog('[Tác vụ bất đồng bộ] APIphản hồi:', response);
       
-      // 刷新项目数据，确保获取最新的大纲页面
+      // Project store logic
       await get().syncProject();
       
-      // 再次确认数据已更新
+      // Project store logic
       const { currentProject: updatedProject } = get();
-      devLog('[生成大纲] 刷新后的项目:', updatedProject?.pages.length, '个页面');
+      devLog('[Tạo dàn ý] Dự án sau khi làm mới:', updatedProject?.pages.length, 'trang');
     } catch (error: any) {
-      console.error('[生成大纲] 错误:', error);
+      console.error('[] :', error);
       const message =
         error.response?.data?.error?.message ||
         error.response?.data?.message ||
@@ -673,7 +692,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 流式生成大纲（SSE，逐页渲染）
+  // Project store logic
   generateOutlineStream: async (lockPageCount?: boolean) => {
     const { currentProject } = get();
     const projectId = currentProject?.id;
@@ -748,7 +767,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         onPage: (page) => { pageQueue.push(page); },
         onDone: (data) => { doneData = data; },
         onError: (message) => {
-          console.error('[流式大纲] 错误:', message);
+          console.error('[Dàn ý luồng] Lỗi:', message);
           if (isViewingTargetProject()) {
             set({ error: normalizeErrorMessage(message) });
           }
@@ -766,16 +785,16 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           const normalized = normalizeProject({ ...proj, pages: doneData.pages });
           set({ currentProject: normalized });
         }
-        devLog('[流式大纲] 完成:', doneData.total, '个页面');
+        devLog('[Dàn ý luồng] Hoàn tất:', doneData.total, 'trang');
         return { complete: doneData.complete ?? false, active: isViewingTargetProject() };
       } else {
         return { complete: false, active: isViewingTargetProject() };
       }
     } catch (error: any) {
-      console.error('[流式大纲] 错误:', error);
+      console.error('[] :', error);
       streamDone = true;
       if (!isViewingTargetProject()) {
-        // 已切换离开发起生成的项目：过期失败不再抛出，避免在后来打开的项目中弹提示
+        // Project store logic
         return { complete: false, active: false };
       }
       set({ error: normalizeErrorMessage(error.message || t('store.generateOutlineFailed')) });
@@ -785,7 +804,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 从描述生成大纲和页面描述（同步操作）
+  // Project store logic
   generateFromDescription: async () => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -793,16 +812,16 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set({ isGlobalLoading: true, error: null });
     try {
       const response = await api.generateFromDescription(currentProject.id!);
-      devLog('[从描述生成] API响应:', response);
+      devLog('[Tác vụ bất đồng bộ] APIphản hồi:', response);
       
-      // 刷新项目数据，确保获取最新的大纲和描述
+      // Project store logic
       await get().syncProject();
       
-      // 再次确认数据已更新
+      // Project store logic
       const { currentProject: updatedProject } = get();
-      devLog('[从描述生成] 刷新后的项目:', updatedProject?.pages.length, '个页面');
+      devLog('[Tạo dàn ý] Dự án sau khi làm mới:', updatedProject?.pages.length, 'trang');
     } catch (error: any) {
-      console.error('[从描述生成] 错误:', error);
+      console.error('[] :', error);
       set({ error: error.message || t('store.generateFromDescFailed') });
       throw error;
     } finally {
@@ -810,7 +829,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 生成描述（根据设置选择流式或并行模式）
+  // Project store logic
   generateDescriptions: async (detailLevel?: string) => {
     const { currentProject } = get();
     if (!currentProject || !currentProject.id) return;
@@ -818,7 +837,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     const pages = currentProject.pages.filter((p) => p.id);
     if (pages.length === 0) return;
 
-    // 检查描述生成模式，优先从 sessionStorage 缓存读取以避免额外 API 调用
+    // Project store logic
     let mode: string = 'streaming';
     try {
       const cached = sessionStorage.getItem('banana-settings');
@@ -831,7 +850,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     } catch { /* ignore */ }
 
     if (mode === 'streaming') {
-      // 流式模式
+      // Project store logic
       set({ isDescriptionStreaming: true, error: null });
 
       const updatedPages = currentProject.pages.map((page) =>
@@ -881,7 +900,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           onDescription: (data) => { descQueue.push(data); },
           onDone: (data) => { doneData = data; },
           onError: (message) => {
-            console.error('[流式描述] 错误:', message);
+          console.error('[Dàn ý luồng] Lỗi:', message);
             set({ error: normalizeErrorMessage(message) });
             streamDone = true;
           },
@@ -900,14 +919,14 @@ export const useProjectStore = create<ProjectState>((set, get) => {
               ...(doneData.warning ? { error: doneData.warning } : {}),
             });
           }
-          devLog('[流式描述] 完成:', doneData.total, '个页面');
+        devLog('[Dàn ý luồng] Hoàn tất:', doneData.total, 'trang');
         } else {
-          // 无 doneData（SSE error 或连接中断）→ 从后端恢复真实状态
+          // Project store logic
           await get().syncProject();
           set({ isDescriptionStreaming: false });
         }
       } catch (error: any) {
-        console.error('[流式描述] 错误:', error);
+        console.error('[] :', error);
         streamDone = true;
         await get().syncProject();
         set({
@@ -917,7 +936,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         throw error;
       }
     } else {
-      // 并行模式（原有逻辑）
+      // Project store logic
       set({ error: null });
 
       const updatedPages = currentProject.pages.map((page) =>
@@ -966,10 +985,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
               }
             }
           } catch (error: any) {
-            console.error('[生成描述] 轮询错误:', error);
+            console.error('[] :', error);
             pollErrors++;
             if (pollErrors >= 10) {
-              console.error('[生成描述] 轮询错误次数过多，停止轮询');
+              console.error('[Tạo mô tả] Quá nhiều lỗi polling, dừng polling');
               set({
                 taskProgress: null,
                 activeTaskId: null,
@@ -986,7 +1005,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         setTimeout(pollAndSync, 2000);
 
       } catch (error: any) {
-        console.error('[生成描述] 启动任务失败:', error);
+        console.error('[] :', error);
         await get().syncProject();
         set({ error: normalizeErrorMessage(error.message || t('store.startGenerationFailed')) });
         throw error;
@@ -994,21 +1013,21 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 生成单页描述
+  // Project store logic
   generatePageDescription: async (pageId: string, detailLevel?: string) => {
     const { currentProject } = get();
     if (!currentProject) return;
 
-    // 如果该页面正在生成，不重复提交
+    // Project store logic
     const targetPage = currentProject.pages.find((p) => p.id === pageId);
     if (targetPage?.status === 'GENERATING_DESCRIPTION') {
-      devLog(`[生成描述] 页面 ${pageId} 正在生成中，跳过重复请求`);
+      devLog(`[Tạo mô tả] Trang ${pageId} đang được tạo, bỏ qua yêu cầu trùng lặp`);
       return;
     }
 
     set({ error: null });
 
-    // 乐观更新：设置页面状态为 GENERATING_DESCRIPTION
+    // Project store logic
     const updatedPages = currentProject.pages.map((page) =>
       page.id === pageId ? { ...page, status: 'GENERATING_DESCRIPTION' as const } : page
     );
@@ -1025,32 +1044,32 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             page.id === pageId ? { ...page, ...updatedPageData } : page
           );
           set({ currentProject: { ...latestProject, pages: newPages } });
-          devLog(`[生成描述] 页面 ${pageId} 描述已更新，数据来自 API 响应`);
+          devLog(`[Tạo mô tả] Trang ${pageId} đã cập nhật mô tả, Dữ liệu từ API phản hồi`);
         }
       }
     } catch (error: any) {
-      // 恢复页面状态
+      // Project store logic
       await get().syncProject();
       set({ error: normalizeErrorMessage(error.message || t('store.generateDescFailed')) });
       throw error;
     }
   },
 
-  // 重新生成 PPT 翻新项目的单页（重新解析原 PDF 并提取内容）
+  // Project store logic
   regenerateRenovationPage: async (pageId: string, keepLayout: boolean = false) => {
     const { currentProject } = get();
     if (!currentProject) return;
 
-    // 如果该页面正在生成，不重复提交
+    // Project store logic
     const targetPage = currentProject.pages.find((p) => p.id === pageId);
     if (targetPage?.status === 'GENERATING_DESCRIPTION') {
-      devLog(`[PPT翻新] 页面 ${pageId} 正在生成中，跳过重复请求`);
+      devLog(`[PPTLàm mới] Trang ${pageId} đang được tạo, bỏ qua yêu cầu trùng lặp`);
       return;
     }
 
     set({ error: null });
 
-    // 乐观更新：设置页面状态为 GENERATING_DESCRIPTION
+    // Project store logic
     const updatedPages = currentProject.pages.map((page) =>
       page.id === pageId ? { ...page, status: 'GENERATING_DESCRIPTION' as const } : page
     );
@@ -1067,7 +1086,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             page.id === pageId ? { ...page, ...updatedPageData } : page
           );
           set({ currentProject: { ...latestProject, pages: newPages } });
-          devLog(`[PPT翻新] 页面 ${pageId} 大纲和描述已更新`);
+          devLog(`[PPT]  ${pageId} `);
         }
       }
     } catch (error: any) {
@@ -1077,13 +1096,13 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 生成单页图片（用于预览页的手动重新生成）
+  // Project store logic
   generatePageImage: async (pageId: string, forceRegenerate: boolean = false) => {
     const { currentProject } = get();
     if (!currentProject) return;
 
     if (get().pageGeneratingTasks[pageId]) {
-      devLog(`[单页生成] 页面 ${pageId} 正在生成中，跳过重复请求`);
+      devLog(`[Tạo mô tả] Trang ${pageId} đang được tạo, bỏ qua yêu cầu trùng lặp`);
       return;
     }
 
@@ -1094,7 +1113,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       const taskId = response.data?.task_id;
 
       if (taskId) {
-        devLog(`[单页生成] 收到 task_id: ${taskId}，开始轮询页面 ${pageId}`);
+        devLog(`[Tạo trang đơn] nhận được task_id: ${taskId}, Bắt đầu polling trang ${pageId}`);
         set((state) => ({
           pageGeneratingTasks: {
             ...state.pageGeneratingTasks,
@@ -1108,28 +1127,28 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         await get().syncProject();
       }
     } catch (error: any) {
-      console.error('[单页生成] 启动失败:', error);
+      console.error('[] :', error);
       await get().syncProject();
       throw error;
     }
   },
 
-  // 生成图片（非阻塞，每个页面显示生成状态）
+  // Project store logic
   generateImages: async (pageIds?: string[]) => {
     const { currentProject, pageGeneratingTasks } = get();
     if (!currentProject) return;
 
-    // 确定要生成的页面ID列表
+    // Project store logic
     const targetPageIds = pageIds || currentProject.pages.map(p => p.id).filter((id): id is string => !!id);
     
-    // 检查是否有页面正在生成
+    // Project store logic
     const alreadyGenerating = targetPageIds.filter(id => pageGeneratingTasks[id]);
     if (alreadyGenerating.length > 0) {
-      devLog(`[批量生成] ${alreadyGenerating.length} 个页面正在生成中，跳过`);
-      // 过滤掉已经在生成的页面
+      devLog(`[Tạo hàng loạt] ${alreadyGenerating.length} trang đang được tạo, bỏ qua`);
+      // Project store logic
       const newPageIds = targetPageIds.filter(id => !pageGeneratingTasks[id]);
       if (newPageIds.length === 0) {
-        devLog('[批量生成] 所有页面都在生成中，跳过请求');
+    devLog('[Tác vụ bất đồng bộ] Khởi chạy tác vụ bất đồng bộ...');
         return;
       }
     }
@@ -1137,40 +1156,40 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set({ error: null, warningMessage: null });
     
     try {
-      // 调用批量生成 API
+      // Project store logic
       const response = await api.generateImages(currentProject.id, undefined, pageIds);
       const taskId = response.data?.task_id;
       
       if (taskId) {
-        devLog(`[批量生成] 收到 task_id: ${taskId}，标记 ${targetPageIds.length} 个页面为生成中`);
+        devLog(`[Tạo hàng loạt] nhận được task_id: ${taskId}, đánh dấu ${targetPageIds.length} trang sang trạng thái đang tạo`);
         
-        // 为所有目标页面设置任务ID
+        // Project store logic
         const newPageGeneratingTasks = { ...pageGeneratingTasks };
         targetPageIds.forEach(id => {
           newPageGeneratingTasks[id] = taskId;
         });
         set({ pageGeneratingTasks: newPageGeneratingTasks });
         
-        // 立即同步一次项目数据，以获取后端设置的 'QUEUED' 状态
+        // Project store logic
         await get().syncProject();
 
-        // 开始轮询批量任务状态（非阻塞）
+        // Project store logic
         get().pollImageTask(taskId, targetPageIds);
       } else {
-        // 如果没有返回 task_id，可能是同步接口，直接刷新
+        // Project store logic
         await get().syncProject();
       }
     } catch (error: any) {
-      console.error('[批量生成] 启动失败:', error);
+      console.error('[] :', error);
       throw error;
     }
   },
 
-  // 轮询图片生成任务（非阻塞，支持单页和批量）
+  // Project store logic
   pollImageTask: async (taskId: string, pageIds: string[]) => {
     const { currentProject } = get();
     if (!currentProject) {
-      console.warn('[批量轮询] 没有当前项目，停止轮询');
+      console.warn('[] , ');
       return;
     }
     const projectId = currentProject.id!;
@@ -1181,16 +1200,16 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const task = response.data;
         
         if (!task) {
-          console.warn('[批量轮询] 响应中没有任务数据');
+      console.warn('[Polling] Không có dự án hiện tại, dừng polling');
           return;
         }
 
-        devLog(`[批量轮询] Task ${taskId} 状态: ${task.status}`, task.progress);
+        devLog(`[Polling hàng loạt] Task ${taskId} trạng thái: ${task.status}`, task.progress);
 
-        // 检查任务状态
+        // Project store logic
         if (task.status === 'COMPLETED') {
-          devLog(`[批量轮询] Task ${taskId} 已完成，清除任务记录`);
-          // 清除所有相关页面的任务记录
+          devLog(`[Polling] Task ${taskId} đã hoàn tất, Làm mới dữ liệu dự án`);
+          // Project store logic
           const { pageGeneratingTasks } = get();
           const newTasks = { ...pageGeneratingTasks };
           pageIds.forEach(id => {
@@ -1199,21 +1218,21 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             }
           });
           
-          // 提取警告消息（如果有）
+          // Project store logic
           const warningMessage = task.progress?.warning_message || null;
           
           set({ pageGeneratingTasks: newTasks, warningMessage });
 
-          // 刷新项目数据，并验证图片路径已更新
-          // 使用重试机制确保数据同步完成
+          // Project store logic
+          // Project store logic
           let retryCount = 0;
           const maxRetries = 5;
-          const retryDelay = 1000; // 1秒
+          const retryDelay = 1000; // Project store logic
 
           const syncWithRetry = async (): Promise<void> => {
             await get().syncProject();
 
-            // 验证所有页面的图片路径是否已更新
+            // Project store logic
             const { currentProject: updatedProject } = get();
             if (updatedProject) {
               const allImagesReady = pageIds.every(pageId => {
@@ -1222,25 +1241,25 @@ export const useProjectStore = create<ProjectState>((set, get) => {
               });
 
               if (allImagesReady) {
-                devLog(`[批量轮询] 所有图片路径已同步`);
+                devLog(`[] `);
                 return;
               }
 
               if (retryCount < maxRetries) {
                 retryCount++;
-                devLog(`[批量轮询] 图片路径尚未完全同步，${retryDelay}ms 后重试 (${retryCount}/${maxRetries})`);
+                devLog(`[Polling hàng loạt] Đường dẫn ảnh vẫn chưa đồng bộ hoàn toàn, ${retryDelay}ms rồi thử lại (${retryCount}/${maxRetries})`);
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
                 return syncWithRetry();
               } else {
-                console.warn(`[批量轮询] 达到最大重试次数，部分图片路径可能未同步`);
+                console.warn(`[] , `);
               }
             }
           };
 
           await syncWithRetry();
         } else if (task.status === 'FAILED') {
-          console.error(`[批量轮询] Task ${taskId} 失败:`, task.error_message || task.error);
-          // 清除所有相关页面的任务记录
+          console.error(`[Polling] Task ${taskId} thất bại:`, task.error_message || task.error);
+          // Project store logic
           const { pageGeneratingTasks } = get();
           const newTasks = { ...pageGeneratingTasks };
           pageIds.forEach(id => {
@@ -1252,19 +1271,19 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             pageGeneratingTasks: newTasks,
             error: normalizeErrorMessage(task.error_message || task.error || t('store.batchGenerateFailed'))
           });
-          // 刷新项目数据以更新页面状态
+          // Project store logic
           await get().syncProject();
         } else if (task.status === 'PENDING' || task.status === 'PROCESSING') {
-          // 检查警告消息
+          // Project store logic
           const newWarning = task.progress?.warning_message;
           if (newWarning && get().warningMessage !== newWarning) {
             set({ warningMessage: newWarning });
           }
-          // 继续轮询，同时同步项目数据以更新页面状态
-          devLog(`[批量轮询] Task ${taskId} 处理中，同步项目数据...`);
+          // Project store logic
+          devLog(`[] Task ${taskId} , ...`);
           await get().syncProject();
 
-          // 逐个释放已完成的页面，让缩略图立刻显示
+          // Project store logic
           const { currentProject: proj, pageGeneratingTasks: pgt } = get();
           if (proj) {
             const updated = { ...pgt };
@@ -1272,8 +1291,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             pageIds.forEach(id => {
               if (updated[id] === taskId) {
                 const page = proj.pages.find(p => p.id === id);
-                // 只释放已完成或失败的页面，避免误释放尚未被线程池拾取的页面
-                // （未拾取的页面仍为 DESCRIPTION_GENERATED，不应提前释放）
+                // Project store logic
+                // Project store logic
                 if (page && (page.status === 'COMPLETED' || page.status === 'FAILED')) {
                   delete updated[id];
                   changed = true;
@@ -1283,11 +1302,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             if (changed) set({ pageGeneratingTasks: updated });
           }
 
-          devLog(`[批量轮询] Task ${taskId} 处理中，2秒后继续轮询...`);
+          devLog(`[Polling] Task ${taskId} Đang xử lý, 2giây sau sẽ tiếp tục polling...`);
           setTimeout(poll, 2000);
         } else {
-          // 未知状态，停止轮询
-          console.warn(`[批量轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
+          // Project store logic
+          console.warn(`[Polling] Task ${taskId} Trạng thái không xác định: ${task.status}, dừng polling`);
           const { pageGeneratingTasks } = get();
           const newTasks = { ...pageGeneratingTasks };
           pageIds.forEach(id => {
@@ -1298,8 +1317,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           set({ pageGeneratingTasks: newTasks });
         }
       } catch (error: any) {
-        console.error('[批量轮询] 轮询错误:', error);
-        // 清除所有相关页面的任务记录
+        console.error('[] :', error);
+        // Project store logic
         const { pageGeneratingTasks } = get();
         const newTasks = { ...pageGeneratingTasks };
         pageIds.forEach(id => {
@@ -1311,18 +1330,18 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       }
     };
 
-    // 开始轮询（不 await，立即返回让 UI 继续响应）
+    // Project store logic
     poll();
   },
 
-  // 编辑页面图片（异步）
+  // Project store logic
   editPageImage: async (pageId, editPrompt, contextImages) => {
     const { currentProject, pageGeneratingTasks } = get();
     if (!currentProject) return;
 
-    // 如果该页面正在生成，不重复提交
+    // Project store logic
     if (pageGeneratingTasks[pageId]) {
-      devLog(`[编辑] 页面 ${pageId} 正在生成中，跳过重复请求`);
+      devLog(`[Tạo trang đơn] Trang ${pageId} đang được tạo, bỏ qua yêu cầu trùng lặp`);
       return;
     }
 
@@ -1332,22 +1351,22 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       const taskId = response.data?.task_id;
       
       if (taskId) {
-        // 记录该页面的任务ID
+        // Project store logic
         set({ 
           pageGeneratingTasks: { ...pageGeneratingTasks, [pageId]: taskId }
         });
         
-        // 立即同步一次项目数据，以获取后端设置的'GENERATING'状态
+        // Project store logic
         await get().syncProject();
         
-        // 开始轮询（使用统一的轮询函数）
+        // Project store logic
         get().pollImageTask(taskId, [pageId]);
       } else {
-        // 如果没有返回task_id，可能是同步接口，直接刷新
+        // Project store logic
         await get().syncProject();
       }
     } catch (error: any) {
-      // 清除该页面的任务记录
+      // Project store logic
       const { pageGeneratingTasks } = get();
       const newTasks = { ...pageGeneratingTasks };
       delete newTasks[pageId];
@@ -1356,7 +1375,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 导出PPTX
+  // Project store logic
   exportPPTX: async (pageIds?: string[]) => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -1364,7 +1383,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set({ isGlobalLoading: true, error: null });
     try {
       const response = await api.exportPPTX(currentProject.id, pageIds);
-      // 优先使用相对路径，避免 Docker 环境下的端口问题
+      // Project store logic
       const downloadUrl =
         response.data?.download_url || response.data?.download_url_absolute;
 
@@ -1373,7 +1392,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       }
 
       const filename = downloadUrl.split('/').pop()?.split('?')[0] || 'presentation.pptx';
-      // 使用浏览器或桌面原生保存对话框直接下载，避免 axios 受带宽和超时影响
+      // Project store logic
       triggerDownload(downloadUrl, filename);
     } catch (error: any) {
       set({ error: error.message || t('store.exportFailed') });
@@ -1382,7 +1401,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 导出PDF
+  // Project store logic
   exportPDF: async (pageIds?: string[]) => {
     const { currentProject } = get();
     if (!currentProject) return;
@@ -1390,7 +1409,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set({ isGlobalLoading: true, error: null });
     try {
       const response = await api.exportPDF(currentProject.id, pageIds);
-      // 优先使用相对路径，避免 Docker 环境下的端口问题
+      // Project store logic
       const downloadUrl =
         response.data?.download_url || response.data?.download_url_absolute;
 
@@ -1399,7 +1418,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       }
 
       const filename = downloadUrl.split('/').pop()?.split('?')[0] || 'presentation.pdf';
-      // 使用浏览器或桌面原生保存对话框直接下载，避免 axios 受带宽和超时影响
+      // Project store logic
       triggerDownload(downloadUrl, filename);
     } catch (error: any) {
       set({ error: error.message || t('store.exportFailed') });
@@ -1408,23 +1427,23 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   },
 
-  // 导出可编辑PPTX（异步任务）
+  // Project store logic
   exportEditablePPTX: async (filename?: string, pageIds?: string[]) => {
     const { currentProject, startAsyncTask } = get();
     if (!currentProject) return;
 
     try {
-      devLog('[导出可编辑PPTX] 启动异步导出任务...');
-      // startAsyncTask 中的 pollTask 会在任务完成时自动处理下载
+      devLog('[Xuất tệp có thể chỉnh sửaPPTX] Khởi chạy tác vụ xuất bất đồng bộ...');
+      // Project store logic
       await startAsyncTask(() => api.exportEditablePPTX(currentProject.id, filename, pageIds));
-      devLog('[导出可编辑PPTX] 异步任务完成');
+      devLog('[PPTX] ');
     } catch (error: any) {
-      console.error('[导出可编辑PPTX] 导出失败:', error);
+      console.error('[Xuất tệp có thể chỉnh sửaPPTX] Xuất thất bại:', error);
       set({ error: error.message || t('store.exportEditableFailed') });
     }
   },
 
-  // ===== 每页模板（per-page template）=====
+  // Project store logic
 
   loadTemplateAssets: async (projectId) => {
     const response = await api.listTemplateAssets(projectId);
@@ -1438,8 +1457,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     const asset = response.data!.asset;
     const analyzeTaskId = response.data!.analyze_task_id;
     set((state) => ({ templateAssets: [...state.templateAssets, asset] }));
-    // 后台轮询解析任务，完成/失败后刷新模板库，避免“解析中”徽章一直停留到手动刷新。
-    // 失败也刷新，让 'failed' 状态浮现；用户切走项目后不刷新，避免覆盖新项目的模板库。
+    // Project store logic
+    // Project store logic
     if (analyzeTaskId) {
       const refreshIfCurrent = () => {
         const cur = get().currentProject;
@@ -1452,7 +1471,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         .then(refreshIfCurrent)
         .catch(refreshIfCurrent);
     }
-    // 绑定到页面时同步本地 page 字段
+    // Project store logic
     if (opts?.bindToPageId) {
       const { currentProject } = get();
       if (currentProject) {
@@ -1497,7 +1516,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set((state) => ({
       templateAssets: state.templateAssets.filter((a) => a.id !== assetId),
     }));
-    // 乐观更新：把被清空的页面字段置空
+    // Project store logic
     if (clearedPageIds.length > 0) {
       const { currentProject } = get();
       if (currentProject) {
@@ -1526,7 +1545,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
   reanalyzeTemplateAsset: async (projectId, assetId) => {
     const response = await api.reanalyzeTemplateAsset(projectId, assetId);
-    // 乐观更新：把该 asset 状态置 pending
+    // Project store logic
     set((state) => ({
       templateAssets: state.templateAssets.map((a) =>
         a.id === assetId ? { ...a, analysis_status: 'pending', analysis_error: null } : a
@@ -1555,7 +1574,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
   switchTemplateMode: async (projectId, payload) => {
     await api.switchTemplateMode(projectId, payload);
-    // 模式切换可能批量改写所有页，刷新整个项目
+    // Project store logic
     await get().syncProject(projectId);
   },
 
@@ -1578,8 +1597,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     return response.data!.task_id;
   },
 
-  // 轮询模板相关任务（解析 / PDF 拆页 / 自动匹配），完成或失败时 resolve。
-  // 不污染全局 activeTaskId/taskProgress，便于多任务并发。
+  // Project store logic
+  // Project store logic
   pollTemplateTask: async (taskId, projectId, onProgress) => {
     // Cap the loop so a stuck/dead worker can't poll forever (~15 min).
     const MAX_ATTEMPTS = 450;

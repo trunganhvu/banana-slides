@@ -32,7 +32,7 @@ function resolveDesktopBackendPort(): number {
 const isClientSideUrl = (url: string) => /^\/?(data|blob):/i.test(url);
 const normalizeClientSideUrl = (url: string) => url.replace(/^\/(?=(data|blob):)/i, '');
 
-// 桌面模式：从 URL query param 同步读取后端端口，避免异步竞态
+// API client endpoint
 if (isDesktop) {
   (window as any).__BACKEND_PORT__ = resolveDesktopBackendPort();
 }
@@ -47,7 +47,7 @@ export function getBaseURL(): string {
   return `http://127.0.0.1:${port}`;
 }
 
-// 统一下载入口：desktop 走原生保存对话框，web 走 window.open
+// API client endpoint
 export function triggerDownload(relativeOrAbsoluteUrl: string, filename?: string): void {
   if (!relativeOrAbsoluteUrl || typeof relativeOrAbsoluteUrl !== 'string') {
     console.warn('Invalid download URL:', relativeOrAbsoluteUrl);
@@ -90,12 +90,12 @@ export function triggerDownload(relativeOrAbsoluteUrl: string, filename?: string
   }
 }
 
-// 创建 axios 实例
+// API client endpoint
 export const apiClient = axios.create({
-  timeout: 300000, // 5分钟超时（AI生成可能很慢）
+  timeout: 300000, // API client endpoint
 });
 
-// 请求拦截器
+// API client endpoint
 apiClient.interceptors.request.use(
   (config) => {
     const hasAbsoluteBaseURL = typeof config.baseURL === 'string' && /^https?:\/\//i.test(config.baseURL);
@@ -110,20 +110,20 @@ apiClient.interceptors.request.use(
       config.headers['X-Access-Code'] = accessCode;
     }
 
-    // 让后端按界面语言返回用户可见的错误文案（如后台任务被中断/卡住）
+    // API client endpoint
     if (config.headers && !config.headers['Accept-Language']) {
       config.headers['Accept-Language'] = i18n.language || 'zh';
     }
 
-    // 如果请求体是 FormData，删除 Content-Type 让浏览器自动设置
-    // 浏览器会自动添加正确的 Content-Type 和 boundary
+    // API client endpoint
+    // API client endpoint
     if (config.data instanceof FormData) {
-      // 不设置 Content-Type，让浏览器自动处理
+      // API client endpoint
       if (config.headers) {
         delete config.headers['Content-Type'];
       }
     } else if (config.headers && !config.headers['Content-Type']) {
-      // 对于非 FormData 请求，默认设置为 JSON
+      // API client endpoint
       config.headers['Content-Type'] = 'application/json';
     }
 
@@ -134,47 +134,47 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 响应拦截器
+// API client endpoint
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    // 统一错误处理
+    // API client endpoint
     if (error.response) {
-      // 服务器返回错误状态码
+      // API client endpoint
       console.error('API Error:', error.response.data);
     } else if (error.request) {
-      // 请求已发送但没有收到响应
+      // API client endpoint
       console.error('Network Error:', error.request);
     } else {
-      // 其他错误
+      // API client endpoint
       console.error('Error:', error.message);
     }
     return Promise.reject(error);
   }
 );
 
-// 图片URL处理工具
-// 使用相对路径，通过代理转发到后端
+// API client endpoint
+// API client endpoint
 export const getImageUrl = (path?: string, timestamp?: string | number): string => {
   if (!path) return '';
   if (isClientSideUrl(path)) {
     return normalizeClientSideUrl(path);
   }
 
-  // 如果已经是完整URL，直接返回
+  // API client endpoint
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
-  // 使用相对路径（确保以 / 开头）
+  // API client endpoint
   let url = path.startsWith('/') ? path : '/' + path;
 
   if (isDesktop) {
     url = `${getBaseURL()}${url}`;
   }
   
-  // 添加时间戳参数避免浏览器缓存（仅在提供时间戳时添加）
+  // API client endpoint
   if (timestamp) {
     const ts = typeof timestamp === 'string' 
       ? new Date(timestamp).getTime() 

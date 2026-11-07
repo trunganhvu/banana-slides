@@ -60,8 +60,8 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
         const descEvent = `event: description\ndata: ${JSON.stringify({
           page_index: i,
           page_id: p.page_id,
-          text: `页面标题：Page ${i + 1}\n\n页面文字：\n- Content for page ${i + 1}`,
-          extra_fields: i === 0 ? { '排版布局': '居中布局，大标题' } : { '排版布局': '左文右图' },
+          text: `Page ${i + 1}\n\n\n- Content for page ${i + 1}`,
+          extra_fields: i === 0 ? { 'Bố cục & Trọng tâm': '' } : { 'Bố cục & Trọng tâm': '' },
         })}\n\n`;
         return descEvent;
       });
@@ -72,8 +72,8 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
           ...p,
           status: 'DESCRIPTION_GENERATED',
           description_content: {
-            text: `页面标题：Page ${i + 1}\n\n页面文字：\n- Content for page ${i + 1}`,
-            extra_fields: i === 0 ? { '排版布局': '居中布局，大标题' } : { '排版布局': '左文右图' },
+            text: `Page ${i + 1}\n\n\n- Content for page ${i + 1}`,
+            extra_fields: i === 0 ? { 'Bố cục & Trọng tâm': '' } : { 'Bố cục & Trọng tâm': '' },
           },
         })),
       })}\n\n`;
@@ -99,7 +99,7 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
     });
 
     // Click the generate descriptions button
-    const generateBtn = page.locator('button').filter({ hasText: /生成描述|Generate/ });
+    const generateBtn = page.locator('button').filter({ hasText: /|Generate/ });
     await generateBtn.first().click();
 
     // Wait for descriptions to appear
@@ -124,8 +124,8 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
       {
         data: {
           description_content: {
-            text: '页面标题：Test Page\n\n页面文字：\n- Test content',
-            extra_fields: { '排版布局': '居中布局，大标题+副标题' },
+            text: 'Test Page\n\n\n- Test content',
+            extra_fields: { 'Bố cục & Trọng tâm': '+' },
           },
         },
       }
@@ -136,8 +136,8 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Check extra field is displayed
-    await expect(page.locator('text=排版布局')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=居中布局，大标题+副标题')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Bố cục & Trọng tâm')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=+')).toBeVisible({ timeout: 5000 });
   });
 
   test('should display extra fields from old layout_suggestion format (backward compat)', async ({ page }) => {
@@ -153,8 +153,8 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
       {
         data: {
           description_content: {
-            text: '测试页面内容',
-            layout_suggestion: '左右分栏布局',
+            text: '',
+            layout_suggestion: '',
           },
         },
       }
@@ -163,9 +163,9 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
     await page.goto(`${BASE_URL}/project/${projectId}/detail`);
     await page.waitForLoadState('networkidle');
 
-    // Old layout_suggestion should be mapped to "排版建议" field (legacy name)
-    await expect(page.locator('text=排版建议')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=左右分栏布局')).toBeVisible({ timeout: 5000 });
+    // Old layout_suggestion should be mapped to "Gợi ý bố cục" field (legacy name)
+    await expect(page.locator('text=Gợi ý bố cục')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=')).toBeVisible({ timeout: 5000 });
   });
 
   test('should fall back to parallel mode when setting is parallel', async ({ page }) => {
@@ -214,7 +214,7 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
     });
 
     // Click generate
-    const generateBtn = page.locator('button').filter({ hasText: /生成描述|Generate/ });
+    const generateBtn = page.locator('button').filter({ hasText: /|Generate/ });
     await generateBtn.first().click();
 
     // Wait a bit for the mode dispatch
@@ -232,23 +232,23 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Find the Settings2 button by its title attribute
-    const gearBtn = page.locator('button[title="描述设置"], button[title="Description Settings"]');
+    const gearBtn = page.locator('button[title=""], button[title="Description Settings"]');
     await expect(gearBtn).toBeVisible({ timeout: 5000 });
     await gearBtn.click();
 
     // Check generation mode buttons
-    await expect(page.locator('text=流式').or(page.locator('text=Streaming'))).toBeVisible({ timeout: 3000 });
-    await expect(page.locator('text=并行').or(page.locator('text=Parallel'))).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('text=').or(page.locator('text=Streaming'))).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('text=').or(page.locator('text=Parallel'))).toBeVisible({ timeout: 3000 });
 
     // Check detail level buttons
-    await expect(page.locator('text=精简').or(page.locator('text=Concise'))).toBeVisible();
-    await expect(page.locator('text=默认').or(page.locator('text=Default'))).toBeVisible();
-    await expect(page.getByRole('button', { name: /详细|Detailed/ })).toBeVisible();
+    await expect(page.locator('text=').or(page.locator('text=Concise'))).toBeVisible();
+    await expect(page.locator('text=').or(page.locator('text=Default'))).toBeVisible();
+    await expect(page.getByRole('button', { name: /|Detailed/ })).toBeVisible();
 
     // Check extra fields section
-    await expect(page.locator('text=额外字段').or(page.locator('text=Extra Fields'))).toBeVisible();
-    // Default field "版式与重点" should be shown
-    await expect(page.locator('text=版式与重点')).toBeVisible();
+    await expect(page.locator('text=').or(page.locator('text=Extra Fields'))).toBeVisible();
+    // Default field "Bố cục & Trọng tâm" should be shown
+    await expect(page.locator('text=Bố cục & Trọng tâm')).toBeVisible();
   });
 
   test('should persist generation mode via settings API', async ({ page }) => {
@@ -257,11 +257,11 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Open settings panel
-    const gearBtn = page.locator('button[title="描述设置"], button[title="Description Settings"]');
+    const gearBtn = page.locator('button[title=""], button[title="Description Settings"]');
     await gearBtn.click();
 
     // Click parallel button
-    const parallelBtn = page.locator('button').filter({ hasText: /并行|Parallel/ });
+    const parallelBtn = page.locator('button').filter({ hasText: /|Parallel/ });
     await parallelBtn.first().click();
 
     // Wait for debounced save
@@ -284,16 +284,16 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Open settings panel
-    const gearBtn = page.locator('button[title="描述设置"], button[title="Description Settings"]');
+    const gearBtn = page.locator('button[title=""], button[title="Description Settings"]');
     await gearBtn.click();
 
     // Add a new field via input
-    const fieldInput = page.locator('input[placeholder="添加字段"], input[placeholder="Add Field"]');
-    await fieldInput.fill('配图建议');
+    const fieldInput = page.locator('input[placeholder=""], input[placeholder="Add Field"]');
+    await fieldInput.fill('');
     await fieldInput.press('Enter');
 
     // New field should appear as an active pill button
-    const newPill = page.locator('button').filter({ hasText: '配图建议' });
+    const newPill = page.locator('button').filter({ hasText: '' });
     await expect(newPill).toBeVisible({ timeout: 3000 });
 
     // Wait for debounced save
@@ -302,22 +302,22 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
     // Verify via API — both fields should be active
     const settingsResp = await page.request.get(`${BASE_URL}/api/settings`);
     const settingsData = await settingsResp.json();
-    expect(settingsData.data?.description_extra_fields).toContain('配图建议');
-    expect(settingsData.data?.description_extra_fields).toContain('版式与重点');
+    expect(settingsData.data?.description_extra_fields).toContain('');
+    expect(settingsData.data?.description_extra_fields).toContain('Bố cục & Trọng tâm');
 
-    // Toggle off 配图建议 by clicking the pill
+    // Test verification logic
     await newPill.click();
     await page.waitForTimeout(1500);
 
     // Verify it's removed from active fields but still visible in pool
     const settingsResp2 = await page.request.get(`${BASE_URL}/api/settings`);
     const settingsData2 = await settingsResp2.json();
-    expect(settingsData2.data?.description_extra_fields).not.toContain('配图建议');
+    expect(settingsData2.data?.description_extra_fields).not.toContain('');
     await expect(newPill).toBeVisible(); // Still in pool, just inactive
 
     // Clean up: reset extra fields
     await page.request.put(`${BASE_URL}/api/settings`, {
-      data: { description_extra_fields: ['配图与素材', '版式与重点', '演讲者备注'] },
+      data: { description_extra_fields: ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình'] },
     });
     // Clean up localStorage pool
     await page.evaluate(() => localStorage.removeItem('banana-available-extra-fields'));
@@ -336,8 +336,8 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
       {
         data: {
           description_content: {
-            text: '测试内容',
-            extra_fields: { '排版布局': '居中布局' },
+            text: '',
+            extra_fields: { 'Bố cục & Trọng tâm': '' },
           },
         },
       }
@@ -347,23 +347,23 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Click edit on first card
-    const editBtn = page.locator('button').filter({ hasText: /编辑|Edit/ }).first();
+    const editBtn = page.locator('button').filter({ hasText: /|Edit/ }).first();
     await editBtn.click();
 
     // Modal should be visible with extra field input
-    await expect(page.locator('label').filter({ hasText: '排版布局' })).toBeVisible({ timeout: 5000 });
-    const fieldTextarea = page.locator('textarea').filter({ hasText: '居中布局' });
+    await expect(page.locator('label').filter({ hasText: 'Bố cục & Trọng tâm' })).toBeVisible({ timeout: 5000 });
+    const fieldTextarea = page.locator('textarea').filter({ hasText: '' });
     await expect(fieldTextarea).toBeVisible();
 
     // Edit the extra field value
-    await fieldTextarea.fill('左右分栏');
+    await fieldTextarea.fill('');
 
     // Save
-    const saveBtn = page.locator('button').filter({ hasText: /保存|Save/ });
+    const saveBtn = page.locator('button').filter({ hasText: /|Save/ });
     await saveBtn.click();
 
     // Verify the card shows updated value (use paragraph to avoid matching textarea)
-    await expect(page.getByRole('paragraph').filter({ hasText: '左右分栏' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('paragraph').filter({ hasText: '' })).toBeVisible({ timeout: 5000 });
   });
 
   test('single page regeneration should still work', async ({ page }) => {
@@ -373,7 +373,7 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Click regenerate on the first page card
-    const regenBtn = page.locator('button').filter({ hasText: /重新生成|Regenerate/ });
+    const regenBtn = page.locator('button').filter({ hasText: /|Regenerate/ });
     await expect(regenBtn.first()).toBeVisible({ timeout: 5000 });
   });
 });

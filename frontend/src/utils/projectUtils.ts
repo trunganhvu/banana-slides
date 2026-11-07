@@ -7,22 +7,22 @@ import i18n from '@/i18n';
 const utilsI18n = {
   zh: {
     projectUtils: {
-      untitled: '未命名项目',
-      notStarted: '未开始',
-      completed: '已完成',
-      pendingImages: '待生成图片',
-      pendingDesc: '待生成描述',
-      pageNum: '第 {{num}} 页',
-      pageHeading: '## 第 {{num}} 页: {{title}}',
-      chapter: '章节',
-      outlinePoints: '**大纲要点：**',
-      noPoints: '*暂无要点*',
-      pageDesc: '**页面描述：**',
-      noDesc: '*暂无描述*',
-      generatedAt: '生成时间',
-      prefixDesc: '描述',
-      prefixOutline: '大纲',
-      prefixProject: '项目',
+      untitled: 'Dự án chưa đặt tên',
+      notStarted: 'Chưa bắt đầu',
+      completed: 'Đã hoàn thành',
+      pendingImages: 'Chờ tạo ảnh',
+      pendingDesc: 'Chờ tạo mô tả',
+      pageNum: 'Trang {{num}}',
+      pageHeading: '## Trang {{num}}: {{title}}',
+      chapter: 'Chương',
+      outlinePoints: '**Ý chính dàn ý:**',
+      noPoints: '*Chưa có ý chính*',
+      pageDesc: '**Mô tả trang:**',
+      noDesc: '*Chưa có mô tả*',
+      generatedAt: 'Thời gian tạo',
+      prefixDesc: 'Mo_ta',
+      prefixOutline: 'Dan_y',
+      prefixProject: 'Du_an',
     }
   },
   en: {
@@ -49,14 +49,14 @@ const utilsI18n = {
 const t = getT(utilsI18n);
 
 /**
- * 获取项目标题
+ * Lấy tiêu đề dự án
  */
 export const getProjectTitle = (project: Project): string => {
   if (project.project_title?.trim()) {
     return project.project_title.trim();
   }
 
-  // 从第一个页面的大纲标题获取项目名称
+  // Extract project title from first page outline
   if (project.pages && project.pages.length > 0) {
     const sortedPages = [...project.pages].sort((a, b) =>
       (a.order_index || 0) - (b.order_index || 0)
@@ -80,14 +80,14 @@ export const getProjectTitle = (project: Project): string => {
 };
 
 /**
- * 获取第一页图片URL
+ * Lấy URL hình ảnh trang đầu
  */
 export const getFirstPageImage = (project: Project): string | null => {
   if (!project.pages || project.pages.length === 0) {
     return null;
   }
 
-  // 找到第一页有图片的页面，优先使用 generated_image_url（已包含缩略图逻辑）
+  // Find first page with image
   const firstPageWithImage = project.pages.find(p => p.generated_image_url);
   if (firstPageWithImage?.generated_image_url) {
     return getImageUrl(firstPageWithImage.generated_image_url, firstPageWithImage.updated_at);
@@ -97,11 +97,11 @@ export const getFirstPageImage = (project: Project): string | null => {
 };
 
 /**
- * 格式化日期
+ * Định dạng ngày tháng
  */
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  const locale = i18n.language?.startsWith('zh') ? 'zh-CN' : 'en-US';
+  const locale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
   return date.toLocaleString(locale, {
     year: 'numeric',
     month: '2-digit',
@@ -121,7 +121,7 @@ const getStatusKey = (project: Project): StatusKey => {
 };
 
 /**
- * 获取项目状态文本
+ * Lấy văn bản trạng thái dự án
  */
 export const getStatusText = (project: Project): string => {
   return t(`projectUtils.${getStatusKey(project)}`);
@@ -135,14 +135,14 @@ const statusColorMap: Record<StatusKey, string> = {
 };
 
 /**
- * 获取项目状态颜色样式
+ * Lấy kiểu màu trạng thái dự án
  */
 export const getStatusColor = (project: Project): string => {
   return statusColorMap[getStatusKey(project)];
 };
 
 /**
- * 获取项目路由路径
+ * Lấy đường dẫn điều hướng dự án
  */
 export const getProjectRoute = (project: Project): string => {
   const projectId = project.id || project.project_id;
@@ -162,7 +162,7 @@ export const getProjectRoute = (project: Project): string => {
   return `/project/${projectId}/outline`;
 };
 
-// ========== Markdown 导出/导入 ==========
+// ========== Markdown Export/Import ==========
 
 export const getDescriptionText = (descContent: DescriptionContent | undefined | null): string => {
   if (!descContent) return '';
@@ -171,15 +171,29 @@ export const getDescriptionText = (descContent: DescriptionContent | undefined |
   return '';
 };
 
+const LEGACY_MAP: Record<string, string> = {
+  '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+  '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+  '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+  '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
+  '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
+  '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
+  '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
+};
+
 const getExtraFields = (descContent: DescriptionContent | undefined | null): Record<string, string> | undefined => {
   if (!descContent) return undefined;
   // New format
   if (descContent.extra_fields && typeof descContent.extra_fields === 'object') {
-    return descContent.extra_fields;
+    const res: Record<string, string> = {};
+    for (const [k, v] of Object.entries(descContent.extra_fields)) {
+      res[LEGACY_MAP[k] || k] = v;
+    }
+    return res;
   }
   // Backward compat
   if (descContent.layout_suggestion) {
-    return { '排版建议': descContent.layout_suggestion };
+    return { 'Gợi ý bố cục': descContent.layout_suggestion };
   }
   return undefined;
 };
@@ -217,11 +231,11 @@ const pageToMarkdown = (page: Page, index: number, opts: ExportOptions = {}): st
     } else {
       md += `${t('projectUtils.noDesc')}\n`;
     }
-    // 额外字段
+    // Extra fields
     if (extraFields) {
       md += '\n';
       for (const [name, value] of Object.entries(extraFields)) {
-        if (value) md += `${name}：${value}\n`;
+        if (value) md += `${name}: ${value}\n`;
       }
     }
     md += '\n';
@@ -232,7 +246,7 @@ const pageToMarkdown = (page: Page, index: number, opts: ExportOptions = {}): st
 };
 
 export const exportProjectToMarkdown = (project: Project, opts?: ExportOptions): void => {
-  const locale = i18n.language?.startsWith('zh') ? 'zh-CN' : 'en-US';
+  const locale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
   let md = `# ${getProjectTitle(project)}\n\n`;
   md += `> ${t('projectUtils.generatedAt')}: ${new Date().toLocaleString(locale)}\n\n---\n\n`;
   project.pages.forEach((page, i) => { md += pageToMarkdown(page, i, opts); });
@@ -245,7 +259,7 @@ export const exportProjectToMarkdown = (project: Project, opts?: ExportOptions):
   downloadFile(blob, `${prefix}_${project.id?.slice(0, 8) || 'export'}.md`);
 };
 
-// --- 导入 ---
+// --- Import ---
 
 export interface ParsedPage {
   title: string;
@@ -258,13 +272,13 @@ export interface ParsedPage {
 const sanitize = (s: string) => s.replace(/<[^>]*>/g, '');
 
 const splitMarkdownPages = (markdown: string): string[] => {
-  // Support both Chinese "## 第 N 页:" and English "## Page N:" formats
-  return markdown.split(/^## (?:第 \d+ 页|Page \d+):/m).slice(1);
+  
+  return markdown.split(/^## (?:Trang \d+|Page \d+):/m).slice(1);
 };
 
-// 额外字段行模式：短名称 + 中/英冒号 + 内容
-const EXTRA_FIELD_RE = /^([^\s：:]{1,20})[：:](.+)/;
-const TRAILING_MARKERS = new Set(['---', '', '*暂无要点*', '*暂无描述*', '*No points yet*', '*No description yet*']);
+
+const EXTRA_FIELD_RE = /^([^\s: :]{1,20})[: :](.+)/;
+const TRAILING_MARKERS = new Set(['---', '', '*Chưa có ý chính*', '*Chưa có mô tả*', '*No points yet*', '*No description yet*']);
 const BULLET_RE = /^[-*+]\s+(.+)$/;
 
 const stripBullet = (line: string): string | null => {
@@ -273,7 +287,7 @@ const stripBullet = (line: string): string | null => {
 };
 
 const splitDescAndExtraFields = (descLines: string[]): { text: string; extra_fields?: Record<string, string> } => {
-  // 从末尾向前扫描连续的额外字段行
+  // Scan extra field lines from end
   const fields: Record<string, string> = {};
   let i = descLines.length - 1;
   while (i >= 0) {
@@ -282,7 +296,7 @@ const splitDescAndExtraFields = (descLines: string[]): { text: string; extra_fie
       fields[m[1]] = m[2].trim();
       i--;
     } else if (descLines[i].trim() === '') {
-      i--; // 跳过空行
+      i--; // Skip blank lines
     } else {
       break;
     }
@@ -311,13 +325,13 @@ export const parseMarkdownPages = (markdown: string): ParsedPage[] => {
     const lines = section.split('\n');
     const title = sanitize(lines[0].trim());
 
-    // Extract metadata (support both Chinese and English)
-    const partLine = lines.find(l => l.startsWith('> 章节: ') || l.startsWith('> Chapter: '));
-    const part = partLine ? sanitize(partLine.replace(/^> (?:章节|Chapter): /, '').trim()) : undefined;
+    // Extract metadata (support Vietnamese and English)
+    const partLine = lines.find(l => l.startsWith('> Chương: ') || l.startsWith('> Chapter: '));
+    const part = partLine ? sanitize(partLine.replace(/^> (?:Chương|Chapter): /, '').trim()) : undefined;
 
     // Find section markers (support both Chinese and English)
-    const outlineIdx = lines.findIndex(l => l.trim() === '**大纲要点：**' || l.trim() === '**Outline Points:**');
-    const descIdx = lines.findIndex(l => l.trim() === '**页面描述：**' || l.trim() === '**Page Description:**');
+    const outlineIdx = lines.findIndex(l => l.trim() === '**Ý chính dàn ý:**' || l.trim() === '**Outline Points:**');
+    const descIdx = lines.findIndex(l => l.trim() === '**Mô tả trang:**' || l.trim() === '**Page Description:**');
 
     let points: string[] = [];
     let text = '';

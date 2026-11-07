@@ -15,8 +15,8 @@ class PageImageVersion(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     page_id = db.Column(db.String(36), db.ForeignKey('pages.id'), nullable=False, index=True)
     image_path = db.Column(db.String(500), nullable=False)
-    version_number = db.Column(db.Integer, nullable=False)  # 版本号，从1开始递增
-    is_current = db.Column(db.Boolean, nullable=False, default=False)  # 是否为当前使用的版本
+    version_number = db.Column(db.Integer, nullable=False)  # Backend logic
+    is_current = db.Column(db.Boolean, nullable=False, default=False)  # Backend logic
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     # Relationships
@@ -43,4 +43,3 @@ class PageImageVersion(db.Model):
     
     def __repr__(self):
         return f'<PageImageVersion {self.id}: page={self.page_id}, version={self.version_number}, current={self.is_current}>'
-

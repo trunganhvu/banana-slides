@@ -14,30 +14,30 @@ import { getImageUrl } from '@/api/client';
 const i18nDict = {
   zh: {
     mc: {
-      title: '素材中心',
-      count: '共 {{count}} 个素材',
-      empty: '暂无素材',
-      selected: '已选 {{count}} 个',
-      filterAll: '全部素材',
-      filterNone: '未关联项目',
-      moreProjects: '+ 更多项目…',
-      preview: '预览',
-      remove: '删除',
-      closePreview: '关闭预览',
-      emptyHint: '上传图片或通过素材生成功能创建素材',
+      title: 'Trung tâm tư liệu',
+      count: 'Tổng {{count}} tư liệu',
+      empty: 'Chưa có tư liệu',
+      selected: 'Đã chọn {{count}} ',
+      filterAll: 'Tất cả tư liệu',
+      filterNone: 'Chưa gắn với dự án',
+      moreProjects: '+ Thêm dự án...',
+      preview: 'Xem trước',
+      remove: 'Xóa',
+      closePreview: 'Đóng xem trước',
+      emptyHint: 'Tải ảnh lên hoặc tạo tư liệu qua tính năng Tạo tư liệu',
       msg: {
-        loadErr: '加载素材失败',
-        badFormat: '不支持的图片格式',
-        uploaded: '素材上传成功',
-        uploadErr: '上传素材失败',
-        noId: '无法删除：缺少素材ID',
-        deleted: '素材已删除',
-        deleteErr: '删除素材失败',
-        downloaded: '下载成功',
-        downloadErr: '下载失败',
-        zipped: '已打包 {{count}} 个素材',
-        zipErr: '批量下载失败',
-        pickFirst: '请先选择要下载的素材',
+        loadErr: 'Tải tư liệu thất bại',
+        badFormat: 'Định dạng ảnh không được hỗ trợ',
+        uploaded: 'Tải tư liệu lên thành công',
+        uploadErr: 'Tải tư liệu lên thất bại',
+        noId: 'Không thể xóa: thiếu tư liệuID',
+        deleted: 'Đã xóa tư liệu',
+        deleteErr: 'Xóa tư liệu thất bại',
+        downloaded: 'Tải xuống thành công',
+        downloadErr: 'Tải xuống thất bại',
+        zipped: 'Đã đóng gói {{count}} tư liệu',
+        zipErr: 'Tải xuống hàng loạt thất bại',
+        pickFirst: 'Vui lòng chọn tư liệu cần tải xuống trước',
       },
     },
   },
@@ -219,7 +219,7 @@ const ToolbarSection: React.FC<{
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        {/* 项目筛选下拉框 */}
+        {/* UI element */}
         <select
           value={state.filter}
           onChange={(e) => dispatch({ type: 'SET_FILTER', value: e.target.value })}
@@ -234,7 +234,7 @@ const ToolbarSection: React.FC<{
           ))}
         </select>
 
-        {/* 排序循环按钮 */}
+        {/* UI element */}
         <button
           onClick={() => {
             const order: Array<State['sortBy']> = ['newest', 'oldest', 'name-asc', 'name-desc'];
@@ -246,8 +246,8 @@ const ToolbarSection: React.FC<{
         >
           <ArrowUpDown size={14} />
           <span>
-            {state.sortBy === 'newest' && '从新到旧'}
-            {state.sortBy === 'oldest' && '从旧到新'}
+            {state.sortBy === 'newest' && 'Mới nhất trước'}
+            {state.sortBy === 'oldest' && 'Cũ nhất trước'}
             {state.sortBy === 'name-asc' && 'A-Z'}
             {state.sortBy === 'name-desc' && 'Z-A'}
           </span>

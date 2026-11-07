@@ -13,34 +13,34 @@ import { normalizeProject } from '@/utils';
 import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
 import type { Project } from '@/types';
 
-// 页面特有翻译 - AI 可以直接看到所有文案
+// Page translations
 const historyI18n = {
   zh: {
-    home: { title: '蕉幻', actions: { createProject: '创建新项目' } },
-    nav: { home: '主页' },
-    settings: { language: { label: '界面语言' }, theme: { light: '浅色', dark: '深色' } },
+    home: { title: 'Banana Slides', actions: { createProject: 'Tạo dự án mới' } },
+    nav: { home: 'Trang chủ' },
+    settings: { language: { label: 'Ngôn ngữ giao diện' }, theme: { light: 'Sáng', dark: 'Tối' } },
     history: {
-      title: '历史项目',
-      subtitle: '查看和管理你的所有项目',
-      noProjects: '暂无历史项目',
-      createFirst: '创建你的第一个项目开始使用吧',
-      selectedCount: '已选择 {{count}} 项',
-      cancelSelect: '取消选择',
-      batchDelete: '批量删除',
-      confirmDelete: '确定要删除项目「{{title}}」吗？此操作不可恢复。',
-      confirmBatchDelete: '确定要删除选中的 {{count}} 个项目吗？此操作不可恢复。',
-      deleteTitle: '确认删除',
-      batchDeleteTitle: '确认批量删除',
-      deleteSuccess: '成功删除 {{count}} 个项目',
-      deletePartial: '成功删除 {{success}} 个项目，{{fail}} 个删除失败',
-      deleteCurrentProject: '已删除项目，包括当前打开的项目',
-      deleteFailed: '删除项目失败',
-      openFailed: '打开项目失败',
-      loadFailed: '加载历史项目失败',
-      perPage: '条/页',
-      titleEmpty: '项目名称不能为空',
-      titleUpdated: '项目名称已更新',
-      titleUpdateFailed: '更新项目名称失败',
+      title: 'Lịch sử dự án',
+      subtitle: 'Xem và quản lý tất cả các bài thuyết trình của bạn',
+      noProjects: 'Chưa có dự án lịch sử nào',
+      createFirst: 'Hãy tạo dự án đầu tiên của bạn để bắt đầu',
+      selectedCount: 'Đã chọn {{count}} mục',
+      cancelSelect: 'Hủy chọn',
+      deleteSelected: 'Xóa mục đã chọn',
+      batchDeleteConfirm: 'Bạn có chắc chắn muốn xóa {{count}} dự án đã chọn không? Thao tác này không thể hoàn tác.',
+      batchDeleteSuccess: 'Đã xóa {{count}} dự án',
+      batchDeletePartial: 'Đã xóa {{success}} dự án thành công, {{fail}} dự án thất bại',
+      batchDeleteFailed: 'Xóa hàng loạt thất bại',
+      singleDeleteSuccess: 'Đã xóa dự án',
+      singleDeleteFailed: 'Xóa dự án thất bại',
+      titleUpdated: 'Đã cập nhật tiêu đề',
+      titleUpdateFailed: 'Cập nhật tiêu đề thất bại',
+      pagination: {
+        pageInfo: 'Hiển thị {{start}}-{{end}} trong tổng số {{total}} dự án',
+        pageSize: '{{size}} mục / trang',
+        prev: 'Trang trước',
+        next: 'Trang sau',
+      },
     },
   },
   en: {
@@ -79,7 +79,7 @@ const PAGE_SIZE_KEY = 'history_page_size';
 export const History: React.FC = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
-  const t = useT(historyI18n); // 组件内翻译 + 自动 fallback 到全局
+  const t = useT(historyI18n); // Component translations with fallback
   const { isDark, setTheme } = useTheme();
   const { syncProject, setCurrentProject } = useProjectStore();
 
@@ -113,7 +113,7 @@ export const History: React.FC = () => {
         setTotalProjects(response.data.total ?? 0);
       }
     } catch (err: any) {
-      console.error('加载历史项目失败:', err);
+      console.error('Tải lịch sử dự án thất bại:', err);
       setError(err.message || t('history.loadFailed'));
     } finally {
       setIsLoading(false);
@@ -137,35 +137,35 @@ export const History: React.FC = () => {
     setSelectedProjects(new Set());
   }, []);
 
-  // ===== 项目选择与导航 =====
+  // ===== Project Selection & Navigation =====
 
   const handleSelectProject = useCallback(async (project: Project) => {
     const projectId = project.id || project.project_id;
     if (!projectId) return;
 
-    // 如果正在批量选择模式，不跳转
+    // Do not navigate if in batch selection mode
     if (selectedProjects.size > 0) {
       return;
     }
 
-    // 如果正在编辑该项目，不跳转
+    // Do not navigate if editing this project
     if (editingProjectId === projectId) {
       return;
     }
 
     try {
-      // 设置当前项目
+      // Set current project
       setCurrentProject(project);
       localStorage.setItem('currentProjectId', projectId);
       
-      // 同步项目数据
+      // Sync project data
       await syncProject(projectId);
       
-      // 根据项目状态跳转到不同页面
+      // Navigate based on project status
       const route = getProjectRoute(project);
       navigate(route, { state: { from: 'history' } });
     } catch (err: any) {
-      console.error('打开项目失败:', err);
+      console.error('Mở dự án thất bại:', err);
       show({
         message: t('history.openFailed') + ': ' + (err.message || t('common.unknownError')),
         type: 'error'
@@ -174,7 +174,7 @@ export const History: React.FC = () => {
    
   }, [selectedProjects, editingProjectId, setCurrentProject, syncProject, navigate, show]);
 
-  // ===== 批量选择操作 =====
+  // ===== Batch Selection =====
 
   const handleToggleSelect = useCallback((projectId: string) => {
     setSelectedProjects(prev => {
@@ -199,7 +199,7 @@ export const History: React.FC = () => {
     });
   }, [projects]);
 
-  // ===== 删除操作 =====
+  // ===== Delete Operations =====
 
   const deleteProjects = useCallback(async (projectIds: string[]) => {
     setIsDeleting(true);
@@ -207,7 +207,7 @@ export const History: React.FC = () => {
     let deletedCurrentProject = false;
 
     try {
-      // 批量删除 - 使用 allSettled 处理部分失败
+      // Batch delete using allSettled
       const results = await Promise.allSettled(
         projectIds.map(projectId => api.deleteProject(projectId))
       );
@@ -215,14 +215,14 @@ export const History: React.FC = () => {
       const successIds = projectIds.filter((_, i) => results[i].status === 'fulfilled');
       const failCount = results.filter(r => r.status === 'rejected').length;
 
-      // 检查是否删除了当前项目
+      // Check if current project deleted
       if (currentProjectId && successIds.includes(currentProjectId)) {
         localStorage.removeItem('currentProjectId');
         setCurrentProject(null);
         deletedCurrentProject = true;
       }
 
-      // 清空选择
+      // Clear selection
       setSelectedProjects(new Set());
 
       // Reload current page; if all items on this page were deleted, go back one page
@@ -259,7 +259,7 @@ export const History: React.FC = () => {
         });
       }
     } catch (err: any) {
-      console.error('删除项目失败:', err);
+      console.error('Xóa dự án thất bại:', err);
       show({
         message: t('history.deleteFailed') + ': ' + (err.message || t('common.unknownError')),
         type: 'error'
@@ -270,7 +270,7 @@ export const History: React.FC = () => {
   }, [setCurrentProject, show, projects, currentPage, loadProjects]);
 
   const handleDeleteProject = useCallback(async (e: React.MouseEvent, project: Project) => {
-    e.stopPropagation(); // 阻止事件冒泡，避免触发项目选择
+    e.stopPropagation(); // Prevent event bubbling
     
     const projectId = project.id || project.project_id;
     if (!projectId) return;
@@ -300,12 +300,12 @@ export const History: React.FC = () => {
     );
   }, [selectedProjects, confirm, deleteProjects, t]);
 
-  // ===== 编辑操作 =====
+  // ===== Edit Operations =====
 
   const handleStartEdit = useCallback((e: React.MouseEvent, project: Project) => {
-    e.stopPropagation(); // 阻止事件冒泡，避免触发项目选择
+    e.stopPropagation(); // Prevent event bubbling
     
-    // 如果正在批量选择模式，不允许编辑
+    // Cannot edit during batch selection
     if (selectedProjects.size > 0) {
       return;
     }
@@ -336,7 +336,7 @@ export const History: React.FC = () => {
       if (!targetProject) return;
       await api.updateProject(projectId, { project_title: nextTitle });
 
-      // 更新本地状态
+      // Update local state
       setProjects(prev => prev.map(p => {
         const id = p.id || p.project_id;
         if (id === projectId) {
@@ -352,7 +352,7 @@ export const History: React.FC = () => {
       setEditingTitle('');
       show({ message: t('history.titleUpdated'), type: 'success' });
     } catch (err: any) {
-      console.error('更新项目名称失败:', err);
+      console.error('Cập nhật tên dự án thất bại:', err);
       show({
         message: t('history.titleUpdateFailed') + ': ' + (err.message || t('common.unknownError')),
         type: 'error'
@@ -373,7 +373,7 @@ export const History: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-banana-50 dark:from-background-primary via-white dark:via-background-primary to-gray-50 dark:to-background-primary">
-      {/* 导航栏 */}
+      {/* Navigation bar */}
       <nav className="h-14 md:h-16 bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-100 dark:border-border-primary">
         <div className="max-w-7xl mx-auto px-3 md:px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -390,17 +390,17 @@ export const History: React.FC = () => {
             >
               {t('nav.home')}
             </Button>
-            {/* 分隔线 */}
+            {/* Divider */}
             <div className="h-5 w-px bg-gray-300 dark:bg-border-primary" />
-            {/* 语言切换按钮 */}
+            {/* Language toggle button */}
             <button
-              onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
+              onClick={() => i18n.changeLanguage(i18n.language?.startsWith('en') ? 'vi' : 'en')}
               className="px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
               title={t('settings.language.label')}
             >
-              {i18n.language?.startsWith('zh') ? 'EN' : '中'}
+              {i18n.language?.startsWith('en') ? 'VI' : 'EN'}
             </button>
-            {/* 主题切换按钮 */}
+            {/* Theme toggle button */}
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               className="p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
@@ -412,7 +412,7 @@ export const History: React.FC = () => {
         </div>
       </nav>
 
-      {/* 主内容 */}
+      {/* Main content */}
       <main className="max-w-6xl mx-auto px-3 md:px-4 py-6 md:py-8">
         <div className="mb-6 md:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -473,7 +473,7 @@ export const History: React.FC = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {/* 全选工具栏 */}
+            {/* Select-all toolbar */}
             {projects.length > 0 && (
               <div className="flex items-center gap-3 pb-2 border-b border-gray-200 dark:border-border-primary">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -513,7 +513,7 @@ export const History: React.FC = () => {
               );
             })}
 
-            {/* 分页 */}
+            {/* Pagination */}
             <div className="pt-4">
               <Pagination
                 currentPage={currentPage}

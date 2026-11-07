@@ -20,10 +20,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = '确认操作',
+  title = 'Xác nhận thao tác',
   message,
-  confirmText = '确定',
-  cancelText = '取消',
+  confirmText = 'Xác nhận',
+  cancelText = 'Hủy',
   variant = 'warning',
   checkboxLabel,
   checkboxDefaultChecked = false,
@@ -150,4 +150,3 @@ export const useConfirm = () => {
     ) : null,
   };
 };
-

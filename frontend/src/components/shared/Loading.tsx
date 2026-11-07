@@ -33,14 +33,14 @@ export const Loading: React.FC<LoadingProps> = ({
   const defaultMessage = message || t('common.loading');
   const defaultBackgroundLabel = backgroundButtonLabel || t('common.runInBackground');
   
-  // 自动滚动到最新消息
+  // Component logic
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [progress?.messages]);
   
-  // 计算进度百分比
+  // Component logic
   const getPercent = () => {
     if (!progress) return 0;
     if (progress.percent !== undefined) return progress.percent;
@@ -53,16 +53,16 @@ export const Loading: React.FC<LoadingProps> = ({
   
   const content = (
     <div className="flex flex-col items-center justify-center max-w-md w-full px-4">
-      {/* 加载图标 */}
+      {/* UI element */}
       <div className="relative w-12 h-12 mb-4">
         <div className="absolute inset-0 border-4 border-banana-100 rounded-full" />
         <div className="absolute inset-0 border-4 border-banana-500 rounded-full border-t-transparent animate-spin" />
       </div>
       
-      {/* 消息 */}
+      {/* UI element */}
       <p className="text-lg text-gray-700 dark:text-foreground-secondary mb-4 text-center">{defaultMessage}</p>
 
-      {/* 进度条 */}
+      {/* UI element */}
       {progress && (
         <div className="w-full">
           <div className="flex justify-end text-sm text-gray-600 dark:text-foreground-tertiary mb-2">
@@ -77,7 +77,7 @@ export const Loading: React.FC<LoadingProps> = ({
         </div>
       )}
 
-      {/* 滚动消息日志 */}
+      {/* UI element */}
       {hasMessages && (
         <div className="w-full mt-4">
           <div className="bg-banana-50 dark:bg-background-secondary border border-banana-200 dark:border-border-primary rounded-lg p-3 h-32 overflow-y-auto text-xs">
@@ -123,7 +123,7 @@ export const Loading: React.FC<LoadingProps> = ({
   return content;
 };
 
-// 骨架屏组件
+// Component logic
 export const Skeleton: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div
@@ -135,4 +135,3 @@ export const Skeleton: React.FC<{ className?: string }> = ({ className }) => {
     />
   );
 };
-

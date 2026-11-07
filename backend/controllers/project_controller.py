@@ -107,9 +107,9 @@ def _reconstruct_outline_from_pages(pages: list) -> list:
             
         page_data = outline_content.copy()
         
-        # 如果当前页面属于一个 part
+        # Backend logic
         if page.part:
-            # 如果这是新的 part，先保存之前的 part（如果有）
+            # Backend logic
             if current_part and current_part != page.part:
                 outline.append({
                     "part": current_part,
@@ -118,12 +118,12 @@ def _reconstruct_outline_from_pages(pages: list) -> list:
                 current_part_pages = []
             
             current_part = page.part
-            # 移除 part 字段，因为它在顶层
+            # Backend logic
             if 'part' in page_data:
                 del page_data['part']
             current_part_pages.append(page_data)
         else:
-            # 如果当前页面不属于任何 part，先保存之前的 part（如果有）
+            # Backend logic
             if current_part:
                 outline.append({
                     "part": current_part,
@@ -132,10 +132,10 @@ def _reconstruct_outline_from_pages(pages: list) -> list:
                 current_part = None
                 current_part_pages = []
             
-            # 直接添加页面
+            # Backend logic
             outline.append(page_data)
     
-    # 保存最后一个 part（如果有）
+    # Backend logic
     if current_part:
         outline.append({
             "part": current_part,
@@ -495,9 +495,9 @@ def generate_outline(project_id):
         else:
             logger.info(f"No reference files found for project {project_id}")
         
-        # 根据项目类型选择不同的处理方式
+        # Backend logic
         if project.creation_type == 'outline':
-            # 从大纲生成：解析用户输入的大纲文本
+            # Backend logic
             if not project.outline_text:
                 return bad_request("outline_text is required for outline type project")
             
@@ -505,14 +505,14 @@ def generate_outline(project_id):
             project_context = ProjectContext(project, reference_files_content)
             outline = ai_service.parse_outline_text(project_context, language=language)
         elif project.creation_type == 'descriptions':
-            # 从描述生成：从 description_text 提取大纲结构（仅大纲，不含页面描述）
+            # Backend logic
             if not project.description_text:
                 return bad_request("description_text is required for descriptions type project")
 
             project_context = ProjectContext(project, reference_files_content)
             outline = ai_service.parse_description_to_outline(project_context, language=language)
         else:
-            # 一句话生成：从idea生成大纲
+            # Backend logic
             idea_prompt = data.get('idea_prompt') or project.idea_prompt
             
             if not idea_prompt:
@@ -537,7 +537,7 @@ def generate_outline(project_id):
         
         db.session.commit()
         
-        logger.info(f"大纲生成完成: 项目 {project_id}, 创建了 {len(pages_list)} 个页面")
+        logger.info(f"Hoàn tất tạo dàn ý: Dự án {project_id}, đã tạo {len(pages_list)} trang")
         
         # Return pages
         return success_response({
@@ -639,7 +639,7 @@ def generate_outline_stream(project_id):
                 proj.updated_at = datetime.utcnow()
                 db.session.commit()
 
-                logger.info(f"流式大纲生成完成: 项目 {project_id}, {len(pages_list)} 个页面")
+                logger.info(f":  {project_id}, {len(pages_list)} ")
 
                 yield _sse_event('done', {
                     'total': len(pages_list),
@@ -653,7 +653,7 @@ def generate_outline_stream(project_id):
                 except Exception as rollback_exc:
                     logger.warning(f"Session rollback failed: {rollback_exc}", exc_info=True)
                 logger.error(f"generate_outline_stream failed: {str(e)}", exc_info=True)
-                yield _sse_event('error', {'message': '生成过程中发生内部错误'})
+                yield _sse_event('error', {'message': 'Đã xảy ra lỗi nội bộ trong quá trình tạo'})
 
     return Response(
         stream_with_context(sse_generate()),
@@ -715,24 +715,24 @@ def generate_from_description(project_id):
         reference_files_content = _get_project_reference_files_content(project_id)
         project_context = ProjectContext(project, reference_files_content)
         
-        logger.info(f"开始从描述生成大纲和页面描述: 项目 {project_id}")
+        logger.info(f"Bắt đầu tạo dàn ý và mô tả trang từ văn bản mô tả: Dự án {project_id}")
         
         # Step 1: Parse description to outline
-        logger.info("Step 1: 解析描述文本到大纲结构...")
+        logger.info("Step 1: Phân tích văn bản mô tả thành cấu trúc dàn ý...")
         outline = ai_service.parse_description_to_outline(project_context, language=language)
-        logger.info(f"大纲解析完成，共 {len(ai_service.flatten_outline(outline))} 页")
+        logger.info(f"Hoàn tất phân tích dàn ý, Tổng {len(ai_service.flatten_outline(outline))} trang")
         
         # Step 2: Split description into page descriptions
-        logger.info("Step 2: 切分描述文本到每页描述...")
+        logger.info("Step 2: Tách văn bản mô tả thành mô tả cho từng trang...")
         page_descriptions = ai_service.parse_description_to_page_descriptions(project_context, outline, language=language)
-        logger.info(f"描述切分完成，共 {len(page_descriptions)} 页")
+        logger.info(f"Hoàn tất tách mô tả, Tổng {len(page_descriptions)} trang")
         
         # Step 3: Flatten outline to pages
         pages_data = ai_service.flatten_outline(outline)
         
         if len(pages_data) != len(page_descriptions):
-            logger.warning(f"页面数量不匹配: 大纲 {len(pages_data)} 页, 描述 {len(page_descriptions)} 页")
-            # 取较小的数量，避免索引错误
+            logger.warning(f"Số lượng trang không khớp: Dàn ý {len(pages_data)} trang, Mô tả {len(page_descriptions)} trang")
+            # Backend logic
             min_count = min(len(pages_data), len(page_descriptions))
             pages_data = pages_data[:min_count]
             page_descriptions = page_descriptions[:min_count]
@@ -749,7 +749,7 @@ def generate_from_description(project_id):
                 project_id=project_id,
                 order_index=i,
                 part=page_data.get('part'),
-                status='DESCRIPTION_GENERATED'  # 直接设置为已生成描述
+                status='DESCRIPTION_GENERATED'  # Backend logic
             )
             
             # Set outline content
@@ -774,7 +774,7 @@ def generate_from_description(project_id):
         
         db.session.commit()
         
-        logger.info(f"从描述生成完成: 项目 {project_id}, 创建了 {len(pages_list)} 个页面，已填充大纲和描述")
+        logger.info(f":  {project_id},  {len(pages_list)} , ")
         
         # Return pages
         return success_response({
@@ -821,7 +821,7 @@ def generate_descriptions(project_id):
         outline = _reconstruct_outline_from_pages(pages)
         
         data = request.get_json() or {}
-        # 从配置中读取默认并发数，如果请求中提供了则使用请求的值
+        # Backend logic
         max_workers = data.get('max_workers', current_app.config.get('MAX_DESCRIPTION_WORKERS', 5))
         language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
         detail_level = data.get('detail_level', 'default')
@@ -960,14 +960,14 @@ def generate_descriptions_stream(project_id):
                         'extra_fields': result.get('extra_fields'),
                     })
 
-                # 检查是否所有页面都已生成描述
+                # Backend logic
                 missing = [p for p in pages if p.status == 'GENERATING_DESCRIPTION']
                 if missing:
                     for p in missing:
-                        # 有旧描述的保留，无描述的恢复 DRAFT
+                        # Backend logic
                         p.status = 'DESCRIPTION_GENERATED' if p.description_content else 'DRAFT'
                         p.updated_at = datetime.utcnow()
-                    logger.warning(f"流式描述生成不完整: {len(missing)}/{len(pages)} 页未生成")
+                    logger.warning(f"Tạo mô tả luồng (stream) chưa hoàn chỉnh: {len(missing)}/{len(pages)} trang chưa được tạo")
 
                 proj.status = 'DESCRIPTIONS_GENERATED'
                 proj.updated_at = datetime.utcnow()
@@ -978,7 +978,7 @@ def generate_descriptions_stream(project_id):
                 yield _sse_event('done', {
                     'total': len(pages),
                     'pages': [p.to_dict() for p in pages],
-                    **(({'warning': f'{len(missing)} 页描述未生成，请重试'}) if missing else {}),
+                    **(({'warning': f'{len(missing)} , '}) if missing else {}),
                 })
 
             except Exception as e:
@@ -988,14 +988,14 @@ def generate_descriptions_stream(project_id):
                     logger.warning(f"Session rollback failed: {rollback_exc}", exc_info=True)
                 logger.error(f"generate_descriptions_stream failed: {str(e)}", exc_info=True)
 
-                # 恢复未完成页面的状态：已生成描述的保留，未生成的恢复为 DRAFT
+                # Backend logic
                 try:
                     pages = Page.query.filter_by(project_id=project_id).order_by(Page.order_index).all()
                     proj = db.session.get(Project, project_id)
                     has_any_desc = False
                     for page in pages:
                         if page.status == 'GENERATING_DESCRIPTION':
-                            # 如果之前就有描述内容，恢复为 DESCRIPTION_GENERATED
+                            # Backend logic
                             if page.description_content:
                                 page.status = 'DESCRIPTION_GENERATED'
                                 has_any_desc = True
@@ -1010,7 +1010,7 @@ def generate_descriptions_stream(project_id):
                 except Exception as recover_exc:
                     logger.warning(f"Failed to recover page statuses: {recover_exc}", exc_info=True)
 
-                yield _sse_event('error', {'message': '生成过程中发生内部错误'})
+                yield _sse_event('error', {'message': 'Đã xảy ra lỗi nội bộ trong quá trình tạo'})
 
     return Response(
         stream_with_context(sse_generate()),
@@ -1057,7 +1057,7 @@ def generate_images(project_id):
         if not pages:
             return bad_request("No pages found for project")
         
-        # 检查是否有模板图片或风格描述
+        # Backend logic
         from services import FileService
         file_service = FileService(current_app.config['UPLOAD_FOLDER'])
         use_template = data.get('use_template', True)
@@ -1074,12 +1074,12 @@ def generate_images(project_id):
             for p in pages
         )
         if not ref_image_path and not project.template_style and not has_page_template:
-            return bad_request("请先上传模板图片或添加风格描述。")
+            return bad_request("Vui lòng tải ảnh mẫu lên trước hoặc thêm mô tả phong cách. ")
         
         # Reconstruct outline from pages with part structure
         outline = _reconstruct_outline_from_pages(pages)
         
-        # 从配置中读取默认并发数，如果请求中提供了则使用请求的值
+        # Backend logic
         max_workers = data.get('max_workers', current_app.config.get('MAX_IMAGE_WORKERS', 8))
         use_template = data.get('use_template', True)
         language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
@@ -1102,10 +1102,10 @@ def generate_images(project_id):
         # Get singleton AI service instance
         ai_service = get_ai_service()
         
-        # 合并额外要求和风格描述
+        # Backend logic
         combined_requirements = project.extra_requirements or ""
         if project.template_style:
-            style_requirement = f"\n\nppt页面风格描述：\n\n{project.template_style}"
+            style_requirement = f"\n\npptMô tả phong cách trang: \n\n{project.template_style}"
             combined_requirements = combined_requirements + style_requirement
         
         # Set all target pages to QUEUED before submitting background task
@@ -1164,10 +1164,10 @@ def get_task_status(project_id, task_id):
         if not task or task.project_id != project_id:
             return not_found('Task')
 
-        # 后台任务只存在于本进程内（ThreadPoolExecutor）。进程重启后，
-        # 数据库里的 PENDING/PROCESSING 记录会永远停在最后一次进度上，
-        # 前端就会一直显示"进行中"（例如"88% 构建第 17/24 页"）。
-        # 这里按"任务是否真的还有 worker + 心跳是否新鲜"对账。
+        # Backend logic
+        # Backend logic
+        # Backend logic
+        # Backend logic
         from services.task_watchdog import localize_watchdog_payload, reconcile_task_for_response
         reconcile_task_for_response(task)
         
@@ -1185,7 +1185,7 @@ def refine_outline(project_id):
     
     Request body:
     {
-        "user_requirement": "用户要求，例如：增加一页关于XXX的内容",
+        "user_requirement": "Yêu cầu người dùng, ví dụ: Thêm một trang vềXXXnội dung của",
         "language": "zh"  # output language: zh, en, ja, auto
     }
     """
@@ -1209,10 +1209,10 @@ def refine_outline(project_id):
         # Get current outline from pages
         pages = Page.query.filter_by(project_id=project_id).order_by(Page.order_index).all()
         
-        # Reconstruct current outline from pages (如果没有页面，使用空列表)
+        # Backend logic
         if not pages:
-            logger.info(f"项目 {project_id} 当前没有页面，将从空开始生成")
-            current_outline = []  # 空大纲
+            logger.info(f" {project_id} , ")
+            current_outline = []  # Backend logic
         else:
             current_outline = _reconstruct_outline_from_pages(pages)
         
@@ -1235,7 +1235,7 @@ def refine_outline(project_id):
         language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
         
         # Refine outline
-        logger.info(f"开始修改大纲: 项目 {project_id}, 用户要求: {user_requirement}, 历史要求数: {len(previous_requirements)}")
+        logger.info(f"Bắt đầu chỉnh sửa dàn ý: Dự án {project_id}, Yêu cầu người dùng: {user_requirement}, Số yêu cầu lịch sử: {len(previous_requirements)}")
         refined_outline = ai_service.refine_outline(
             current_outline=current_outline,
             user_requirement=user_requirement,
@@ -1250,7 +1250,7 @@ def refine_outline(project_id):
 
         preserved_count = sum(1 for p in pages_list if p.description_content)
         new_count = len(pages_list) - preserved_count
-        logger.info(f"描述匹配完成: 保留了 {preserved_count} 个页面的描述, {new_count} 个页面需要重新生成描述")
+        logger.info(f"Hoàn tất khớp mô tả: đã giữ lại {preserved_count} mô tả trang, {new_count} trang cần tạo lại mô tả")
 
         # Update project status
         if preserved_count and all(p.description_content for p in pages_list):
@@ -1261,12 +1261,12 @@ def refine_outline(project_id):
         
         db.session.commit()
         
-        logger.info(f"大纲修改完成: 项目 {project_id}, 创建了 {len(pages_list)} 个页面")
+        logger.info(f"Hoàn tất tạo dàn ý: Dự án {project_id}, đã tạo {len(pages_list)} trang")
         
         # Return pages
         return success_response({
             'pages': [page.to_dict() for page in pages_list],
-            'message': '大纲修改成功'
+            'message': 'Chỉnh sửa dàn ý thành công'
         })
     
     except Exception as e:
@@ -1282,7 +1282,7 @@ def refine_descriptions(project_id):
     
     Request body:
     {
-        "user_requirement": "用户要求，例如：让描述更详细一些",
+        "user_requirement": "Yêu cầu người dùng, ví dụ: Làm cho phần mô tả chi tiết hơn",
         "language": "zh"  # output language: zh, en, ja, auto
     }
     """
@@ -1305,13 +1305,13 @@ def refine_descriptions(project_id):
         pages = Page.query.filter_by(project_id=project_id).order_by(Page.order_index).all()
         
         if not pages:
-            logger.info(f"项目 {project_id} 当前没有页面，无法修改描述")
+            logger.info(f" {project_id} , ")
             return bad_request("No pages found for project. Please generate outline first.")
         
-        # Check if pages have descriptions (允许没有描述，从空开始)
+        # Backend logic
         has_descriptions = any(page.description_content for page in pages)
         if not has_descriptions:
-            logger.info(f"项目 {project_id} 当前没有描述，将基于大纲生成新描述")
+            logger.info(f" {project_id} , ")
         
         # Reconstruct outline from pages
         outline = _reconstruct_outline_from_pages(pages)
@@ -1324,7 +1324,7 @@ def refine_descriptions(project_id):
             
             current_descriptions.append({
                 'index': i,
-                'title': outline_content.get('title', '未命名') if outline_content else '未命名',
+                'title': outline_content.get('title', 'Chưa đặt tên') if outline_content else 'Chưa đặt tên',
                 'description_content': desc_content if desc_content else ''
             })
         
@@ -1347,7 +1347,7 @@ def refine_descriptions(project_id):
         language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
         
         # Refine descriptions
-        logger.info(f"开始修改页面描述: 项目 {project_id}, 用户要求: {user_requirement}, 历史要求数: {len(previous_requirements)}")
+        logger.info(f"Bắt đầu chỉnh sửa dàn ý: Dự án {project_id}, Yêu cầu người dùng: {user_requirement}, Số yêu cầu lịch sử: {len(previous_requirements)}")
         refined_descriptions = ai_service.refine_descriptions(
             current_descriptions=current_descriptions,
             user_requirement=user_requirement,
@@ -1357,16 +1357,16 @@ def refine_descriptions(project_id):
             language=language
         )
         
-        # 验证返回的描述数量
+        # Backend logic
         if len(refined_descriptions) != len(pages):
             error_msg = ""
-            logger.error(f"AI 返回的描述数量不匹配: 期望 {len(pages)} 个页面，实际返回 {len(refined_descriptions)} 个描述。")
+            logger.error(f"AI Số lượng mô tả trả về không khớp: kỳ vọng {len(pages)} trang, thực tế trả về {len(refined_descriptions)} mô tả. ")
             
-            # 如果 AI 试图增删页面，给出明确提示
+            # Backend logic
             if len(refined_descriptions) > len(pages):
-                error_msg += " 提示：如需增加页面，请在大纲页面进行操作。"
+                error_msg += " Gợi ý: Nếu cần thêm trang, vui lòng thực hiện trên trang Dàn ý. "
             elif len(refined_descriptions) < len(pages):
-                error_msg += " 提示：如需删除页面，请在大纲页面进行操作。"
+                error_msg += " Gợi ý: Nếu cần thêm trang, vui lòng thực hiện trên trang Dàn ý. "
             
             return bad_request(error_msg)
         
@@ -1387,12 +1387,12 @@ def refine_descriptions(project_id):
         
         db.session.commit()
         
-        logger.info(f"页面描述修改完成: 项目 {project_id}, 更新了 {len(pages)} 个页面")
+        logger.info(f"Hoàn tất chỉnh sửa mô tả trang: Dự án {project_id}, đã cập nhật {len(pages)} trang")
         
         # Return pages
         return success_response({
             'pages': [page.to_dict() for page in pages],
-            'message': '页面描述修改成功'
+            'message': 'Chỉnh sửa dàn ý thành công'
         })
     
     except Exception as e:
@@ -1455,7 +1455,7 @@ def create_ppt_renovation_project():
 
         # Save original file with a standardized name to avoid encoding issues
         # (secure_filename strips non-ASCII chars, causing Chinese filenames like
-        # '演示文稿.pdf' to become 'pdf' with no extension, breaking PDF discovery)
+        # Backend logic
         original_ext = file.filename.rsplit('.', 1)[-1].lower()
         safe_name = f'original.{original_ext}'
         original_path = template_dir / safe_name
@@ -1476,13 +1476,13 @@ def create_ppt_renovation_project():
                 logger.info(f"Converted PPTX to PDF: {pdf_path}")
             except subprocess.TimeoutExpired:
                 raise ValueError(
-                    "PPTX 转 PDF 超时，请稍后重试或手动转为 PDF 后上传。"
+                    "PPTX chuyển PDF quá thời gian chờ, Vui lòng thử lại sau hoặc chuyển thủ công sang PDF rồi tải lên. "
                     if language == 'zh' else
                     "PPTX to PDF conversion timed out. Please retry or convert to PDF manually before uploading."
                 )
             except FileNotFoundError:
                 raise ValueError(
-                    "PPTX 转换需要安装 LibreOffice，但当前环境未检测到。请在本地将 PPTX 转为 PDF 后再上传。"
+                    "PPTX Chuyển đổi cần cài đặt LibreOffice, nhưng môi trường hiện tại không phát hiện thấy. Vui lòng chuyển cục bộ PPTX chuyển thành PDF rồi tải lên lại. "
                     if language == 'zh' else
                     "PPTX conversion requires LibreOffice, which is not installed. Please convert your PPTX to PDF locally before uploading."
                 )
@@ -1724,4 +1724,3 @@ def generate_style_from_content():
     except Exception as e:
         logger.error(f"generate_style_from_content failed: {str(e)}", exc_info=True)
         return error_response('AI_SERVICE_ERROR', str(e), 503)
-

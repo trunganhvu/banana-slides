@@ -7,12 +7,12 @@ import type { Task } from '@/types';
 const i18n = {
   zh: {
     tmp: {
-      matching: '正在自动匹配模板…',
-      done: '自动匹配完成',
-      failed: '自动匹配失败',
-      progress: '已处理 {completed}/{total} 页',
-      matched: '匹配 {matched} 页',
-      failedPages: '{failed} 页失败',
+      matching: 'Đang tự động khớp mẫu...',
+      done: 'Hoàn tất tự động khớp',
+      failed: 'Tự động khớp thất bại',
+      progress: 'Đã xử lý {completed}/{total} trang',
+      matched: 'Khớp {matched} trang',
+      failedPages: '{failed} trang thất bại',
     },
   },
   en: {

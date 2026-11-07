@@ -17,7 +17,7 @@ import type {
   DesktopUpdateElectronApi,
 } from '@/types/desktopUpdate';
 
-// 组件内翻译
+// Component translations
 import { settingsI18n } from '@/components/settings/settingsI18n';
 import { Button, Input, Loading, Markdown, Modal, useToast, useConfirm } from '@/components/shared';
 import * as api from '@/api/endpoints';
@@ -25,7 +25,7 @@ import type { OutputLanguage, UpdateCheckInfo } from '@/api/endpoints';
 import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
 
-// 配置项类型定义
+// Configuration item type definition
 type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
 
 interface FieldConfig {
@@ -34,12 +34,12 @@ interface FieldConfig {
   type: FieldType;
   placeholder?: string;
   description?: string;
-  sensitiveField?: boolean;  // 是否为敏感字段（如 API Key）
-  lengthKey?: keyof SettingsType;  // 用于显示已有长度的 key（如 api_key_length）
-  options?: { value: string; label: string }[];  // select 类型的选项
+  sensitiveField?: boolean;  // Sensitive field flag (e.g. API Key)
+  lengthKey?: keyof SettingsType;  // Key for displaying existing length
+  options?: { value: string; label: string }[];  // Options for select type
   min?: number;
   max?: number;
-  link?: string;  // 申请链接 URL
+  link?: string;  // Application link URL
 }
 
 interface SectionConfig {
@@ -60,50 +60,50 @@ const INFERERA_AFFILIATE_URL = 'https://api.inferera.com/?aff=17EC';
 const VOLCENGINE_AGENTPLANS_CN_URL = 'https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides';
 const VOLCENGINE_AGENTPLANS_EN_URL = 'https://www.byteplus.com/en/product/modelark?utm_campaign=hw&utm_content=banana-slides&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides';
 
-// LazyLLM 支持的厂商列表
+// List of supported LazyLLM vendors
 const LAZYLLM_SOURCES = [
-  { value: 'qwen', label: 'Qwen (通义千问)' },
-  { value: 'doubao', label: 'Doubao (火山引擎)' },
+  { value: 'qwen', label: 'Qwen (Tongyi Qianwen)' },
+  { value: 'doubao', label: 'Doubao (Volcengine)' },
   { value: 'deepseek', label: 'DeepSeek' },
-  { value: 'glm', label: 'GLM (智谱)' },
+  { value: 'glm', label: 'GLM (Zhipu)' },
   { value: 'siliconflow', label: 'SiliconFlow' },
-  { value: 'sensenova', label: 'SenseNova (商汤)' },
+  { value: 'sensenova', label: 'SenseNova (SenseNova)' },
   { value: 'minimax', label: 'MiniMax' },
   { value: 'openai', label: 'OpenAI' },
   { value: 'kimi', label: 'Kimi' },
-  { value: 'ppio', label: 'PPIO (派欧云)' },
-  { value: 'aiping', label: 'AIPing (爱拼)' },
+  { value: 'ppio', label: 'PPIO (PPIO Cloud)' },
+  { value: 'aiping', label: 'AIPing (Aipin)' },
 ];
 
-// 所有可用的提供商选项（Gemini/OpenAI/Codex + LazyLLM 厂商）
-const getAllProviderSources = (isZh: boolean) => [
+// All available provider options (Gemini/OpenAI/Codex + LazyLLM vendors)
+const getAllProviderSources = (isVi: boolean) => [
   { value: 'gemini', label: 'Gemini' },
   { value: 'openai', label: 'OpenAI' },
-  { value: 'volcengine', label: isZh ? '火山 Agent Plan' : 'Volcengine Agent Plan' },
-  { value: 'doubao', label: isZh ? 'Doubao（豆包）' : 'Doubao / ModelArk' },
+  { value: 'volcengine', label: 'Volcengine Agent Plan' },
+  { value: 'doubao', label: 'Doubao / ModelArk' },
   { value: 'codex', label: 'Codex (OpenAI OAuth)' },
   ...LAZYLLM_SOURCES.filter(s => !['openai', 'doubao', 'ppio', 'aiping'].includes(s.value)), // avoid duplicate or non-partner providers
 ];
 
-// 需要 API Key + Base URL 的提供商（非 LazyLLM 厂商）
+// Providers requiring API Key + Base URL (non-LazyLLM)
 const API_KEY_PROVIDERS = new Set(['gemini', 'openai', 'volcengine']);
 // Quality tiers only apply to the GPT Image family (matches the backend's
 // _is_gpt_image_model); DALL-E, Seedream and Gemini models ignore the setting.
 const GPT_IMAGE_MODEL_PATTERN = /^(gpt-image|chatgpt-image)/i;
-// 火山 Agent Plans（OpenAI 兼容）: 专属 Base URL 与模型名
+// Volcengine Agent Plans: dedicated Base URL and model names
 const VOLCENGINE_AGENTPLANS_BASE_URL = 'https://ark.cn-beijing.volces.com/api/plan/v3';
 const VOLCENGINE_AGENTPLANS_RECOMMENDED_MODELS = {
   text: 'doubao-seed-2.1-turbo',
   caption: 'doubao-seed-2.1-turbo',
   image: 'doubao-seedream-5.0-lite',
 };
-// 火山方舟（标准 ModelArk, LazyLLM Doubao 路径）: 使用端点 ID 格式
+// ModelArk (standard ModelArk): endpoint ID format
 const VOLCENGINE_MODELARK_RECOMMENDED_MODELS = {
   text: 'doubao-seed-2-1-pro-260628',
   caption: 'doubao-seed-2-1-pro-260628',
   image: 'doubao-seedream-5-0-260128',
 };
-// 各 provider 的默认端点: 切换到 Agent Plans 时用于识别并清除过时默认值
+// Default endpoints per provider
 const KNOWN_DEFAULT_BASE_URLS = new Set([
   '',
   'https://api.inferera.com/v1',
@@ -114,13 +114,13 @@ const KNOWN_DEFAULT_BASE_URLS = new Set([
   'https://ark.cn-beijing.volces.com/api/v3',
   'https://api.anthropic.com',
 ]);
-// 离开 Agent Plans 时必须清空的火山默认端点（对 openai/gemini 等是过时值）
+// Stale endpoints when leaving Agent Plans
 const VOLCENGINE_DEFAULT_BASE_URLS = new Set([
   'https://ark.cn-beijing.volces.com/api/plan/v3',
   'https://ark.cn-beijing.volces.com/api/v3',
 ]);
 
-// LazyLLM 厂商名集合
+// LazyLLM vendor names set
 const LAZYLLM_VENDOR_SET = new Set(LAZYLLM_SOURCES.map(s => s.value));
 
 // LazyLLM 0.7.x vendors that actually register an image-generation (text2image)
@@ -138,7 +138,7 @@ const isImageModelSourceSelectable = (value: string) =>
   || !LAZYLLM_VENDOR_SET.has(value)
   || IMAGE_CAPABLE_LAZYLLM_SOURCES.has(value);
 
-// 初始表单数据
+// Initial form data
 const initialFormData = {
   ai_provider_format: 'gemini' as string,
   api_base_url: '',
@@ -154,14 +154,14 @@ const initialFormData = {
   max_description_workers: 5,
   max_image_workers: 8,
   output_language: 'zh' as OutputLanguage,
-  // 推理模式配置（分别控制文本和图像）
+  // Reasoning mode configurations
   enable_text_reasoning: false,
   text_max_output_tokens: 32768,
   text_thinking_budget: 1024,
   enable_image_reasoning: false,
   image_thinking_budget: 1024,
   baidu_api_key: '',
-  // LazyLLM 配置
+  // LazyLLM configurations
   text_model_source: '',
   image_model_source: '',
   image_caption_model_source: '',
@@ -609,11 +609,11 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
   };
 };
 
-// Settings 组件 - 纯嵌入模式（可复用）
+// Settings component - embeddable mode
 export const Settings: React.FC = () => {
   const t = useT(settingsI18n);
   const { i18n } = useTranslation();
-  const isZh = i18n.language?.startsWith('zh') ?? true;
+  const isVi = i18n.language?.startsWith('zh') ?? true;
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -630,7 +630,7 @@ export const Settings: React.FC = () => {
       document.execCommand('copy');
       document.body.removeChild(textarea);
     }
-    show({ message: '链接已复制到剪贴板', type: 'success' });
+    show({ message: !i18n.language?.startsWith('en') ? 'Đã sao chép liên kết vào clipboard' : 'Link copied to clipboard', type: 'success' });
   };
 
   const [settings, setSettings] = useState<SettingsType | null>(null);
@@ -648,15 +648,15 @@ export const Settings: React.FC = () => {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const oauthMonitorStopRef = useRef<(() => void) | null>(null);
   const oauthAttemptRef = useRef(0);
-  const allProviderSources = getAllProviderSources(isZh);
+  const allProviderSources = getAllProviderSources(isVi);
   const globalProviderSources = [
     allProviderSources[0],
     allProviderSources[2],
     allProviderSources[1],
     ...allProviderSources.slice(3),
   ];
-  const volcengineAgentPlansUrl = isZh ? VOLCENGINE_AGENTPLANS_CN_URL : VOLCENGINE_AGENTPLANS_EN_URL;
-  const volcengineLogoUrl = isZh ? '/volcengine/huoshan.png' : '/volcengine/byteplus.png';
+  const volcengineAgentPlansUrl = isVi ? VOLCENGINE_AGENTPLANS_CN_URL : VOLCENGINE_AGENTPLANS_EN_URL;
+  const volcengineLogoUrl = isVi ? '/volcengine/huoshan.png' : '/volcengine/byteplus.png';
   const usesVolcengineCampaignPromo = formData.ai_provider_format === 'volcengine' || formData.ai_provider_format === 'doubao';
   const selectedGlobalProvider = formData.ai_provider_format;
   const activeVolcenginePromoKey = formData.ai_provider_format === 'doubao'
@@ -812,7 +812,7 @@ export const Settings: React.FC = () => {
     }
   };
 
-  // 配置驱动的表单区块定义（使用翻译）
+  // Configuration-driven form sections
   const settingsSections: SectionConfig[] = [
     // Global API config & Model config are rendered separately above
     {
@@ -991,7 +991,7 @@ export const Settings: React.FC = () => {
         setFormData(formDataFromSettings(response.data));
       }
     } catch (error: any) {
-      console.error('加载设置失败:', error);
+      console.error('Tải cài đặt thất bại:', error);
       show({
         message: t('settings.messages.loadFailed') + ': ' + (error?.message || t('settings.messages.unknownError')),
         type: 'error'
@@ -1056,7 +1056,7 @@ export const Settings: React.FC = () => {
         }));
       }
     } catch (error: any) {
-      console.error('保存设置失败:', error);
+      console.error('Lưu cài đặt thất bại:', error);
       show({
         message: t('settings.messages.saveFailed') + ': ' + (error?.response?.data?.error?.message || error?.message || t('settings.messages.unknownError')),
         type: 'error'
@@ -1079,7 +1079,7 @@ export const Settings: React.FC = () => {
             show({ message: t('settings.messages.resetSuccess'), type: 'success' });
           }
         } catch (error: any) {
-          console.error('重置设置失败:', error);
+          console.error('Đặt lại cài đặt thất bại:', error);
           show({
             message: t('settings.messages.resetFailed') + ': ' + (error?.message || t('settings.messages.unknownError')),
             type: 'error'
@@ -1115,27 +1115,27 @@ export const Settings: React.FC = () => {
 
       if (key === 'ai_provider_format') {
         if (value === 'volcengine') {
-          // Agent Plans 需要专属端点: 空值或其他 provider 的默认端点会被替换,
-          // 用户显式填写的自定义 Base URL 保留
+          // Agent Plans requires dedicated endpoint
+          // Preserve custom user Base URL
           if (KNOWN_DEFAULT_BASE_URLS.has(next.api_base_url)) {
             next.api_base_url = VOLCENGINE_AGENTPLANS_BASE_URL;
           }
         } else if (VOLCENGINE_DEFAULT_BASE_URLS.has(next.api_base_url)) {
-          // 离开 Agent Plans: plan/v3 端点对新 provider 是过时默认值, 清空以
-          // 回退到新 provider 的环境变量/默认端点, 自定义 URL 保留
+          // Reset stale plan/v3 endpoint when leaving Agent Plans
+          // Fall back to environment defaults
           next.api_base_url = '';
         }
       } else if (perModelBaseKeys[key]) {
         const baseKey = perModelBaseKeys[key];
         if (value === 'volcengine') {
-          // 单模型切到 Agent Plans 时同样替换过时的默认端点, 否则该模型的
-          // {MODEL}_API_BASE 会优先于 VOLCENGINE_API_BASE 命中旧 provider 端点。
+          // Replace stale endpoint for single model
+          // Model API base takes precedence
           if (KNOWN_DEFAULT_BASE_URLS.has(next[baseKey])) {
             next[baseKey] = VOLCENGINE_AGENTPLANS_BASE_URL;
           }
         } else if (VOLCENGINE_DEFAULT_BASE_URLS.has(next[baseKey])) {
-          // 单模型离开 Agent Plans: 清空过时的 plan/v3 端点, 否则该模型的
-          // {MODEL}_API_BASE 仍优先于新 provider 的默认端点
+          // Clear stale plan/v3 endpoint
+          // Model API base precedence check
           next[baseKey] = '';
         }
       }
@@ -1149,12 +1149,12 @@ export const Settings: React.FC = () => {
     const provider = isAgentPlans ? 'volcengine' : 'doubao';
     const models = isAgentPlans ? VOLCENGINE_AGENTPLANS_RECOMMENDED_MODELS : VOLCENGINE_MODELARK_RECOMMENDED_MODELS;
     setFormData(prev => {
-      // Agent Plans 需要专属端点: 只替换空值或已知的过时默认端点, 保留用户自定义端点,
-      // 否则代理/替代端点部署下 per-model 调用会命中硬编码的 cn-beijing 地址
+      // Agent Plans endpoint replacement
+      // Prevent hitting hardcoded cn-beijing address
       const agentPlansBaseOrDefault = (current: string) =>
         KNOWN_DEFAULT_BASE_URLS.has(current) ? VOLCENGINE_AGENTPLANS_BASE_URL : current;
-      // per-model 字段为空时继承全局解析后的端点（自定义代理端点同样生效）,
-      // 因为 {MODEL}_API_BASE 的解析优先级高于 VOLCENGINE_API_BASE
+      // Per-model inherits global endpoint when empty
+      // Resolution priority check
       const resolvedGlobalBase = agentPlansBaseOrDefault(prev.api_base_url);
       const perModelBase = (current: string) =>
         KNOWN_DEFAULT_BASE_URLS.has(current) ? resolvedGlobalBase : current;
@@ -1167,7 +1167,7 @@ export const Settings: React.FC = () => {
         image_caption_model_source: provider,
         image_model_source: provider,
         api_base_url: isAgentPlans ? agentPlansBaseOrDefault(prev.api_base_url) : prev.api_base_url,
-        // per-model base 同样只替换过时默认值: 空值/默认值继承全局端点, 自定义值原样保留
+        // Per-model base replaces stale defaults
         text_api_base_url: isAgentPlans ? perModelBase(prev.text_api_base_url) : prev.text_api_base_url,
         image_caption_api_base_url: isAgentPlans ? perModelBase(prev.image_caption_api_base_url) : prev.image_caption_api_base_url,
         image_api_base_url: isAgentPlans ? perModelBase(prev.image_api_base_url) : prev.image_api_base_url,
@@ -1224,10 +1224,10 @@ export const Settings: React.FC = () => {
   ) => {
     updateServiceTest(key, { status: 'loading' });
     try {
-      // 准备测试时要使用的设置（包括未保存的修改）
+      // Prepare settings for test
       const testSettings: any = {};
 
-      // 只传递用户已填写的非空值
+      // Only pass non-empty filled values
       if (formData.api_key) testSettings.api_key = formData.api_key;
       if (formData.api_base_url) testSettings.api_base_url = formData.api_base_url;
       if (formData.ai_provider_format) {
@@ -1255,7 +1255,7 @@ export const Settings: React.FC = () => {
       if (formData.image_caption_api_key) testSettings.image_caption_api_key = formData.image_caption_api_key;
       if (formData.image_caption_api_base_url) testSettings.image_caption_api_base_url = formData.image_caption_api_base_url;
 
-      // 推理模式设置
+      // Reasoning mode settings
       if (formData.enable_text_reasoning !== undefined) {
         testSettings.enable_text_reasoning = formData.enable_text_reasoning;
       }
@@ -1270,7 +1270,7 @@ export const Settings: React.FC = () => {
         testSettings.image_thinking_budget = formData.image_thinking_budget;
       }
 
-      // 启动异步测试，获取任务ID
+      // Start async test and get task ID
       const response = await action(testSettings);
       const taskId = response.data.task_id;
 
@@ -1286,7 +1286,7 @@ export const Settings: React.FC = () => {
         show({ message: toastMsg, type: toastType });
       };
 
-      // 开始轮询任务状态
+      // Start polling task status
       pollInterval = setInterval(async () => {
         try {
           const statusResponse = await api.getTestStatus(taskId);
@@ -1307,17 +1307,17 @@ export const Settings: React.FC = () => {
             }
             finish({ status: 'error', message: errorMessage }, `${t('settings.serviceTest.testFailed')}: ${errorMessage}`, 'error');
           }
-          // 如果是 PENDING 或 PROCESSING，继续轮询
+          // Continue polling if PENDING or PROCESSING
         } catch (pollError: any) {
           const errorMessage = pollError?.response?.data?.error?.message || pollError?.message || t('settings.serviceTest.testFailed');
           finish({ status: 'error', message: errorMessage }, `${t('settings.serviceTest.testFailed')}: ${errorMessage}`, 'error');
         }
-      }, 2000); // 每2秒轮询一次
+      }, 2000); // Poll every 2 seconds
 
-      // 设置最大轮询时间（2分钟）
+      // Set max polling timeout
       setTimeout(() => {
         finish({ status: 'error', message: t('settings.serviceTest.testTimeout') }, t('settings.serviceTest.testTimeout'), 'error');
-      }, 600000); // 10 分钟，覆盖 gpt-image-2 等慢模型的生成时间
+      }, 600000); // 10 minutes timeout for slow models
 
     } catch (error: any) {
       const errorMessage = error?.response?.data?.error?.message || error?.message || t('common.unknownError');
@@ -1335,7 +1335,7 @@ export const Settings: React.FC = () => {
     onChange={value => handleFieldChange(field.key, value)} t={t}
   />;
 
-  // 模型配置项定义：每种模型类型的 key、source key、api key/base key、标签等
+  // Model configuration item definitions
   const modelConfigItems = [
     {
       modelKey: 'text_model' as keyof typeof initialFormData,
@@ -1372,7 +1372,7 @@ export const Settings: React.FC = () => {
     },
   ];
 
-  // 渲染单个模型配置组（模型名 + 提供商选择 + 条件凭证）
+  // Render single model configuration group
   const renderModelConfigGroup = (item: typeof modelConfigItems[0]) => {
     const sourceValue = formData[item.sourceKey] as string;
     const isApiKeyProvider = API_KEY_PROVIDERS.has(sourceValue);
@@ -1392,7 +1392,7 @@ export const Settings: React.FC = () => {
 
     return (
       <div key={item.modelKey} className="pb-6 border-b border-gray-200 dark:border-border-primary last:border-b-0 last:pb-0 space-y-3">
-        {/* 模型名称 */}
+        {/* Model name */}
         <Input
           label={item.label}
           type="text"
@@ -1404,7 +1404,7 @@ export const Settings: React.FC = () => {
           <p className="-mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{item.description}</p>
         )}
 
-        {/* 提供商选择 */}
+        {/* Provider selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
             {item.sourceLabel}
@@ -1458,7 +1458,7 @@ export const Settings: React.FC = () => {
           )}
         </div>
 
-        {/* Gemini/OpenAI/Volcengine 提供商：显示 API Key + Base URL */}
+        {/* Gemini/OpenAI/Volcengine provider: API Key + Base URL */}
         {isApiKeyProvider && (
           <div className="space-y-3 pl-3 border-l-2 border-banana-300 dark:border-banana-600">
             <Input
@@ -1540,7 +1540,7 @@ export const Settings: React.FC = () => {
           </>
         )}
 
-        {/* LazyLLM 厂商：显示厂商 API Key */}
+        {/* LazyLLM vendor: Vendor API Key */}
         {isLazyllm && (() => {
           const vendorLabel = LAZYLLM_SOURCES.find(s => s.value === sourceValue)?.label || sourceValue.toUpperCase();
           const keyLength = settings?.lazyllm_api_keys_info?.[sourceValue] || 0;
@@ -1572,7 +1572,7 @@ export const Settings: React.FC = () => {
   };
 
   const oauthPanel = (<>
-              {/* OpenAI OAuth 连接区块 */}
+              {/* OpenAI OAuth connection block */}
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
                   <Link2 size={20} />
@@ -1672,7 +1672,7 @@ export const Settings: React.FC = () => {
         {oauthPanel}
       </Modal>
       <div className="space-y-8">
-        {/* 默认 API 配置区块 */}
+        {/* Default API config block */}
         <div data-testid="global-api-config-section">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
             <Key size={20} />
@@ -1680,7 +1680,7 @@ export const Settings: React.FC = () => {
           </h2>
           <p className="text-sm text-gray-500 dark:text-foreground-tertiary mb-4">{t('settings.sections.apiConfigDesc')}</p>
           <div className="space-y-3">
-            {/* 默认提供商胶囊选择 */}
+            {/* Default provider pill selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
                 {t('settings.fields.aiProviderFormat')}
@@ -1746,7 +1746,7 @@ export const Settings: React.FC = () => {
               </div>
             )}
 
-            {/* LazyLLM 厂商: 厂商 API Key */}
+            {/* LazyLLM vendor: Vendor API Key */}
             {isLazyllmVendor(formData.ai_provider_format) && (
               <GlobalVendorKeyInput vendor={formData.ai_provider_format} formData={formData} setFormData={setFormData} settings={settings} t={t} />
             )}
@@ -1755,14 +1755,14 @@ export const Settings: React.FC = () => {
           <SettingsApiGuidance
             t={t} usesVolcengineCampaignPromo={usesVolcengineCampaignPromo}
             providerFormat={formData.ai_provider_format} volcengineAgentPlansUrl={volcengineAgentPlansUrl}
-            volcengineLogoUrl={volcengineLogoUrl} isZh={isZh} activeVolcenginePromoKey={activeVolcenginePromoKey}
+            volcengineLogoUrl={volcengineLogoUrl} isVi={isVi} activeVolcenginePromoKey={activeVolcenginePromoKey}
             activeApiKeyHelpKey={activeApiKeyHelpKey} activeApiKeyTipKey={activeApiKeyTipKey}
             activeApiKeyHelpUrl={activeApiKeyHelpUrl} copyToClipboard={copyToClipboard}
             applyVolcengineRecommendedModels={applyVolcengineRecommendedModels}
           />
         </div>
 
-        {/* 模型配置区块 */}
+        {/* Model config block */}
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
             <FileText size={20} />
@@ -1773,7 +1773,7 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* 其余配置区块（配置驱动，排除性能配置和推理模式） */}
+        {/* Remaining config blocks */}
         <div className="space-y-8">
           {settingsSections.filter((section) =>
             section.title !== t('settings.sections.performanceConfig') &&
@@ -1792,13 +1792,13 @@ export const Settings: React.FC = () => {
           ))}
         </div>
 
-        {/* 高级设置（折叠区域） */}
+        {/* Advanced settings (collapsible) */}
         <SettingsAdvanced open={advancedOpen} onToggle={() => setAdvancedOpen(!advancedOpen)} label={t('settings.sections.advancedSettings')}>
               {isDesktop && <DataStorageSettings />}
 
               {!oauthDialogOpen && oauthPanel}
 
-              {/* 并发性能配置 + 推理模式 */}
+              {/* Performance + reasoning mode */}
               {settingsSections.filter((section) =>
                 section.title === t('settings.sections.performanceConfig') ||
                 section.title === t('settings.sections.textReasoning') ||
@@ -1816,7 +1816,7 @@ export const Settings: React.FC = () => {
               ))}
         </SettingsAdvanced>
 
-        {/* 服务测试区 */}
+        {/* Service test area */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-2 flex items-center">
             <FileText size={20} />
@@ -1892,7 +1892,7 @@ export const Settings: React.FC = () => {
                 }>
                   {testState.status === 'success' && (
                     <p className="text-sm text-green-600">
-                      {testState.message}{testState.detail ? `｜${testState.detail}` : ''}
+                      {testState.message}{testState.detail ? `${testState.detail}` : ''}
                     </p>
                   )}
                   {testState.status === 'error' && (
@@ -1906,7 +1906,7 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* 操作按钮 */}
+        {/* Action buttons */}
         <SettingsActions>
           <Button
             variant="secondary"
@@ -1932,5 +1932,5 @@ export const Settings: React.FC = () => {
   );
 };
 
-// SettingsPage 组件 - 完整页面包装
+// SettingsPage component - full page wrapper
 export const SettingsPage: React.FC = () => <SettingsPageFrame><Settings /></SettingsPageFrame>;

@@ -191,7 +191,7 @@ class TestAPIFullFlow:
             f"{BASE_URL}/api/projects",
             json={
                 'creation_type': 'idea',
-                'idea_prompt': '创建一份关于人工智能基础的简短PPT，包含3页内容：什么是AI、AI的应用、AI的未来'
+                'idea_prompt': 'PPT3AIAIAI'
             },
             timeout=30
         )

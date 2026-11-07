@@ -8,16 +8,16 @@ export const emptyReport: ReportFields = {
   topic: '', purpose: '', audience: '', style: '', pages: '', points: '', requirements: '',
 };
 const labels = {
-  zh: { topic: '主题（必填）', purpose: '用途', audience: '目标受众', style: '视觉风格', pages: '预计页数', points: '内容要点', requirements: '补充要求' },
+  zh: { topic: 'Chủ đề (bắt buộc) ', purpose: 'mục đích', audience: 'Đối tượng mục tiêu', style: 'Phong cách hình ảnh', pages: 'Số trang dự kiến', points: 'Ý chính nội dung', requirements: 'Yêu cầu bổ sung' },
   en: { topic: 'Topic (required)', purpose: 'Purpose', audience: 'Audience', style: 'Visual style', pages: 'Expected slides', points: 'Key points', requirements: 'Additional requirements' },
 };
 const presets = {
   zh: [
-    ['周报/月报', '汇报本期工作进展', '团队成员', '简洁清晰', '8'],
-    ['项目汇报', '汇报项目阶段成果', '项目相关方', '专业简洁', '10'],
-    ['产品介绍', '介绍产品及其价值', '潜在用户', '清晰直观', '10'],
-    ['培训课件', '讲解知识与实践方法', '培训学员', '易读易懂', '15'],
-    ['自定义', '', '', '', ''],
+    ['Báo cáo tuần/Báo cáo tháng', 'Báo cáo tiến độ công việc kỳ này', 'Thành viên nhóm', 'Ngắn gọn, rõ ràng', '8'],
+    ['Báo cáo dự án', 'Báo cáo kết quả giai đoạn dự án', 'Các bên liên quan dự án', 'Chuyên nghiệp, ngắn gọn', '10'],
+    ['Giới thiệu sản phẩm', 'Giới thiệu sản phẩm và giá trị cốt lõi', 'Người dùng tiềm năng', 'Rõ ràng, trực quan', '10'],
+    ['Bài giảng đào tạo', 'Trình bày kiến thức và phương pháp thực hành', 'Học viên đào tạo', 'Dễ đọc, dễ hiểu', '15'],
+    ['Tùy chỉnh', '', '', '', ''],
   ],
   en: [
     ['Weekly / monthly report', 'Report progress this period', 'Team members', 'Clear and concise', '8'],
@@ -45,9 +45,9 @@ export const ReportForm: React.FC<{
   const names = labels[zh ? 'zh' : 'en'];
   return <fieldset disabled={disabled} className="space-y-3 mb-4" data-testid="report-form">
     <label className="block text-sm">
-      {zh ? '场景预设' : 'Scenario'}
+      {zh ? 'Mẫu kịch bản' : 'Scenario'}
       <select defaultValue="" className="block w-full p-2 border rounded-lg dark:bg-background-secondary" onChange={e => onChange(applyReportPreset(fields, Number(e.target.value), zh))}>
-        <option value="" disabled>{zh ? '选择场景' : 'Choose a scenario'}</option>
+        <option value="" disabled>{zh ? 'Chọn kịch bản' : 'Choose a scenario'}</option>
         {presets[zh ? 'zh' : 'en'].map(([name], index) => <option key={index} value={index}>{name}</option>)}
       </select>
     </label>
@@ -59,10 +59,10 @@ export const ReportForm: React.FC<{
           : <input className="block w-full p-2 border rounded-lg dark:bg-background-secondary" type={key === 'pages' ? 'number' : 'text'} min={key === 'pages' ? 1 : undefined} required={key === 'topic'} value={fields[key]} onChange={e => onChange({ ...fields, [key]: e.target.value })} />}
       </label>)}
     </div>
-    {!fields.topic.trim() && <p className="text-sm text-amber-700 dark:text-amber-300">{zh ? '请填写主题后继续' : 'Enter a topic to continue'}</p>}
+    {!fields.topic.trim() && <p className="text-sm text-amber-700 dark:text-amber-300">{zh ? 'Vui lòng nhập chủ đề để tiếp tục' : 'Enter a topic to continue'}</p>}
     <div className="flex items-center justify-between gap-3 text-sm">
-      <span>{zh ? 'Prompt 预览（可直接编辑；手动编辑后，更新字段不会覆盖预览）' : 'Editable prompt preview (field changes preserve your manual edits)'}</span>
-      <button type="button" className="text-blue-600 shrink-0" onClick={onRebuild}>{zh ? '从表单更新 Prompt' : 'Rebuild prompt from fields'}</button>
+      <span>{zh ? 'Prompt Xem trước (có thể chỉnh sửa trực tiếp; Sau khi chỉnh sửa thủ công, Cập nhật trường sẽ không ghi đè bản xem trước) ' : 'Editable prompt preview (field changes preserve your manual edits)'}</span>
+      <button type="button" className="text-blue-600 shrink-0" onClick={onRebuild}>{zh ? 'Cập nhật từ biểu mẫu Prompt' : 'Rebuild prompt from fields'}</button>
     </div>
   </fieldset>;
 };

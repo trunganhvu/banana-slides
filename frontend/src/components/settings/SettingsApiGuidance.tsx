@@ -48,7 +48,7 @@ export function SettingsApiGuidance({
             >
               <img
                 src={volcengineLogoUrl}
-                alt={isZh ? "火山引擎" : "BytePlus"}
+                alt={isZh ? "Volcengine" : "BytePlus"}
                 className="h-9 w-auto max-w-[160px] object-contain"
               />
             </a>
@@ -149,7 +149,7 @@ export function SettingsApiGuidance({
           </p>
         </div>
       )}
-      {/* API Key 获取指南 */}
+      {/* UI element */}
       {!usesVolcengineCampaignPromo && (
         <div className="mt-2 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
           <p className="text-sm font-medium text-gray-800 dark:text-foreground-primary flex items-center gap-1.5 mb-2">

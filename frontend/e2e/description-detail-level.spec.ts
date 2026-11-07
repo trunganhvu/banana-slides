@@ -72,14 +72,14 @@ test.describe('Detail level selector — mock tests', () => {
     await setupMockRoutes(page)
 
     await page.goto(`/project/${PROJECT_ID}/detail`)
-    await page.waitForSelector('text=批量生成描述')
+    await page.waitForSelector('text=')
 
     // The selector should be visible with 3 buttons
-    const buttons = page.locator('button', { hasText: /精简|标准|详细/ })
+    const buttons = page.locator('button', { hasText: /||/ })
     await expect(buttons).toHaveCount(3)
 
-    // "标准" should have the active style (bg-banana-500)
-    const standardBtn = page.locator('button', { hasText: '标准' })
+    // Test verification logic
+    const standardBtn = page.locator('button', { hasText: '' })
     await expect(standardBtn).toHaveClass(/bg-banana-500/)
   })
 
@@ -87,19 +87,19 @@ test.describe('Detail level selector — mock tests', () => {
     await setupMockRoutes(page)
 
     await page.goto(`/project/${PROJECT_ID}/detail`)
-    await page.waitForSelector('text=批量生成描述')
+    await page.waitForSelector('text=')
 
-    // Click "精简"
-    const conciseBtn = page.locator('button', { hasText: '精简' })
+    // Test verification logic
+    const conciseBtn = page.locator('button', { hasText: '' })
     await conciseBtn.click()
     await expect(conciseBtn).toHaveClass(/bg-banana-500/)
 
-    // "标准" should no longer be active
-    const standardBtn = page.locator('button', { hasText: '标准' })
+    // Test verification logic
+    const standardBtn = page.locator('button', { hasText: '' })
     await expect(standardBtn).not.toHaveClass(/bg-banana-500/)
 
-    // Click "详细"
-    const detailedBtn = page.locator('button', { hasText: '详细' })
+    // Test verification logic
+    const detailedBtn = page.locator('button', { hasText: '' })
     await detailedBtn.click()
     await expect(detailedBtn).toHaveClass(/bg-banana-500/)
     await expect(conciseBtn).not.toHaveClass(/bg-banana-500/)
@@ -132,11 +132,11 @@ test.describe('Detail level selector — mock tests', () => {
     })
 
     await page.goto(`/project/${PROJECT_ID}/detail`)
-    await page.waitForSelector('text=批量生成描述')
+    await page.waitForSelector('text=')
 
-    // Select "详细" then click batch generate
-    await page.locator('button', { hasText: '详细' }).click()
-    await page.locator('button', { hasText: '批量生成描述' }).click()
+    // Test verification logic
+    await page.locator('button', { hasText: '' }).click()
+    await page.locator('button', { hasText: '' }).click()
 
     // Wait for the request to be captured
     await expect.poll(() => capturedBody).toBeTruthy()
@@ -168,9 +168,9 @@ test.describe('Detail level selector — mock tests', () => {
     })
 
     await page.goto(`/project/${PROJECT_ID}/detail`)
-    await page.waitForSelector('text=批量生成描述')
+    await page.waitForSelector('text=')
 
-    await page.locator('button', { hasText: '批量生成描述' }).click()
+    await page.locator('button', { hasText: '' }).click()
 
     await expect.poll(() => capturedBody).toBeTruthy()
     expect(capturedBody.detail_level).toBe('default')

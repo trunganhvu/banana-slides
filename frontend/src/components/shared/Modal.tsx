@@ -76,7 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain">
-      {/* 遮罩 */}
+      {/* UI element */}
       <div
         className={cn(
           'fixed inset-0 z-0 transition-all duration-300',
@@ -88,7 +88,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-hidden="true"
       />
 
-      {/* 容器 */}
+      {/* UI element */}
       <div
         className="relative z-10 flex min-h-full items-center justify-center p-4 sm:p-6"
         onClick={handleBackdropClick}
@@ -100,16 +100,16 @@ export const Modal: React.FC<ModalProps> = ({
           className={cn(
             'relative w-full flex flex-col',
             size === 'full' ? 'max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)]' : 'max-h-[85vh]',
-            // 背景和边框
+            // Component logic
             'bg-white/95 dark:bg-[#1a1a24]/95',
             'backdrop-blur-xl',
             'border border-white/20 dark:border-white/10',
-            // 圆角 + 裁剪滚动条
+            // Component logic
             'rounded-3xl overflow-hidden',
-            // 阴影 - 多层次
+            // Component logic
             'shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.09)]',
             'dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.2),0_12px_24px_rgba(0,0,0,0.4)]',
-            // 动画
+            // Component logic
             'transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
             isAnimating
               ? 'opacity-100 scale-100 translate-y-0'
@@ -118,16 +118,16 @@ export const Modal: React.FC<ModalProps> = ({
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* 顶部光晕效果 */}
+          {/* UI element */}
           <div className="absolute -top-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-banana-400/50 to-transparent" />
 
-          {/* 内部光晕 */}
+          {/* UI element */}
           <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
             <div className="absolute -top-32 -left-32 w-64 h-64 bg-banana-400/10 dark:bg-banana-400/5 rounded-full blur-3xl" />
             <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-banana-300/10 dark:bg-banana-300/5 rounded-full blur-3xl" />
           </div>
 
-          {/* 标题栏 */}
+          {/* UI element */}
           {title && (
             <div className="relative flex-shrink-0 px-7 pt-7 pb-5">
               <h2
@@ -153,7 +153,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
           )}
 
-          {/* 关闭按钮 */}
+          {/* UI element */}
           {showCloseButton && (
             <button
               onClick={onClose}
@@ -169,7 +169,7 @@ export const Modal: React.FC<ModalProps> = ({
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-banana-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#1a1a24]',
                 title ? 'top-5 right-5' : 'top-4 right-4'
               )}
-              aria-label="关闭"
+              aria-label="Đóng"
             >
               <X
                 size={18}
@@ -179,7 +179,7 @@ export const Modal: React.FC<ModalProps> = ({
             </button>
           )}
 
-          {/* 内容区域 */}
+          {/* UI element */}
           <div
             className={cn(
               'relative px-7 pb-7 overflow-y-auto flex-1',
@@ -191,7 +191,7 @@ export const Modal: React.FC<ModalProps> = ({
             {children}
           </div>
 
-          {/* 底部边框光晕 */}
+          {/* UI element */}
           <div className="absolute -bottom-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent" />
         </div>
       </div>

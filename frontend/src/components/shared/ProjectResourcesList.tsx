@@ -5,14 +5,14 @@ import { listMaterials, deleteMaterial, listProjectReferenceFiles, type Material
 import { getImageUrl } from '@/api/client';
 import { ReferenceFileCard } from './ReferenceFileCard';
 
-// ProjectResourcesList 组件自包含翻译
+// Component logic
 const projectResourcesI18n = {
   zh: {
     projectResources: {
-      uploadedFiles: "已上传的文件", uploadedImages: "已上传图片",
-      refreshList: "刷新列表", imageLoadFailed: "图片加载失败", deleteThisMaterial: "删除此素材"
+      uploadedFiles: "Uploaded Files", uploadedImages: "Uploaded Images",
+      refreshList: "Refresh List", imageLoadFailed: "Image load failed", deleteThisMaterial: "Delete this material"
     },
-    material: { messages: { loadMaterialFailed: "加载素材失败", deleteSuccess: "素材已删除", deleteFailed: "删除素材失败" } }
+    material: { messages: { loadMaterialFailed: "Failed to load materials", deleteSuccess: "Material deleted", deleteFailed: "Failed to delete material" } }
   },
   en: {
     projectResources: {
@@ -26,16 +26,16 @@ const projectResourcesI18n = {
 interface ProjectResourcesListProps {
   projectId: string | null;
   className?: string;
-  showFiles?: boolean; // 是否显示参考文件
-  showImages?: boolean; // 是否显示图片素材
+  showFiles?: boolean; // Updated
+  showImages?: boolean; // Updated
   onFileClick?: (fileId: string) => void;
   onImageClick?: (material: Material) => void;
   showToast?: (props: { message: string; type: 'success' | 'error' | 'info' | 'warning' }) => void;
 }
 
 /**
- * 项目资源列表组件
- * 统一展示项目的参考文件和图片素材
+ * 
+ * 
  */
 export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
   projectId,
@@ -54,7 +54,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
   const [deletingMaterialIds, setDeletingMaterialIds] = useState<Set<string>>(new Set());
   const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
 
-  // 加载素材列表
+  // Component logic
   const loadMaterials = useCallback(async () => {
     if (!projectId || !showImages) return;
     
@@ -72,7 +72,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
     }
   }, [projectId, showImages]);
 
-  // 加载文件列表
+  // Component logic
   const loadFiles = useCallback(async () => {
     if (!projectId || !showFiles) return;
     
@@ -94,7 +94,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
     loadFiles();
   }, [loadMaterials, loadFiles]);
 
-  // 删除素材
+  // Component logic
   const handleDeleteMaterial = async (
     e: React.MouseEvent<HTMLButtonElement>,
     materialId: string
@@ -138,19 +138,19 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
     m.filename ||
     m.url;
 
-  // 如果没有项目ID，不显示
+  // Component logic
   if (!projectId) {
     return null;
   }
 
-  // 如果两个都不显示任何内容，则不渲染
+  // Component logic
   if ((!showFiles || files.length === 0) && (!showImages || materials.length === 0)) {
     return null;
   }
 
   return (
     <div className={className}>
-      {/* 参考文件列表 */}
+      {/* UI element */}
       {showFiles && files.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
@@ -185,7 +185,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
         </div>
       )}
 
-      {/* 图片素材列表 */}
+      {/* UI element */}
       {showImages && materials.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -205,7 +205,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
             </button>
           </div>
 
-          {/* 横向滚动的图片列表 */}
+          {/* UI element */}
           <div className="flex gap-3 overflow-x-auto pb-2">
             {materials.map((material) => {
               const isDeleting = deletingMaterialIds.has(material.id);
@@ -215,7 +215,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
                   className="relative flex-shrink-0 group cursor-pointer"
                   onClick={() => onImageClick?.(material)}
                 >
-                  {/* 图片容器 */}
+                  {/* UI element */}
                   <div className="relative w-32 h-32 bg-gray-100 dark:bg-background-secondary rounded-lg overflow-hidden border-2 border-gray-200 dark:border-border-primary hover:border-banana-400 transition-colors">
                     {failedImageUrls.has(material.url) ? (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-2">
@@ -230,7 +230,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
                       />
                     )}
 
-                    {/* 删除按钮 */}
+                    {/* UI element */}
                     <button
                       onClick={(e) => handleDeleteMaterial(e, material.id)}
                       disabled={isDeleting}
@@ -244,7 +244,7 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
                       )}
                     </button>
 
-                    {/* 悬浮时显示文件名 */}
+                    {/* UI element */}
                     <div className="absolute inset-x-0 bottom-0 bg-black/70 text-white text-xs p-1 opacity-0 group-hover:opacity-100 transition-opacity truncate">
                       {getMaterialDisplayName(material)}
                     </div>
@@ -260,4 +260,3 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
 };
 
 export default ProjectResourcesList;
-

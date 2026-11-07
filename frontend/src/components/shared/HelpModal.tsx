@@ -13,44 +13,44 @@ import logoUrl from '@/assets/logo.png';
 const i18nDict = {
   zh: {
     guide: {
-      brand: '蕉幻 · Banana Slides',
-      setup: '快速开始',
-      setupSub: '完成基础配置，开启 AI 创作之旅',
-      features: '功能介绍',
-      featuresSub: '探索如何使用 AI 快速创建精美 PPT',
-      gallery: '结果案例',
-      gallerySub: '以下是使用蕉幻生成的 PPT 案例展示',
-      galleryMore: '查看更多使用案例',
-      hi: '欢迎使用蕉幻！',
-      hiSub: '在开始前，让我们先完成基础配置',
-      s1: '配置 API Key',
-      s1d: '前往设置页面，配置项目需要使用的API服务，包括：',
-      s1i: ['您的 AI 服务提供商的 API Base 和 API Key', '配置文本、图像生成模型(banana pro)和图像描述模型', '若需要文件解析功能，请配置 MinerU Token', '若需要可编辑导出功能，请配置MinerU TOKEN 和 Baidu API KEY'],
-      s2: '保存并测试',
-      s2d: '配置完成后，务必点击「保存设置」按钮，然后在页面底部进行服务测试，确保各项服务正常工作。',
-      s3: '开始创作',
-      s3d: '配置成功后，返回首页即可开始使用 AI 生成精美的 PPT！',
-      s4: '*问题反馈',
-      s4d: '若使用过程中遇到问题，可在github issue提出',
-      issueLink: '前往Github issue',
-      settingsBtn: '前往设置页面',
-      featuresOverview: '功能总览',
-      featuresOverviewDesc: '了解 Banana Slides 的完整工作流程、创作路径、素材支持和导出能力。',
-      feishuTutorial: '设置页图文教程',
-      feishuTutorialDesc: '按步骤完成设置页面配置。',
-      faq: '常见问题',
-      faqDesc: '查看 API 配置、导出和使用过程中的常见问题。',
-      hint: '提示',
-      hintBody: '如果您还没有 API Key，可以前往对应服务商官网注册获取。配置完成后，建议先进行服务测试，避免后续使用出现问题。',
-      prev: '上一页',
-      next: '下一页',
-      cases: { softwareDev: '软件开发最佳实践', deepseek: 'DeepSeek-V3.2技术展示', prefabFood: '预制菜智能产线装备研发和产业化', moneyHistory: '钱的演变：从贝壳到纸币的旅程' },
+      brand: 'Banana Slides · Banana Slides',
+      setup: 'Bắt đầu nhanh',
+      setupSub: 'Hoàn tất cấu hình cơ bản, bật AI hành trình sáng tạo',
+      features: 'Giới thiệu tính năng',
+      featuresSub: 'Khám phá cách sử dụng AI nhanh chóng tạo bản trình chiếu đẹp mắt PPT',
+      gallery: 'Ví dụ kết quả',
+      gallerySub: 'Banana Slides PPT ',
+      galleryMore: 'Xem thêm các ví dụ thực tế',
+      hi: 'Banana Slides! ',
+      hiSub: 'Trước khi bắt đầu, Hãy hoàn tất cấu hình cơ bản trước',
+      s1: 'Cấu hình API Key',
+      s1d: 'Đi tới trang Cài đặt, Cấu hình dự án cần sử dụngAPIdịch vụ, bao gồm: ',
+      s1i: ['của bạn AI của nhà cung cấp dịch vụ API Base và API Key', 'Cấu hình văn bản, Mô hình tạo ảnh(banana pro)và mô hình mô tả ảnh', 'Nếu cần tính năng phân tích tệp, Vui lòng cấu hình MinerU Token', 'Nếu cần tính năng xuất tệp có thể chỉnh sửa, Vui lòng cấu hìnhMinerU TOKEN và Baidu API KEY'],
+      s2: 'Lưu và kiểm tra',
+      s2d: 'Sau khi hoàn tất cấu hình, nhất định phải nhấnLưu cài đặtnút, sau đó kiểm tra dịch vụ ở cuối trang, Đảm bảo các dịch vụ hoạt động bình thường. ',
+      s3: 'Bắt đầu sáng tạo',
+      s3d: 'Sau khi cấu hình thành công, Quay lại trang chủ để bắt đầu sử dụng AI tạo bản trình chiếu đẹp mắt PPT! ',
+      s4: '*Phản hồi vấn đề',
+      s4d: 'Nếu gặp sự cố trong quá trình sử dụng, Có thể tạigithub issueđưa ra',
+      issueLink: 'Đi tớiGithub issue',
+      settingsBtn: 'Đi tới trang Cài đặt',
+      featuresOverview: 'Tổng quan tính năng',
+      featuresOverviewDesc: 'Tìm hiểu Banana Slides quy trình làm việc hoàn chỉnh, lộ trình sáng tạo, hỗ trợ tư liệu và khả năng xuất tệp. ',
+      feishuTutorial: 'Hướng dẫn chi tiết trang Cài đặt',
+      feishuTutorialDesc: 'Hoàn tất cấu hình trang Cài đặt theo từng bước. ',
+      faq: 'Câu hỏi thường gặp',
+      faqDesc: 'Xem API Cấu hình, Các câu hỏi thường gặp trong quá trình xuất và sử dụng. ',
+      hint: 'Gợi ý',
+      hintBody: 'Nếu bạn chưa có API Key, Có thể truy cập trang chủ của nhà cung cấp tương ứng để đăng ký và lấy mã. Sau khi hoàn tất cấu hình, Khuyến nghị kiểm tra dịch vụ trước, tránh gặp sự cố trong quá trình sử dụng sau này. ',
+      prev: 'Trang trước',
+      next: 'Trang sau',
+      cases: { softwareDev: 'Thực hành tốt nhất trong phát triển phần mềm', deepseek: 'DeepSeek-V3.2Trình diễn kỹ thuật', prefabFood: 'Nghiên cứu phát triển và công nghiệp hóa dây chuyền thiết bị thông minh', moneyHistory: 'Sự tiến hóa của tiền tệ: Hành trình từ vỏ sò đến tiền giấy' },
       feat: {
-        paths: { t: '灵活多样的创作路径', d: '支持想法、大纲、页面描述三种起步方式，满足不同创作习惯。', items: ['一句话生成：输入一个主题，AI 自动生成结构清晰的大纲和逐页内容描述', '自然语言编辑：支持以 Vibe 形式口头修改大纲或描述，AI 实时响应调整', '大纲/描述模式：既可一键批量生成，也可手动调整细节'] },
-        parse: { t: '强大的素材解析能力', d: '上传多种格式文件，自动解析内容，为生成提供丰富素材。', items: ['多格式支持：上传 PDF/Docx/MD/Txt 等文件，后台自动解析内容', '智能提取：自动识别文本中的关键点、图片链接和图表信息', '风格参考：支持上传参考图片或模板，定制 PPT 风格'] },
-        vibe: { t: '「Vibe」式自然语言修改', d: '不再受限于复杂的菜单按钮，直接通过自然语言下达修改指令。', items: ['局部重绘：对不满意的区域进行口头式修改（如「把这个图换成饼图」）', '整页优化：基于 nano banana pro 生成高清、风格统一的页面'] },
-        export: { t: '开箱即用的格式导出', d: '一键导出标准格式，直接演示无需调整。', items: ['多格式支持：一键导出标准 PPTX 或 PDF 文件', '完美适配：默认 16:9 比例，排版无需二次调整'] },
-        video: { t: 'TTS 讲解视频导出', d: '一键将幻灯片转换为带 AI 语音旁白和字幕的讲解视频。', items: ['AI 自动将页面描述转为口语化旁白，通过 edge-tts 合成语音', '支持中/英/日三种语言，多种音色可选', '逐句滚动字幕，自动按语音节奏切换', '可选 Ken Burns 画面动效（缩放/平移）'] },
+        paths: { t: 'Lộ trình sáng tạo linh hoạt, đa dạng', d: 'Hỗ trợ từ ý tưởng, Dàn ý, và mô tả trang — 3 cách khởi đầu, đáp ứng mọi thói quen sáng tạo. ', items: ['Tạo từ một câu: Nhập một chủ đề, AI Tự động tạo dàn ý có cấu trúc rõ ràng và mô tả nội dung từng trang', 'Chỉnh sửa bằng ngôn ngữ tự nhiên: Hỗ trợ dùng Vibe để chỉnh sửa dàn ý hoặc mô tả bằng ngôn ngữ tự nhiên, AI phản hồi điều chỉnh theo thời gian thực', 'Dàn ý/Chế độ mô tả: Vừa có thể tạo hàng loạt chỉ với một cú nhấp, hoặc chỉnh sửa chi tiết thủ công'] },
+        parse: { t: 'Khả năng phân tích tư liệu mạnh mẽ', d: 'tải lên nhiều định dạng tệp, Tự động phân tích nội dung, cung cấp nguồn tư liệu phong phú cho việc tạo slide. ', items: ['Hỗ trợ đa định dạng: Tải lên PDF/Docx/MD/Txt và các tệp khác, tự động phân tích nội dung dưới nền', 'trích xuất thông minh: Tự động nhận diện các điểm chính trong văn bản, liên kết ảnh và thông tin biểu đồ', 'Tham chiếu phong cách: Hỗ trợ tải lên ảnh tham chiếu hoặc mẫu, tùy biến PPT phong cách'] },
+        vibe: { t: 'VibeChỉnh sửa bằng ngôn ngữ tự nhiên', d: 'Không còn bị giới hạn bởi các nút menu phức tạp, Đưa ra yêu cầu chỉnh sửa trực tiếp bằng ngôn ngữ tự nhiên. ', items: ['Vẽ lại cục bộ: Chỉnh sửa bằng ngôn ngữ tự nhiên cho các vùng chưa ưng ý ( như Đổi biểu đồ này thành biểu đồ tròn) ', 'tối ưu toàn trang: dựa trên nano banana pro tạo độ nét cao, các trang có phong cách đồng nhất'] },
+        export: { t: 'Xuất định dạng dùng ngay', d: 'Xuất định dạng chuẩn chỉ với một cú nhấp, trình chiếu ngay không cần chỉnh sửa. ', items: ['Hỗ trợ đa định dạng: Xuất chuẩn chỉ với một cú nhấp PPTX hoặc PDF Tệp', 'tương thích hoàn hảo: mặc định 16:9 tỷ lệ, bố cục chuẩn đẹp không cần chỉnh lại'] },
+        video: { t: 'TTS Xuất video thuyết trình', d: 'Chuyển đổi slide chỉ với một cú nhấp thành AI video thuyết trình có giọng đọc và phụ đề. ', items: ['AI Tự động chuyển mô tả trang thành lời thuyết minh tự nhiên, qua edge-tts Tổng hợp giọng nói', 'Hỗ trợ tiếng Việt/Anh/Nhật (3 ngôn ngữ), nhiều giọng đọc tùy chọn', 'phụ đề cuộn từng câu, tự động chuyển cảnh theo nhịp giọng đọc', 'tùy chọn Ken Burns hiệu ứng chuyển cảnh (thu phóng/dịch chuyển) '] },
       },
     },
   },
@@ -256,7 +256,7 @@ const renderSetupPage: PageRenderer = ({ t, lang, navigate, onClose }) => {
       <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
         <p className="text-xs text-blue-800 flex items-start gap-1.5">
           <Lightbulb size={14} className="flex-shrink-0 mt-0.5" />
-          <span><strong>{t('guide.hint')}</strong>：{t('guide.hintBody')}</span>
+          <span><strong>{t('guide.hint')}</strong>: {t('guide.hintBody')}</span>
         </p>
       </div>
 
@@ -382,7 +382,7 @@ interface HelpModalProps {
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   const t = useT(i18nDict);
   const { i18n } = useTranslation();
-  const lang: 'zh' | 'en' = i18n.language?.startsWith('zh') ? 'zh' : 'en';
+  const lang: 'zh' | 'en' = !i18n.language?.startsWith('en') ? 'zh' : 'en';
   const navigate = useNavigate();
   const [pageIdx, setPageIdx] = useState(0);
   const [showcaseIdx, setShowcaseIdx] = useState(0);

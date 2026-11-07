@@ -1,4 +1,4 @@
-# 镜像源配置参数（可通过 build args 覆盖）
+# Tham số cấu hình nguồn mirror (có thể ghi đè qua build args)
 ARG DOCKER_REGISTRY=
 ARG GHCR_REGISTRY=ghcr.io/
 ARG APT_MIRROR=
@@ -8,14 +8,14 @@ ARG APP_COMMIT_SHA=
 ARG APP_COMMIT_SHORT_SHA=
 ARG APP_BUILD_DATE=
 
-# 安装 uv（使用中间阶段避免 COPY --from 的变量展开问题）
+# Cài đặt uv (sử dụng giai đoạn trung gian để tránh lỗi mở rộng biến trong COPY --from)
 FROM ${GHCR_REGISTRY}astral-sh/uv:latest AS uv
 
-# 使用 Python 3.10 作为基础镜像
-# 如果指定了 DOCKER_REGISTRY，使用镜像源；否则使用官方源
+# Sử dụng Python 3.10 làm image cơ sở
+# Nếu chỉ định DOCKER_REGISTRY thì dùng mirror; ngược lại dùng nguồn chính thức
 FROM ${DOCKER_REGISTRY:-}python:3.10-slim
 
-# 重新声明ARG（FROM之后ARG作用域失效，需要重新声明）
+# Khai báo lại ARG (sau FROM phạm vi ARG bị đặt lại)
 ARG APT_MIRROR=
 ARG PYPI_INDEX_URL=
 ARG APP_VERSION_TAG=
@@ -23,10 +23,10 @@ ARG APP_COMMIT_SHA=
 ARG APP_COMMIT_SHORT_SHA=
 ARG APP_BUILD_DATE=
 
-# 设置工作目录
+# Thiết lập thư mục làm việc
 WORKDIR /app
 
-# 安装系统依赖（如果配置了 APT_MIRROR，先替换镜像源）
+# Cài đặt phụ thuộc hệ thống (nếu cấu hình APT_MIRROR thì thay thế nguồn trước)
 RUN if [ -n "$APT_MIRROR" ]; then \
         if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
             sed -i "s@deb.debian.org@$APT_MIRROR@g" /etc/apt/sources.list.d/debian.sources; \
@@ -40,40 +40,40 @@ RUN if [ -n "$APT_MIRROR" ]; then \
     fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/*
 
-# 从 uv 阶段复制二进制文件
+# Sao chép tệp thực thi từ giai đoạn uv
 COPY --from=uv /uv /usr/local/bin/uv
 RUN chmod +x /usr/local/bin/uv
 
-# 复制项目配置文件
+# Sao chép tệp cấu hình dự án
 COPY pyproject.toml ./
 COPY uv.lock* ./
 
-# 配置 PyPI 镜像源（如果指定）
+# Cấu hình nguồn mirror PyPI (nếu chỉ định)
 ENV UV_INDEX_URL=${PYPI_INDEX_URL}
 
-# 配置 uv 网络超时
+# Cấu hình thời gian chờ mạng cho uv
 ENV UV_HTTP_TIMEOUT=300
 
-# 安装 Python 依赖
-# 如果有 uv.lock 文件则使用 --frozen，否则生成新的锁定文件
+# Cài đặt phụ thuộc Python
+# Nếu có tệp uv.lock thì sử dụng --frozen, ngược lại tạo tệp khóa mới
 RUN if [ -f uv.lock ]; then \
         uv sync --frozen; \
     else \
         uv sync; \
     fi
 
-# 复制后端代码
+# Sao chép mã nguồn backend
 COPY backend/ ./backend/
 
-# 复制测试资源
+# Sao chép tài nguyên kiểm thử và biểu tượng
 COPY assets/ ./assets/
 
-# 创建必要的目录
+# Tạo các thư mục cần thiết
 RUN mkdir -p /app/backend/instance /app/uploads
 
 ENV PYTHONPATH=/app
 ENV FLASK_APP=backend/app.py
-# 容器内固定监听 5000；宿主机端口由 docker-compose 的 BACKEND_PORT 控制
+# Trong container cố định lắng nghe cổng 5000; cổng máy chủ do BACKEND_PORT trong docker-compose điều khiển
 ENV IN_DOCKER=1
 ENV APP_VERSION_TAG=${APP_VERSION_TAG}
 ENV APP_COMMIT_SHA=${APP_COMMIT_SHA}
@@ -81,12 +81,12 @@ ENV APP_COMMIT_SHORT_SHA=${APP_COMMIT_SHORT_SHA}
 ENV APP_BUILD_DATE=${APP_BUILD_DATE}
 ENV DOCKERHUB_REPOSITORY=banana-slides-backend
 
-# 暴露端口
+# Mở cổng
 EXPOSE 5000
 
-# 容器内部固定使用 5000 端口
+# Container sử dụng cố định cổng 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD ["sh", "-c", "curl -f http://localhost:5000/health || exit 1"]
 
-# 启动应用。直接使用构建阶段同步好的虚拟环境，避免预构建镜像启动时再次联网解析依赖。
+# Khởi động ứng dụng. Sử dụng trực tiếp môi trường ảo đã đồng bộ ở bước build để tránh phải kết nối mạng tải lại khi khởi chạy.
 CMD ["sh", "-c", "cd /app/backend && /app/.venv/bin/alembic upgrade head && exec /app/.venv/bin/python app.py"]

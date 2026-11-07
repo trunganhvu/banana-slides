@@ -48,7 +48,7 @@ def _get_openai_oauth_token() -> Optional[str]:
         settings = Settings.get_settings()
         return settings.get_openai_oauth_token()
     except Exception as e:
-        logger.error("从设置中获取 OpenAI OAuth 令牌失败: %s", e)
+        logger.error("Lấy từ cài đặt OpenAI OAuth token thất bại: %s", e)
         return None
 
 

@@ -125,7 +125,7 @@ jobs:
         run: cd frontend && npx playwright test ui-full-flow.spec.ts page-properties-drawer.spec.ts pptx-download.spec.ts --workers=1
         env:
           CI: true
-        # ui-full-flow（含真实生成等待）与 drawer 回归同 job 串行，留足余量
+        # ui-full-flow va drawer regression chay tuan tu trong cung job, du thoi gian du phong
         timeout-minutes: 40
 
       - name: Upload E2E reports

@@ -11,9 +11,9 @@ const resetSettings = vi.fn();
 
 vi.mock('@/api/endpoints', () => ({
   OUTPUT_LANGUAGE_OPTIONS: [
-    { value: 'zh', label: '中文' },
+    { value: 'zh', label: '' },
     { value: 'en', label: 'English' },
-    { value: 'ja', label: '日本語' },
+    { value: 'ja', label: '' },
     { value: 'auto', label: 'Auto' },
   ],
   getSettings: () => getSettings(),
@@ -50,8 +50,8 @@ const baseSettings: SettingsType = {
   image_caption_model: 'gemini-3-flash-preview',
   output_language: 'zh',
   description_generation_mode: 'streaming',
-  description_extra_fields: ['配图与素材', '版式与重点', '演讲者备注'],
-  image_prompt_extra_fields: ['配图与素材', '版式与重点'],
+  description_extra_fields: ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm', 'Ghi chú thuyết trình'],
+  image_prompt_extra_fields: ['Hình ảnh & Tư liệu', 'Bố cục & Trọng tâm'],
   enable_text_reasoning: false,
   text_max_output_tokens: 32768,
   text_thinking_budget: 1024,
@@ -94,12 +94,12 @@ describe('Settings quality control', () => {
       </MemoryRouter>
     );
 
-    const label = await screen.findByText(/启用质量控制模式|Enable Quality Control/);
+    const label = await screen.findByText(/|Enable Quality Control/);
     const switchButton = label.parentElement?.querySelector('button');
     expect(switchButton).toBeTruthy();
 
     await userEvent.click(switchButton!);
-    await userEvent.click(screen.getByRole('button', { name: /保存设置|Save Settings/ }));
+    await userEvent.click(screen.getByRole('button', { name: /|Save Settings/ }));
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(

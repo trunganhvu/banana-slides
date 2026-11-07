@@ -118,9 +118,9 @@ test.describe('UX Polish – i18n strings (mock)', () => {
 
     // The status badge should show English text, not Chinese
     const pageContent = await page.textContent('body');
-    // In English mode, status should be "Completed" not "已完成"
+    // Test verification logic
     expect(pageContent).toContain('Completed');
-    expect(pageContent).not.toContain('已完成');
+    expect(pageContent).not.toContain('');
   });
 
   test('settings page error messages use i18n', async ({ page }) => {
@@ -144,8 +144,8 @@ test.describe('UX Polish – i18n strings (mock)', () => {
 
     // The error toast should show English text
     const toastText = await page.textContent('body');
-    // Should NOT contain hardcoded Chinese error like "加载设置失败"
-    expect(toastText).not.toContain('加载设置失败');
+    // Test verification logic
+    expect(toastText).not.toContain('');
   });
 });
 

@@ -58,11 +58,11 @@ test.describe('Aspect ratio lock (mock)', () => {
     await page.waitForLoadState('networkidle')
 
     // Open project settings modal
-    const settingsBtn = page.locator('button').filter({ hasText: /设置|Settings/ }).first()
+    const settingsBtn = page.locator('button').filter({ hasText: /|Settings/ }).first()
     await settingsBtn.click()
 
     // Verify locked description text
-    await expect(page.getByText(/已生成图片的项目无法调整|Cannot change aspect ratio/)).toBeVisible()
+    await expect(page.getByText(/|Cannot change aspect ratio/)).toBeVisible()
 
     // Verify buttons are disabled
     for (const ratio of ['16:9', '4:3', '1:1', '9:16', '3:2']) {
@@ -70,7 +70,7 @@ test.describe('Aspect ratio lock (mock)', () => {
     }
 
     // Save button should not be visible
-    await expect(page.locator('button').filter({ hasText: /^保存$|^Save$/ }).first()).not.toBeVisible()
+    await expect(page.locator('button').filter({ hasText: /^$|^Save$/ }).first()).not.toBeVisible()
   })
 
   test('help icon tooltip visible', async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe('Aspect ratio lock (mock)', () => {
     await page.goto(`/project/${PROJECT_ID}/preview`)
     await page.waitForLoadState('networkidle')
 
-    const settingsBtn = page.locator('button').filter({ hasText: /设置|Settings/ }).first()
+    const settingsBtn = page.locator('button').filter({ hasText: /|Settings/ }).first()
     await settingsBtn.click()
 
     // Help icon should exist
@@ -87,7 +87,7 @@ test.describe('Aspect ratio lock (mock)', () => {
 
     // Hover to show tooltip
     await helpIcon.hover()
-    await expect(page.getByText(/部分模型仅支持特定|Some models only support/)).toBeVisible()
+    await expect(page.getByText(/|Some models only support/)).toBeVisible()
   })
 
   test('buttons enabled when no images exist', async ({ page }) => {
@@ -95,11 +95,11 @@ test.describe('Aspect ratio lock (mock)', () => {
     await page.goto(`/project/${PROJECT_ID}/preview`)
     await page.waitForLoadState('networkidle')
 
-    const settingsBtn = page.locator('button').filter({ hasText: /设置|Settings/ }).first()
+    const settingsBtn = page.locator('button').filter({ hasText: /|Settings/ }).first()
     await settingsBtn.click()
 
     // Normal description text
-    await expect(page.getByText(/设置生成幻灯片|Set the aspect ratio/)).toBeVisible()
+    await expect(page.getByText(/|Set the aspect ratio/)).toBeVisible()
 
     // Buttons should be enabled
     const btn43 = page.locator('button:has-text("4:3")').first()

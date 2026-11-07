@@ -56,7 +56,7 @@ export const Toast: React.FC<ToastProps> = ({
   );
 };
 
-// Toast 管理器
+// Component logic
 export const useToast = () => {
   const [toasts, setToasts] = React.useState<Array<{ id: string; props: Omit<ToastProps, 'onClose'> }>>([]);
 
@@ -64,7 +64,7 @@ export const useToast = () => {
     const id = Math.random().toString(36);
     setToasts((prev) => {
       const newToasts = [...prev, { id, props }];
-      // 最多保留5个toast，超过则移除最早的
+      // Component logic
       return newToasts.length > 5 ? newToasts.slice(-5) : newToasts;
     });
   };

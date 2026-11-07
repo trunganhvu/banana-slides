@@ -14,8 +14,8 @@ class Task(db.Model):
     """
     __tablename__ = 'tasks'
 
-    # 任务被看门狗判定失败后，这些进度键不允许被后续的进度写入覆盖，
-    # 否则前端会丢掉失败原因（见 services/task_watchdog.py）
+    # Backend logic
+    # Backend logic
     WATCHDOG_PROGRESS_KEYS = (
         'error_code',
         'error_stage',
@@ -49,14 +49,14 @@ class Task(db.Model):
     def set_progress(self, data):
         """Set progress as JSON string, stamping the last-activity time.
 
-        ``heartbeat_at`` 是"任务最后一次写进度"的时间，看门狗用它判断
-        任务是否还在推进（进程重启后也能从数据库读到）。
+        ``heartbeat_at`` là "Lần cuối tác vụ ghi tiến độ"thời gian của, watchdog dùng nó để phán đoán
+         () . 
         """
         if not data:
             existing = self.get_progress() or {}
             if existing.get('error_stage') == 'task_watchdog':
-                # 不能用空进度覆盖看门狗写入的失败诊断
-                # （例如设置页测试失败时会 set_progress({})）
+                # Backend logic
+                # Backend logic
                 return
             self.progress = None
             return
@@ -83,12 +83,12 @@ class Task(db.Model):
 
     @validates('status')
     def _keep_watchdog_failure_terminal(self, key, value):
-        """看门狗判定的失败是终态，不允许 worker 之后把它改回成功。
+        """,  worker . 
 
-        后台任务无法被真正取消：被判"卡住"的 worker 可能稍后恢复并跑完。
-        此时用户已经看到失败提示（前端已停止轮询），状态若静默变回
-        COMPLETED 会造成误解与重复执行，因此这里保持 FAILED，
-        但产物信息（download_url 等）仍由 set_progress 写入。
+        : "" worker . 
+         () , 
+        COMPLETED ,  FAILED, 
+         (download_url )  set_progress . 
         """
         if value != 'FAILED' and self.status == 'FAILED':
             progress = self.get_progress() or {}
@@ -110,4 +110,3 @@ class Task(db.Model):
     
     def __repr__(self):
         return f'<Task {self.id}: {self.task_type} - {self.status}>'
-

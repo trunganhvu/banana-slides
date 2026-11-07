@@ -427,25 +427,25 @@ class FileService:
             Absolute path to template file or None
         """
         
-        # 刷新数据库会话，确保获取最新数据
+        # Backend logic
         db.session.expire_all()
         project = Project.query.get(project_id)
         if project and project.template_image_path:
-            # template_image_path 是相对路径，需要转换为绝对路径
+            # Backend logic
             template_path = self.upload_folder / project.template_image_path
             if template_path.exists() and template_path.is_file():
                 return str(template_path)
         
-        # 如果数据库中没有，回退到目录查找（兼容旧数据）
+        # Backend logic
         template_dir = self._get_template_dir(project_id)
         if template_dir.exists():
-            # 按修改时间排序，返回最新的模板文件
+            # Backend logic
             template_files = [
                 f for f in template_dir.iterdir() 
                 if f.is_file() and f.stem == 'template'
             ]
             if template_files:
-                # 返回修改时间最新的文件
+                # Backend logic
                 latest_file = max(template_files, key=lambda f: f.stat().st_mtime)
                 return str(latest_file)
         

@@ -9,17 +9,17 @@ import logoUrl from '@/assets/logo.png';
 
 const titleBarI18n = {
   zh: {
-    materialGenerate: '素材生成',
-    materialCenter: '素材中心',
-    history: '历史',
-    settings: '设置',
-    themeLight: '浅色',
-    themeDark: '深色',
-    themeSystem: '跟随系统',
-    refresh: '刷新',
-    minimize: '最小化',
-    maximize: '最大化',
-    close: '关闭',
+    materialGenerate: 'Tạo tư liệu',
+    materialCenter: 'Trung tâm tư liệu',
+    history: 'Lịch sử',
+    settings: 'Cài đặt',
+    themeLight: 'Sáng',
+    themeDark: 'Tối',
+    themeSystem: 'Theo hệ thống',
+    refresh: 'Làm mới',
+    minimize: 'Thu nhỏ',
+    maximize: 'Phóng to',
+    close: 'Đóng',
   },
   en: {
     materialGenerate: 'Generate',
@@ -173,10 +173,10 @@ export function DesktopTitleBar() {
         {/* Language toggle */}
         <button
           className={navBtnClass}
-          onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
+          onClick={() => i18n.changeLanguage(i18n.language?.startsWith('en') ? 'vi' : 'en')}
         >
           <Globe size={12} />
-          <span>{i18n.language?.startsWith('zh') ? 'EN' : '中'}</span>
+          <span>{i18n.language?.startsWith('en') ? 'VI' : 'EN'}</span>
         </button>
 
         {/* Theme switcher */}

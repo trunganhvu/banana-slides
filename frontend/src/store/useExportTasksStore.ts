@@ -8,31 +8,31 @@ import { normalizeErrorMessage } from '@/utils';
 const exportI18n = {
   zh: {
     exportStore: {
-      exportFailed: '导出失败',
-      pollFailed: '轮询失败',
-      pollRetrying: '暂时无法查询导出状态，后台任务未被判定失败，正在自动重连',
-      pollPaused: '无法继续自动查询导出状态，后台任务状态未知，请手动重新查询',
-      staleTask: '任务状态响应异常，后台任务状态未知，请手动重新查询',
-      pollGatewayTimeout: '状态查询经过网关时超时',
-      pollRequestTimeout: '本次状态查询超过请求时限',
-      pollRateLimited: '状态查询请求过于频繁',
-      pollServiceUnavailable: '导出状态服务暂时不可用',
-      pollNetworkError: '状态查询网络连接中断',
-      createConfirmationPending: '创建响应中断后暂未查到任务，可能仍在经过网关或写入队列',
-      taskInterrupted: '导出被中断：后台服务已重启或进程已退出，该任务不会继续执行（最后进度更新于 {{duration}}前）。',
-      taskInterruptedNoDuration: '导出被中断：后台服务已重启或进程已退出，该任务不会继续执行。',
-      taskStalled: '导出疑似卡住：已 {{duration}}没有进度更新（最后一步：{{step}}）。',
-      taskStalledNoStep: '导出疑似卡住：已 {{duration}}没有进度更新。',
-      durationHours: '{{value}} 小时',
-      durationMinutes: '{{value}} 分钟',
-      durationSeconds: '{{value}} 秒',
-      stepStarting: '开始执行',
-      stepPreparing: '准备',
-      stepLayoutAnalysis: '版面分析',
-      stepStyleExtraction: '样式提取',
-      stepBuildingPptx: '构建 PPTX',
-      stepSaving: '保存文件',
-    },
+      exportFailed: 'Xuất thất bại',
+      pollFailed: 'Truy vấn thất bại',
+      pollRetrying: 'Tạm thời không thể truy vấn trạng thái xuất, tác vụ nền chưa bị coi là thất bại, đang tự động kết nối lại',
+      pollPaused: 'Không thể tiếp tục tự động truy vấn trạng thái xuất, trạng thái tác vụ nền chưa rõ, vui lòng kiểm tra lại thủ công',
+      staleTask: 'Phản hồi trạng thái tác vụ bất thường, trạng thái tác vụ nền chưa rõ, vui lòng kiểm tra lại thủ công',
+      pollGatewayTimeout: 'Quá thời gian chờ cổng kết nối khi truy vấn trạng thái',
+      pollRequestTimeout: 'Lần truy vấn trạng thái này đã quá thời gian yêu cầu',
+      pollRateLimited: 'Tần suất yêu cầu truy vấn trạng thái quá cao',
+      pollServiceUnavailable: 'Dịch vụ trạng thái xuất tạm thời không khả dụng',
+      pollNetworkError: 'Kết nối mạng bị gián đoạn khi truy vấn trạng thái',
+      createConfirmationPending: 'Tác vụ chưa xuất hiện sau khi tạo bị gián đoạn; có thể vẫn đang được xếp hàng',
+      taskInterrupted: 'Tác vụ xuất bị gián đoạn: backend đã khởi động lại, tác vụ này sẽ không tiếp tục (tiến độ gần nhất {{duration}} trước).',
+      taskInterruptedNoDuration: 'Tác vụ xuất bị gián đoạn: backend đã khởi động lại, tác vụ này sẽ không tiếp tục.',
+      taskStalled: 'Tác vụ xuất có vẻ bị treo: không có tiến triển trong {{duration}} (bước gần nhất: {{step}}).',
+      taskStalledNoStep: 'Tác vụ xuất có vẻ bị treo: không có tiến triển trong {{duration}}.',
+      durationHours: '{{value}} giờ',
+      durationMinutes: '{{value}} phút',
+      durationSeconds: '{{value}} giây',
+      stepStarting: 'đang khởi động',
+      stepPreparing: 'đang chuẩn bị',
+      stepLayoutAnalysis: 'phân tích bố cục',
+      stepStyleExtraction: 'trích xuất phong cách',
+      stepBuildingPptx: 'đang tạo PPTX',
+      stepSaving: 'đang lưu tệp',
+    }
   },
   en: {
     exportStore: {
@@ -67,22 +67,22 @@ const t = getT(exportI18n);
 const EXPORT_POLL_INTERVAL_MS = 2000;
 const MAX_POLL_RETRY_DELAY_MS = 30000;
 const MAX_CREATE_CONFIRMATION_RETRIES = 6;
-// 后端看门狗写入的 error_code（见 backend/services/task_watchdog.py）。
-// 这类失败的文案完全由前端本地化 + 后端结构化细节拼装，
-// 不依赖后端的中文句子（避免中英混排与文案漂移导致的重复）。
+// Export task tracking logic
+// Export task tracking logic
+// Export task tracking logic
 const TASK_INTERRUPTED_CODE = 'TASK_INTERRUPTED';
 const TASK_STALLED_CODE = 'TASK_STALLED';
 
-// 后端心跳里的阶段名（中文），映射成本地化文案；未知阶段不插入句子
+// Export task tracking logic
 const STEP_LABEL_KEYS: Record<string, string> = {
-  '开始执行': 'exportStore.stepStarting',
-  '准备': 'exportStore.stepPreparing',
-  '配置': 'exportStore.stepPreparing',
-  '版面分析': 'exportStore.stepLayoutAnalysis',
-  '样式提取': 'exportStore.stepStyleExtraction',
-  '构建PPTX': 'exportStore.stepBuildingPptx',
-  '保存文件': 'exportStore.stepSaving',
-  '完成': 'exportStore.stepSaving',
+  'Bắt đầu': 'exportStore.stepStarting',
+  'Chuẩn bị': 'exportStore.stepPreparing',
+  'Cấu hình': 'exportStore.stepPreparing',
+  'Phân tích bố cục': 'exportStore.stepLayoutAnalysis',
+  'Trích xuất phong cách': 'exportStore.stepStyleExtraction',
+  'Xây dựng PPTX': 'exportStore.stepBuildingPptx',
+  'Lưu tệp': 'exportStore.stepSaving',
+  'Hoàn thành': 'exportStore.stepSaving',
 };
 
 const localizeStep = (step: string | undefined): string | undefined => {
@@ -208,7 +208,7 @@ export interface ExportTask {
   projectId: string;
   type: ExportTaskType;
   status: ExportTaskStatus;
-  pageIds?: string[]; // 选中的页面ID列表，undefined表示全部
+  pageIds?: string[]; // Export task tracking logic
   progress?: {
     total: number;
     completed: number;
@@ -232,8 +232,8 @@ export interface ExportTask {
       [key: string]: unknown;
     };
     messages?: string[];
-    warnings?: string[];  // 导出警告信息
-    warning_details?: {   // 警告详细信息
+    warnings?: string[];  // Export task tracking logic
+    warning_details?: {   // Export task tracking logic
       style_extraction_failed?: Array<{ element_id: string; reason: string }>;
       text_render_failed?: Array<{ text: string; reason: string }>;
       image_add_failed?: Array<{ path: string; reason: string }>;
@@ -267,7 +267,7 @@ interface ExportTasksState {
   removeTask: (id: string) => void;
   clearCompleted: (projectId?: string | null) => void;
   pollTask: (id: string, projectId: string, taskId: string) => Promise<void>;
-  restoreActiveTasks: () => void; // 恢复正在进行的任务并重新开始轮询
+  restoreActiveTasks: () => void; // Export task tracking logic
 }
 
 export const useExportTasksStore = create<ExportTasksState>()(
@@ -484,7 +484,7 @@ export const useExportTasksStore = create<ExportTasksState>()(
                 monitoring: {
                   state: 'retrying',
                   code: issue.code,
-                  message: `${issue.message}。${t('exportStore.pollRetrying')}。`,
+                  message: `${issue.message}. ${t('exportStore.pollRetrying')}. `,
                   consecutiveErrors: consecutivePollErrors,
                   lastErrorAt: new Date().toISOString(),
                   nextRetryAt,
@@ -500,7 +500,7 @@ export const useExportTasksStore = create<ExportTasksState>()(
               monitoring: {
                 state: 'paused',
                 code: issue.code,
-                message: `${issue.message}。${t('exportStore.pollPaused')}。`,
+                message: `${issue.message}. ${t('exportStore.pollPaused')}. `,
                 consecutiveErrors: consecutivePollErrors,
                 lastErrorAt: new Date().toISOString(),
                 httpStatus: issue.httpStatus,
@@ -513,18 +513,18 @@ export const useExportTasksStore = create<ExportTasksState>()(
       },
 
       restoreActiveTasks: () => {
-        // 恢复所有正在进行的任务并重新开始轮询
+        // Export task tracking logic
         const state = get();
         const activeTasks = state.tasks.filter(
           task => task.status === 'PENDING' || task.status === 'PROCESSING' || task.status === 'RUNNING'
         );
         
         if (activeTasks.length > 0) {
-          devLog(`[ExportTasksStore] 恢复 ${activeTasks.length} 个正在进行的任务`);
+          devLog(`[ExportTasksStore] Khôi phục ${activeTasks.length} tác vụ đang diễn ra`);
           activeTasks.forEach(task => {
-            // 重新开始轮询
+            // Export task tracking logic
             state.pollTask(task.id, task.projectId, task.taskId).catch(err => {
-              console.error(`[ExportTasksStore] 恢复任务 ${task.id} 失败:`, err);
+              console.error(`[ExportTasksStore] Khôi phục tác vụ ${task.id} thất bại:`, err);
             });
           });
         }

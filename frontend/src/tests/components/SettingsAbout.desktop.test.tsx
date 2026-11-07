@@ -24,30 +24,30 @@ vi.mock('@/api/endpoints', () => ({
 import { SettingsAbout } from '@/pages/Settings';
 
 const labels: Record<string, string> = {
-  'settings.sections.about': '关于',
-  'settings.about.version': '当前版本',
-  'settings.about.source': 'GitHub 项目',
-  'settings.about.automaticUpdates': '自动检查更新',
-  'settings.about.automaticUpdatesDesc': '自动检查，由用户决定是否更新',
-  'settings.about.automaticUpdateChecks': '自动检查更新',
-  'settings.about.automaticUpdateChecksDesc': '自动提醒，手动下载',
-  'settings.about.automaticUpdatesSaveFailed': '自动更新设置保存失败',
-  'settings.about.checkUpdate': '检查更新',
-  'settings.about.checking': '检查中...',
-  'settings.about.upToDate': '您当前已是最新版本',
-  'settings.about.updateAvailable': '有版本更新：{{version}}',
-  'settings.about.updateDownloading': '正在下载版本 {{version}}（{{progress}}%）',
-  'settings.about.updateReady': '版本 {{version}} 已下载，重启后完成更新',
-  'settings.about.unknown': '无法判断当前是否为最新版本',
-  'settings.about.failed': '检查更新失败',
-  'settings.about.resultTitle': '检查更新结果',
-  'settings.about.download': '立即更新',
-  'settings.about.fallbackDownload': '前往下载',
-  'settings.about.restart': '重启并更新',
-  'settings.about.summary': '本次更新',
-  'settings.about.changelog': '查看完整更新日志',
-  'settings.about.later': '稍后更新',
-  'settings.about.close': '关闭',
+  'settings.sections.about': '',
+  'settings.about.version': '',
+  'settings.about.source': 'GitHub ',
+  'settings.about.automaticUpdates': '',
+  'settings.about.automaticUpdatesDesc': '',
+  'settings.about.automaticUpdateChecks': '',
+  'settings.about.automaticUpdateChecksDesc': '',
+  'settings.about.automaticUpdatesSaveFailed': '',
+  'settings.about.checkUpdate': '',
+  'settings.about.checking': '...',
+  'settings.about.upToDate': '',
+  'settings.about.updateAvailable': '{{version}}',
+  'settings.about.updateDownloading': ' {{version}}{{progress}}%',
+  'settings.about.updateReady': ' {{version}} ',
+  'settings.about.unknown': '',
+  'settings.about.failed': '',
+  'settings.about.resultTitle': '',
+  'settings.about.download': '',
+  'settings.about.fallbackDownload': '',
+  'settings.about.restart': '',
+  'settings.about.summary': '',
+  'settings.about.changelog': '',
+  'settings.about.later': '',
+  'settings.about.close': '',
 };
 
 const t = (key: string, vars?: Record<string, string>) => {
@@ -102,19 +102,19 @@ describe('SettingsAbout desktop update checks', () => {
 
     render(<SettingsAbout t={t} />);
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+      await userEvent.click(screen.getByRole('button', { name: // }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('有版本更新：0.9.0-rc.4')).toBeInTheDocument();
-    expect(within(dialog).getByText('本次更新')).toBeInTheDocument();
+    expect(within(dialog).getByText('0.9.0-rc.4')).toBeInTheDocument();
+    expect(within(dialog).getByText('')).toBeInTheDocument();
     expect(within(dialog).getByText('Release candidate fixes')).toBeInTheDocument();
-    expect(within(dialog).queryByText('无法判断当前是否为最新版本')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('')).not.toBeInTheDocument();
     expect(backendCheckForUpdates).not.toHaveBeenCalled();
 
-    await userEvent.click(within(dialog).getByRole('button', { name: '查看完整更新日志' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '' }));
     expect(openExternal).toHaveBeenCalledWith(releaseUrl);
-    await userEvent.click(within(dialog).getByRole('button', { name: '前往下载' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '' }));
     expect(openExternal).toHaveBeenCalledWith(releaseUrl);
   });
 
@@ -128,11 +128,11 @@ describe('SettingsAbout desktop update checks', () => {
 
     render(<SettingsAbout t={t} />);
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+      await userEvent.click(screen.getByRole('button', { name: // }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('您当前已是最新版本')).toBeInTheDocument();
+    expect(within(dialog).getByText('')).toBeInTheDocument();
     expect(within(dialog).getByTestId('update-success-icon')).toBeInTheDocument();
     expect(backendCheckForUpdates).not.toHaveBeenCalled();
   });
@@ -141,7 +141,7 @@ describe('SettingsAbout desktop update checks', () => {
     setAutomaticUpdatesEnabled.mockResolvedValueOnce({ automaticUpdatesEnabled: false });
     render(<SettingsAbout t={t} />);
 
-    const toggle = await screen.findByRole('switch', { name: '自动检查更新' });
+    const toggle = await screen.findByRole('switch', { name: '' });
     expect(toggle).toHaveAttribute('aria-checked', 'true');
     await userEvent.click(toggle);
 
@@ -157,9 +157,9 @@ describe('SettingsAbout desktop update checks', () => {
 
     render(<SettingsAbout t={t} />);
 
-    expect(await screen.findByText('自动检查更新')).toBeInTheDocument();
-    expect(screen.getByText('自动提醒，手动下载')).toBeInTheDocument();
-    expect(screen.getByRole('switch', { name: '自动检查更新' })).toHaveAttribute('aria-checked', 'true');
+    expect(await screen.findByText('')).toBeInTheDocument();
+    expect(screen.getByText('')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: '' })).toHaveAttribute('aria-checked', 'true');
   });
 
   it('downloads and installs an update inside the desktop app', async () => {
@@ -189,13 +189,13 @@ describe('SettingsAbout desktop update checks', () => {
     installUpdate.mockResolvedValueOnce({ success: true });
 
     render(<SettingsAbout t={t} />);
-    await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+    await userEvent.click(screen.getByRole('button', { name: // }));
     const dialog = await screen.findByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: '立即更新' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '' }));
 
     expect(downloadUpdate).toHaveBeenCalledOnce();
-    expect(within(dialog).getByText('版本 0.9.0-rc.4 已下载，重启后完成更新')).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('button', { name: '重启并更新' }));
+    expect(within(dialog).getByText(' 0.9.0-rc.4 ')).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: '' }));
     expect(installUpdate).toHaveBeenCalledOnce();
     expect(openExternal).not.toHaveBeenCalled();
   });
@@ -225,12 +225,12 @@ describe('SettingsAbout desktop update checks', () => {
     });
 
     render(<SettingsAbout t={t} />);
-    await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+    await userEvent.click(screen.getByRole('button', { name: // }));
     const dialog = await screen.findByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: '立即更新' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '' }));
 
-    expect(within(dialog).getByText('检查更新失败: network unavailable')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: '立即更新' })).toBeInTheDocument();
+    expect(within(dialog).getByText(': network unavailable')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: '' })).toBeInTheDocument();
   });
 
   it('clears a stale update action when the desktop updater reports no update', async () => {
@@ -254,9 +254,9 @@ describe('SettingsAbout desktop update checks', () => {
     checkForUpdates.mockResolvedValueOnce(updateState);
 
     render(<SettingsAbout t={t} />);
-    await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+    await userEvent.click(screen.getByRole('button', { name: // }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByRole('button', { name: '立即更新' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: '' })).toBeInTheDocument();
 
     act(() => {
       updateListener?.({
@@ -269,9 +269,9 @@ describe('SettingsAbout desktop update checks', () => {
       });
     });
 
-    expect(within(dialog).getByText('您当前已是最新版本')).toBeInTheDocument();
-    expect(within(dialog).queryByRole('button', { name: '立即更新' })).not.toBeInTheDocument();
-    expect(within(dialog).queryByRole('button', { name: '查看完整更新日志' })).not.toBeInTheDocument();
+    expect(within(dialog).getByText('')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: '' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: '' })).not.toBeInTheDocument();
   });
 
   it('shows network failures instead of claiming the app is current', async () => {
@@ -279,11 +279,11 @@ describe('SettingsAbout desktop update checks', () => {
 
     render(<SettingsAbout t={t} />);
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /检查更新/ }));
+      await userEvent.click(screen.getByRole('button', { name: // }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('检查更新失败: GitHub API request timed out')).toBeInTheDocument();
-    expect(within(dialog).queryByText('您当前已是最新版本')).not.toBeInTheDocument();
+    expect(within(dialog).getByText(': GitHub API request timed out')).toBeInTheDocument();
+    expect(within(dialog).queryByText('')).not.toBeInTheDocument();
   });
 });

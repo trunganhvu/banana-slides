@@ -501,14 +501,14 @@ class FileParserService:
         upload_folder: Optional[Union[os.PathLike, str]] = None
     ) -> str:
         """
-        从 MinerU layout.json 的 discarded_blocks 中提取页眉页脚文本。
+         MinerU layout.json  discarded_blocks . 
 
         Args:
-            extract_id: MinerU 解析结果的 extract_id
-            upload_folder: 上传根目录，未传入时使用 Flask UPLOAD_FOLDER/环境变量/默认 uploads
+            extract_id: MinerU  extract_id
+            upload_folder: ,  Flask UPLOAD_FOLDER// uploads
 
         Returns:
-            提取到的页眉页脚文本，如无则返回空字符串
+            , 
         """
         import json
 
@@ -745,7 +745,7 @@ class FileParserService:
                 return ""
             
             # Generate caption via provider factory
-            prompt = "请用一句简短的中文描述这张图片的主要内容。只返回描述文字，不要其他解释。"
+            prompt = "Hãy mô tả ngắn gọn nội dung chính của bức ảnh này bằng một câu tiếng Việt. Chỉ trả về văn bản mô tả, không kèm giải thích khác. "
 
             with tempfile.NamedTemporaryFile(prefix='caption_', suffix='.jpg', delete=False) as tmp:
                 temp_path = tmp.name

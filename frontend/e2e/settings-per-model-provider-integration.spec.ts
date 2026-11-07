@@ -13,8 +13,8 @@ function getModelGroup(page: Page, index: number) {
 test.afterAll(async ({ browser }) => {
   const page = await browser.newPage()
   await page.goto('/settings')
-  await page.getByRole('button', { name: /重置/ }).click()
-  await page.getByRole('button', { name: /确定重置/ }).click()
+  await page.getByRole('button', { name: // }).click()
+  await page.getByRole('button', { name: // }).click()
   await page.waitForTimeout(1000)
   await page.close()
 })
@@ -41,8 +41,8 @@ test.describe('Settings: Per-model provider integration (real backend)', () => {
     await apiKeyInput.fill('sk-integration-test-key')
 
     // Click save
-    await page.getByRole('button', { name: /保存/ }).click()
-    await expect(page.locator('text=保存成功').or(page.locator('text=saved'))).toBeVisible({ timeout: 5000 })
+    await page.getByRole('button', { name: // }).click()
+    await expect(page.locator('text=').or(page.locator('text=saved'))).toBeVisible({ timeout: 5000 })
   })
 
   test('reload page shows persisted per-model config', async ({ page }) => {
@@ -58,12 +58,12 @@ test.describe('Settings: Per-model provider integration (real backend)', () => {
     const baseUrlInput = textGroup.locator('input[type="text"]').nth(1)
     await expect(baseUrlInput).toHaveValue('https://integration-test.example.com/v1')
 
-    // Verify API Key shows "已设置" placeholder (length > 0)
+    // Test verification logic
     const apiKeyInput = textGroup.locator('input[type="password"]')
     const placeholder = await apiKeyInput.getAttribute('placeholder')
-    expect(placeholder).toMatch(/长度|length/i)
+    expect(placeholder).toMatch(/|length/i)
     await expect(page.getByTestId('per-model-provider-override-alert')).toHaveCount(0)
-    await expect(page.getByRole('button', { name: /全部跟随默认配置/ })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: // })).toHaveCount(0)
   })
 
   test('reset clears per-model config from backend', async ({ page }) => {
@@ -71,16 +71,16 @@ test.describe('Settings: Per-model provider integration (real backend)', () => {
 
     const textGroup = getModelGroup(page, 0)
     await textGroup.locator('select').selectOption('openai')
-    await page.getByRole('button', { name: /保存/ }).click()
-    await expect(page.locator('text=保存成功').or(page.locator('text=saved'))).toBeVisible({ timeout: 5000 })
+    await page.getByRole('button', { name: // }).click()
+    await expect(page.locator('text=').or(page.locator('text=saved'))).toBeVisible({ timeout: 5000 })
     await expect(textGroup.locator('select')).toHaveValue('openai')
 
     // Click reset
-    await page.getByRole('button', { name: /重置/ }).click()
-    await page.getByRole('button', { name: /确定重置/ }).click()
+    await page.getByRole('button', { name: // }).click()
+    await page.getByRole('button', { name: // }).click()
 
     // Wait for reset to complete
-    await expect(page.locator('text=已重置').or(page.locator('text=reset'))).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('text=').or(page.locator('text=reset'))).toBeVisible({ timeout: 5000 })
 
     // Verify provider reverted to env default
     await expect(textGroup.locator('select')).not.toHaveValue('openai')

@@ -22,22 +22,22 @@ test.describe('Material generation aspect ratio selector', () => {
   });
 
   async function openMaterialGeneratorModal(page: Page) {
-    // Use dispatchEvent to reliably trigger the click on the 素材生成 button
+    // Test verification logic
     // (regular click may be blocked by overlay elements)
-    const materialBtn = page.locator('button', { hasText: /素材生成/ }).first();
+    const materialBtn = page.locator('button', { hasText: // }).first();
     await expect(materialBtn).toBeAttached({ timeout: 5000 });
     await materialBtn.dispatchEvent('click');
     // Wait for the MaterialGeneratorModal dialog to appear (identified by its title)
-    await expect(page.getByRole('dialog', { name: /素材工具箱|Material Toolbox/ })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('dialog', { name: /|Material Toolbox/ })).toBeVisible({ timeout: 5000 });
   }
 
   test('should render aspect ratio selector with all options in material generator modal', async ({ page }) => {
     await openMaterialGeneratorModal(page);
 
-    const dialog = page.getByRole('dialog', { name: /素材工具箱|Material Toolbox/ });
+    const dialog = page.getByRole('dialog', { name: /|Material Toolbox/ });
 
     // Check the aspect ratio label is visible
-    await expect(dialog.getByText(/生成比例|Aspect Ratio/)).toBeVisible();
+    await expect(dialog.getByText(/|Aspect Ratio/)).toBeVisible();
 
     // Check that all ratio buttons are visible inside the dialog (derived from config)
     for (const { value } of ASPECT_RATIO_OPTIONS) {
@@ -48,7 +48,7 @@ test.describe('Material generation aspect ratio selector', () => {
   test('should default to 16:9 and allow changing aspect ratio selection', async ({ page }) => {
     await openMaterialGeneratorModal(page);
 
-    const dialog = page.getByRole('dialog', { name: /素材工具箱|Material Toolbox/ });
+    const dialog = page.getByRole('dialog', { name: /|Material Toolbox/ });
 
     // 16:9 should be the default selected ratio
     const btn169 = dialog.locator('button', { hasText: '16:9' }).first();
@@ -112,7 +112,7 @@ test.describe('Material generation aspect ratio selector', () => {
 
     await openMaterialGeneratorModal(page);
 
-    const dialog = page.getByRole('dialog', { name: /素材工具箱|Material Toolbox/ });
+    const dialog = page.getByRole('dialog', { name: /|Material Toolbox/ });
 
     // Select 1:1 ratio
     await dialog.locator('button', { hasText: '1:1' }).first().click();
@@ -123,7 +123,7 @@ test.describe('Material generation aspect ratio selector', () => {
     // Click the generate button and wait for the API response
     const [response] = await Promise.all([
       page.waitForResponse('**/api/projects/none/materials/process'),
-      dialog.locator('button', { hasText: /执行工具|Run Tool/ }).first().click(),
+      dialog.locator('button', { hasText: /|Run Tool/ }).first().click(),
     ]);
 
     expect(response.status()).toBe(202);
@@ -169,9 +169,9 @@ test.describe('Material generation aspect ratio selector', () => {
     });
 
     await openMaterialGeneratorModal(page);
-    const dialog = page.getByRole('dialog', { name: /素材工具箱|Material Toolbox/ });
+    const dialog = page.getByRole('dialog', { name: /|Material Toolbox/ });
 
-    await dialog.locator('button', { hasText: /框选编辑|Region Edit/ }).first().click();
+    await dialog.locator('button', { hasText: /|Region Edit/ }).first().click();
     await dialog.locator('textarea').first().fill('make the selected area glossy');
     await dialog.getByTestId('material-source-input').setInputFiles(path.join(process.cwd(), 'e2e', 'fixtures', 'slide_1.jpg'));
     await dialog.getByTestId('material-selection-toggle').click();
@@ -188,11 +188,11 @@ test.describe('Material generation aspect ratio selector', () => {
     await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7);
     await page.mouse.up();
 
-    await dialog.locator('button', { hasText: /直接用整张结果覆盖|Replace with the full generated image/ }).first().click();
+    await dialog.locator('button', { hasText: /|Replace with the full generated image/ }).first().click();
 
     await Promise.all([
       page.waitForResponse('**/api/projects/none/materials/process'),
-      dialog.locator('button', { hasText: /执行工具|Run Tool/ }).first().click(),
+      dialog.locator('button', { hasText: /|Run Tool/ }).first().click(),
     ]);
 
     expect(capturedOperation).toBe('region_edit');

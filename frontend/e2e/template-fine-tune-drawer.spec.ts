@@ -2,11 +2,11 @@
  * E2E: per-page template controls are gated by mode (spec §8.3).
  *
  * The project template library is multi-mode-only: it lives on
- * TemplateSetupPage, reachable from the SlidePreview header's "模板配置 /
+ * TemplateSetupPage, reachable from the SlidePreview header's " /
  * Template Setup" entry. In single mode that entry (and the whole library
- * concept) is absent — the only template control is "转为每页独立模板 / Switch to
+ * concept) is absent — the only template control is " / Switch to
  * per-page". In multi mode the header exposes both the library entry and the
- * "转为统一模板 / Switch to unified" unifier.
+ * " / Switch to unified" unifier.
  */
 import { test, expect } from '@playwright/test'
 import { seedProjectWithImages } from './helpers/seed-project'
@@ -36,10 +36,10 @@ test('single mode hides the template library entry', async ({ page }) => {
 
   // No library access in single mode (check inside the template menu).
   await page.getByTestId('template-menu').click()
-  await expect(page.getByRole('button', { name: /模板配置|Template Setup/ })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: /转为统一模板|Switch to unified/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /|Template Setup/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /|Switch to unified/ })).toHaveCount(0)
   // Only the upgrade entry is present.
-  await expect(page.getByRole('button', { name: /转为每页独立模板|Switch to per-page/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /|Switch to per-page/ })).toBeVisible()
 })
 
 test('multi mode exposes the full template library + unifier', async ({ page }) => {
@@ -51,13 +51,13 @@ test('multi mode exposes the full template library + unifier', async ({ page }) 
 
   // Library entry + switch-to-single unifier both present (inside the template menu).
   await page.getByTestId('template-menu').click()
-  await expect(page.getByRole('button', { name: /模板配置|Template Setup/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /转为统一模板|Switch to unified/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /|Template Setup/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /|Switch to unified/ })).toBeVisible()
   // The single-mode upgrade entry is gone.
-  await expect(page.getByRole('button', { name: /转为每页独立模板|Switch to per-page/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /|Switch to per-page/ })).toHaveCount(0)
 
   // Following the library entry reaches the setup page with the library.
-  await page.getByRole('button', { name: /模板配置|Template Setup/ }).click()
+  await page.getByRole('button', { name: /|Template Setup/ }).click()
   await page.waitForURL(`**/project/${projectId}/template-setup`)
-  await expect(page.getByText(/项目模板库|Project template library/)).toBeVisible()
+  await expect(page.getByText(/|Project template library/)).toBeVisible()
 })

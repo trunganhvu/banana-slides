@@ -1,7 +1,7 @@
 """
-pytest配置文件 - 提供测试fixtures和配置
+pytest - fixtures
 
-用于后端所有测试的共享配置和fixtures
+fixtures
 """
 
 import os
@@ -11,39 +11,39 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-# 确保backend目录和仓库根目录都在Python路径中
-# CLI 测试需要从仓库根目录导入 `cli.*`
+# Test verification logic
+# Test verification logic
 backend_path = Path(__file__).parent.parent
 project_root = backend_path.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(backend_path))
 
-# 设置测试环境变量 - 必须在导入app之前设置
+# Test verification logic
 os.environ['TESTING'] = 'true'
-os.environ['USE_MOCK_AI'] = 'true'  # 标记使用mock AI服务
+os.environ['USE_MOCK_AI'] = 'true'  # Test logic
 os.environ['GOOGLE_API_KEY'] = os.environ.get('GOOGLE_API_KEY', 'mock-api-key-for-testing')
 os.environ['FLASK_ENV'] = 'testing'
 
 
 @pytest.fixture(scope='session')
 def app():
-    """创建Flask测试应用"""
-    # 创建临时目录用于测试
+    """ Test docstring """
+    # Test verification logic
     temp_dir = tempfile.mkdtemp()
     temp_db = os.path.join(temp_dir, 'test.db')
     
-    # 设置测试数据库路径
+    # Test verification logic
     os.environ['DATABASE_PATH'] = temp_db
     os.environ.pop('DATABASE_URL', None)
     os.environ.pop('ACCESS_CODE', None)
     
-    # 现在导入app
+    # Test verification logic
     from app import create_app
     
-    # 使用工厂函数创建测试应用
+    # Test verification logic
     test_app = create_app()
     
-    # 覆盖配置
+    # Test verification logic
     test_app.config.update({
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': f'sqlite:///{temp_db}',
@@ -51,14 +51,14 @@ def app():
         'UPLOAD_FOLDER': temp_dir,
     })
     
-    # 创建应用上下文
+    # Test verification logic
     with test_app.app_context():
         from models import db
         db.create_all()
     
     yield test_app
     
-    # 清理
+    # Test verification logic
     import shutil
     try:
         shutil.rmtree(temp_dir)
@@ -68,11 +68,11 @@ def app():
 
 @pytest.fixture(scope='function')
 def client(app):
-    """创建测试客户端"""
+    """ Test docstring """
     with app.test_client() as test_client:
         with app.app_context():
             from models import db
-            # 清理旧数据，保持测试隔离
+            # Test verification logic
             db.session.rollback()
             for table in reversed(db.metadata.sorted_tables):
                 db.session.execute(table.delete())
@@ -83,11 +83,11 @@ def client(app):
 
 @pytest.fixture(scope='function')
 def db_session(app):
-    """创建数据库会话。
+    """
 
-    清理时只删除行、不 drop_all：app fixture 是 session 级，表只建一次，
-    若在此处 drop_all 会把表删掉，导致后续依赖 client fixture 的测试
-    报 "no such table"。
+     drop_allapp fixture  session 
+     drop_all  client fixture 
+     "no such table"
     """
     with app.app_context():
         from models import db
@@ -102,11 +102,11 @@ def db_session(app):
 
 @pytest.fixture
 def sample_project(client):
-    """创建示例项目"""
+    """ Test docstring """
     response = client.post('/api/projects', 
         json={
             'creation_type': 'idea',
-            'idea_prompt': '测试PPT生成'
+            'idea_prompt': 'PPT'
         }
     )
     data = response.get_json()
@@ -115,32 +115,32 @@ def sample_project(client):
 
 @pytest.fixture
 def mock_ai_service():
-    """Mock AI服务，避免真实API调用（使用标准库unittest.mock）"""
+    """ Test docstring """
     with patch('services.ai_service.AIService') as mock:
-        # Mock实例
+        # Test verification logic
         mock_instance = MagicMock()
         mock.return_value = mock_instance
         
-        # Mock大纲生成
+        # Test verification logic
         mock_instance.generate_outline.return_value = [
-            {'title': '测试页面1', 'points': ['要点1', '要点2']},
-            {'title': '测试页面2', 'points': ['要点3', '要点4']},
+            {'title': '1', 'points': ['1', '2']},
+            {'title': '2', 'points': ['3', '4']},
         ]
         
-        # Mock扁平化大纲
+        # Test verification logic
         mock_instance.flatten_outline.return_value = [
-            {'title': '测试页面1', 'points': ['要点1', '要点2']},
-            {'title': '测试页面2', 'points': ['要点3', '要点4']},
+            {'title': '1', 'points': ['1', '2']},
+            {'title': '2', 'points': ['3', '4']},
         ]
         
-        # Mock描述生成
+        # Test verification logic
         mock_instance.generate_page_description.return_value = {
-            'title': '测试标题',
-            'text_content': ['内容1', '内容2'],
-            'extra_fields': {'排版布局': '居中布局'}
+            'title': '',
+            'text_content': ['1', '2'],
+            'extra_fields': {'Bố cục & Trọng tâm': ''}
         }
         
-        # Mock图片生成 - 返回一个简单的测试图片
+        # Test verification logic
         from PIL import Image
         test_image = Image.new('RGB', (1920, 1080), color='blue')
         mock_instance.generate_image.return_value = test_image
@@ -150,15 +150,15 @@ def mock_ai_service():
 
 @pytest.fixture
 def temp_upload_dir():
-    """创建临时上传目录"""
+    """ Test docstring """
     with tempfile.TemporaryDirectory() as tmpdir:
         yield tmpdir
 
 
 @pytest.fixture
 def sample_image_file():
-    """创建示例图片文件"""
-    # 创建一个简单的PNG文件（1x1像素的红色图片）
+    """ Test docstring """
+    # Test verification logic
     import io
     from PIL import Image
     
@@ -171,11 +171,11 @@ def sample_image_file():
 
 
 # =====================================
-# 测试工具函数
+# Test verification logic
 # =====================================
 
 def assert_success_response(response, status_code=200):
-    """断言成功响应"""
+    """ Test docstring """
     assert response.status_code == status_code
     data = response.get_json()
     assert data is not None
@@ -184,7 +184,7 @@ def assert_success_response(response, status_code=200):
 
 
 def assert_error_response(response, expected_status=None):
-    """断言错误响应"""
+    """ Test docstring """
     if expected_status:
         assert response.status_code == expected_status
     data = response.get_json()

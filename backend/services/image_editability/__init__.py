@@ -1,31 +1,31 @@
 """
-图片可编辑化服务模块
 
-核心设计：
-- 无状态服务 - 线程安全，可并行调用
-- 依赖注入 - 通过配置对象注入所有依赖
-- 单一职责 - 只负责单张图片的可编辑化，批量处理由调用者控制
 
-组件：
-- 数据模型（BBox, EditableElement, EditableImage）
-- 元素提取器（ElementExtractor及其实现）
-- Inpaint提供者（InpaintProvider及其实现）
-- 工厂和配置（ServiceConfig）
-- 主服务类（ImageEditabilityService）
+: 
+-  - , 
+-  - 
+-  - , 
+
+: 
+-  (BBox, EditableElement, EditableImage) 
+-  (ElementExtractor) 
+- Inpaint (InpaintProvider) 
+-  (ServiceConfig) 
+-  (ImageEditabilityService) 
 
 Example:
     >>> from services.image_editability import ServiceConfig, ImageEditabilityService
     >>> 
-    >>> # 创建配置
+    >>> # Backend logic
     >>> config = ServiceConfig.from_defaults(mineru_token="your_token")
     >>> 
-    >>> # 创建服务
+    >>> # Backend logic
     >>> service = ImageEditabilityService(config)
     >>> 
-    >>> # 串行处理
+    >>> # Backend logic
     >>> result = service.make_image_editable("image.png")
     >>> 
-    >>> # 并行处理（推荐）
+    >>> # Backend logic
     >>> from concurrent.futures import ThreadPoolExecutor, as_completed
     >>> 
     >>> images = ["img1.png", "img2.png", "img3.png"]
@@ -36,13 +36,13 @@ Example:
     ...                for i, future in enumerate(as_completed(futures))}
 """
 
-# 数据模型
+# Backend logic
 from .data_models import BBox, EditableElement, EditableImage
 
-# 坐标映射
+# Backend logic
 from .coordinate_mapper import CoordinateMapper
 
-# 元素提取器
+# Backend logic
 from .extractors import (
     ElementExtractor,
     MinerUElementExtractor,
@@ -51,14 +51,14 @@ from .extractors import (
     ExtractorRegistry
 )
 
-# 混合提取器
+# Backend logic
 from .hybrid_extractor import (
     HybridElementExtractor,
     BBoxUtils,
     create_hybrid_extractor
 )
 
-# Inpaint提供者
+# Backend logic
 from .inpaint_providers import (
     InpaintProvider,
     DefaultInpaintProvider,
@@ -68,7 +68,7 @@ from .inpaint_providers import (
     InpaintProviderRegistry
 )
 
-# 文字属性提取器
+# Backend logic
 from .text_attribute_extractors import (
     TextStyleResult,
     TextAttributeExtractor,
@@ -76,7 +76,7 @@ from .text_attribute_extractors import (
     TextAttributeExtractorRegistry
 )
 
-# 工厂和配置
+# Backend logic
 from .factories import (
     ExtractorFactory,
     InpaintProviderFactory,
@@ -84,44 +84,43 @@ from .factories import (
     ServiceConfig
 )
 
-# 主服务
+# Backend logic
 from .service import ImageEditabilityService
 
 __all__ = [
-    # 数据模型
+    # Backend logic
     'BBox',
     'EditableElement',
     'EditableImage',
-    # 坐标映射
+    # Backend logic
     'CoordinateMapper',
-    # 元素提取器
+    # Backend logic
     'ElementExtractor',
     'MinerUElementExtractor',
     'BaiduOCRElementExtractor',
     'BaiduAccurateOCRElementExtractor',
     'ExtractorRegistry',
-    # 混合提取器
+    # Backend logic
     'HybridElementExtractor',
     'BBoxUtils',
     'create_hybrid_extractor',
-    # Inpaint提供者
+    # Backend logic
     'InpaintProvider',
     'DefaultInpaintProvider',
     'GenerativeEditInpaintProvider',
     'BaiduInpaintProvider',
     'HybridInpaintProvider',
     'InpaintProviderRegistry',
-    # 文字属性提取器
+    # Backend logic
     'TextStyleResult',
     'TextAttributeExtractor',
     'CaptionModelTextAttributeExtractor',
     'TextAttributeExtractorRegistry',
-    # 工厂和配置
+    # Backend logic
     'ExtractorFactory',
     'InpaintProviderFactory',
     'TextAttributeExtractorFactory',
     'ServiceConfig',
-    # 主服务
+    # Backend logic
     'ImageEditabilityService',
 ]
-

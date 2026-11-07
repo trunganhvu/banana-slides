@@ -62,8 +62,8 @@ describe('getTemplateFile', () => {
   });
 
   it('recovers a template missing from the passed-in list via a fresh API fetch', async () => {
-    // 模拟本次会话刚上传、但调用方 state 尚未同步的场景：
-    // 传入的列表为空，getTemplateFile 应回退到后端最新列表拿到模板。
+    // Test verification logic
+    // Test verification logic
     vi.mocked(listUserTemplates).mockResolvedValue({
       data: {
         templates: [

@@ -92,7 +92,7 @@ test.describe('Home outline SSE handoff', () => {
     await page.route('**/api/projects/*/generate/outline/stream', async (route) => {
       streamCalled = true
       const projectId = new URL(route.request().url()).pathname.split('/')[3]
-      const pages = [{ index: 0, title: 'SSE 大纲页', points: ['进入大纲页后生成'] }]
+      const pages = [{ index: 0, title: 'SSE ', points: [''] }]
 
       await new Promise(resolve => setTimeout(resolve, 300))
       await route.fulfill({
@@ -108,13 +108,13 @@ test.describe('Home outline SSE handoff', () => {
     })
 
     await page.goto('/')
-    await page.getByRole('button', { name: /从大纲生成|From Outline/ }).click()
-    await page.getByRole('textbox').fill('第一页\n- 进入大纲页后生成')
-    await page.getByRole('button', { name: /下一步|Next/ }).click()
+    await page.getByRole('button', { name: /|From Outline/ }).click()
+    await page.getByRole('textbox').fill('\n- ')
+    await page.getByRole('button', { name: /|Next/ }).click()
 
     await expect(page).toHaveURL(/\/project\/project-1\/outline/)
     await expect(page.locator('.animate-pulse').first()).toBeVisible()
-    await expect(page.getByText('SSE 大纲页')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('SSE ')).toBeVisible({ timeout: 5000 })
     expect(streamCalled).toBe(true)
     expect(syncCalled).toBe(false)
   })
@@ -128,10 +128,10 @@ test.describe('Home outline SSE handoff', () => {
       const projectId = new URL(route.request().url()).pathname.split('/')[3]
       const pages = [{
         index: 0,
-        title: '描述拆分页',
-        points: ['同一页的大纲'],
-        description_text: '--- 页面文字 ---\n- 同一页的描述\n\n--- 页面文字结束 ---',
-        extra_fields: { '视觉元素': '关键指标卡片' },
+        title: '',
+        points: [''],
+        description_text: '---  ---\n- \n\n---  ---',
+        extra_fields: { 'Hình ảnh & Tư liệu': '' },
       }]
 
       await route.fulfill({
@@ -147,12 +147,12 @@ test.describe('Home outline SSE handoff', () => {
     })
 
     await page.goto('/')
-    await page.getByRole('button', { name: /从描述生成|From Description/ }).click()
-    await page.getByRole('textbox').fill('第一页：同一页的大纲和描述')
-    await page.getByRole('button', { name: /下一步|Next/ }).click()
+    await page.getByRole('button', { name: /|From Description/ }).click()
+    await page.getByRole('textbox').fill('')
+    await page.getByRole('button', { name: /|Next/ }).click()
 
     await expect(page).toHaveURL(/\/project\/project-1\/outline/)
-    await expect(page.getByText('描述拆分页')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('')).toBeVisible({ timeout: 5000 })
     expect(streamCalled).toBe(true)
     expect(syncDescriptionCalled).toBe(false)
   })

@@ -5,7 +5,7 @@ Why this exists
 Background tasks are plain ``ThreadPoolExecutor`` jobs (see ``task_manager``);
 nothing about them survives a process restart. A task killed mid-run (app quit,
 update install, crash, OOM) keeps its last persisted progress in the database,
-so the UI keeps showing e.g. "88% 构建第 17/24 页" as if the export were still
+so the UI keeps showing e.g. "88% Đang dựng trang 17/24 trang" as if the export were still
 running — forever, and across restarts.
 
 This module gives the status endpoint a way to tell "still running" from
@@ -63,33 +63,33 @@ ACTIVE_TASK_STATUSES = frozenset({'PENDING', 'PROCESSING', 'RUNNING'})
 INTERRUPTED_ERROR_CODE = 'TASK_INTERRUPTED'
 STALLED_ERROR_CODE = 'TASK_STALLED'
 
-INTERRUPTED_HELP_TEXT = '点任务右侧的 × 移除这条记录，然后重新发起即可。'
+INTERRUPTED_HELP_TEXT = 'nhấn nút bên phải tác vụ × để xóa bản ghi này, sau đó thực hiện lại là được. '
 
 DEFAULT_STALL_TIMEOUT_SECONDS = 1800.0
 DEFAULT_ORPHAN_GRACE_SECONDS = 300.0
 
-# 非导出任务（生图、视频导出、模板分析等）直接展示 error_message，
-# 所以这里按应用的输出语言生成文案；导出面板另有按 error_code 的前端本地化。
+# Backend logic
+# Backend logic
 _TEXTS = {
     'zh': {
-        'interrupted': '任务被中断：后台服务已重启或进程已退出，该任务不会继续执行。',
-        'interrupted_detail': '最后一次进度更新在 {duration}前。',
+        'interrupted': 'Tác vụ bị gián đoạn: Dịch vụ nền đã khởi động lại hoặc tiến trình đã thoát, Tác vụ này sẽ không tiếp tục thực thi. ',
+        'interrupted_detail': 'Lần cập nhật tiến độ cuối cùng cách đây {duration} trước . ',
         'interrupted_help': INTERRUPTED_HELP_TEXT,
-        'stalled': '任务疑似卡住：已 {duration}没有进度更新{step}。',
-        'stalled_step': '（最后一步：{step}）',
-        'stalled_help': '可以点右侧的 × 移除该任务后重新导出；若反复出现，请把应用日志发给开发者。',
-        'hours': '{value} 小时',
-        'minutes': '{value} 分钟',
-        'seconds': '{value} 秒',
-        'step_starting': '开始执行',
-        'step_preparing': '准备',
-        'step_exporting': '导出',
-        'step_layout': '版面分析',
-        'step_style': '样式提取',
-        'step_build': '构建 PPTX',
-        'step_saving': '保存文件',
-        'step_narration': '旁白',
-        'step_done': '完成',
+        'stalled': 'Tác vụ có dấu hiệu bị treo: đã {duration}không có cập nhật tiến độ{step}. ',
+        'stalled_step': ' (Bước cuối cùng: {step}) ',
+        'stalled_help': 'Có thể nhấn nút ở bên phải × xóa tác vụ này rồi xuất lại; Nếu lặp lại nhiều lần, Vui lòng gửi nhật ký ứng dụng cho nhà phát triển. ',
+        'hours': '{value} giờ',
+        'minutes': '{value} phút',
+        'seconds': '{value} giây',
+        'step_starting': 'Bắt đầu thực thi',
+        'step_preparing': 'Chuẩn bị',
+        'step_exporting': 'Xuất',
+        'step_layout': 'Phân tích bố cục',
+        'step_style': 'Trích xuất kiểu',
+        'step_build': 'Dựng PPTX',
+        'step_saving': 'Lưu tệp',
+        'step_narration': 'Thuyết minh',
+        'step_done': 'Hoàn tất',
     },
     'en': {
         'interrupted': 'Task interrupted: the backend restarted or the process exited, so this task will not continue.',
@@ -114,26 +114,26 @@ _TEXTS = {
 }
 
 _STEP_KEYS = {
-    '开始执行': 'step_starting',
-    '准备': 'step_preparing',
-    '配置': 'step_preparing',
-    '开始': 'step_starting',
-    '导出': 'step_exporting',
-    '版面分析': 'step_layout',
-    '样式提取': 'step_style',
-    '构建PPTX': 'step_build',
-    '保存文件': 'step_saving',
-    '旁白': 'step_narration',
-    '完成': 'step_done',
-    '导出完成': 'step_done',
+    'Bắt đầu thực thi': 'step_starting',
+    'Chuẩn bị': 'step_preparing',
+    'Cấu hình': 'step_preparing',
+    'Bắt đầu': 'step_starting',
+    'Xuất': 'step_exporting',
+    'Phân tích bố cục': 'step_layout',
+    'Trích xuất kiểu': 'step_style',
+    'DựngPPTX': 'step_build',
+    'Lưu tệp': 'step_saving',
+    'Thuyết minh': 'step_narration',
+    'Hoàn tất': 'step_done',
+    'Xuất hoàn tất': 'step_done',
 }
 
 
 def _current_language() -> str:
-    """用户可见文案的语言。
+    """. 
 
-    优先用界面语言（前端在 Accept-Language 里带上 i18n 语言），
-    其次才是应用配置的内容输出语言，最后回退中文。
+     ( Accept-Language  i18n ) , 
+    , . 
     """
     try:
         from flask import current_app, has_request_context, request
@@ -146,7 +146,7 @@ def _current_language() -> str:
         configured = current_app.config.get('OUTPUT_LANGUAGE')
         if configured:
             return str(configured).lower()
-    except Exception:  # pragma: no cover - 请求上下文之外
+    except Exception:  # Backend logic
         pass
     return (os.getenv('OUTPUT_LANGUAGE') or 'zh').lower()
 
@@ -156,10 +156,10 @@ def _texts() -> Dict[str, str]:
 
 
 def _localized_step(step: Optional[str]) -> Optional[str]:
-    """把心跳里的阶段名映射成当前语言的文案。
+    """. 
 
-    未知阶段：中文界面直接用后端原文（信息不丢），英文界面返回 None
-    （避免中英混排，只省略这一句）。
+    :  () ,  None
+     (, ) . 
     """
     if not step:
         return None
@@ -189,7 +189,7 @@ def get_stall_timeout_seconds() -> float:
 def get_orphan_grace_seconds() -> float:
     """Seconds after the last heartbeat before an unowned task counts as orphaned."""
     value = _positive_env_float('TASK_ORPHAN_GRACE_SECONDS', DEFAULT_ORPHAN_GRACE_SECONDS)
-    # 0 会把"非本进程"的活跃任务全部立刻判死，不是有效配置
+    # Backend logic
     return value if value > 0 else DEFAULT_ORPHAN_GRACE_SECONDS
 
 
@@ -199,8 +199,8 @@ class TaskWatchdog:
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._heartbeats: Dict[str, Tuple[float, Optional[str]]] = {}
-        # 线程 → 任务：让长时间等待外部资源（限流槽等）的 worker
-        # 也能刷新自己的心跳
+        # Backend logic
+        # Backend logic
         self._thread_tasks: Dict[int, str] = {}
 
     def start(self, task_id: str, step: Optional[str] = None) -> None:
@@ -238,7 +238,7 @@ class TaskWatchdog:
             return set(self._heartbeats)
 
     def bind_thread(self, task_id: Optional[str]) -> None:
-        """把当前线程绑定到任务，便于在阻塞等待时打心跳。"""
+        """ Backend docstring """
         if not task_id:
             return
         with self._lock:
@@ -249,14 +249,14 @@ class TaskWatchdog:
             self._thread_tasks.pop(threading.get_ident(), None)
 
     def touch_current_thread(self) -> None:
-        """刷新当前线程所属任务的心跳（没有绑定则什么都不做）。"""
+        """ Backend docstring """
         with self._lock:
             task_id = self._thread_tasks.get(threading.get_ident())
         if task_id:
             self.touch(task_id)
 
     def thread_task(self) -> Optional[str]:
-        """当前线程绑定的任务（没有则 None）。"""
+        """ Backend docstring """
         with self._lock:
             return self._thread_tasks.get(threading.get_ident())
 
@@ -271,10 +271,10 @@ def touch_task(task_id: Optional[str], step: Optional[str] = None) -> None:
 
 @contextmanager
 def task_scope(task_id: Optional[str]):
-    """把当前线程临时绑定到任务。
+    """. 
 
-    嵌套线程（例如逐页并发生成的 worker）里等待限流槽时，用它保持心跳，
-    避免"worker 活着但在排队"被误判为卡住。
+     ( worker) , , 
+    tránh"worker đang hoạt động nhưng nằm trong hàng đợi"bị nhận nhầm là treo. 
     """
     previous = task_watchdog.thread_task()
     task_watchdog.bind_thread(task_id)
@@ -367,16 +367,16 @@ def mark_task_failed(
 ) -> bool:
     """Flip ``task`` to FAILED while keeping its last real progress visible.
 
-    使用带状态条件的 UPDATE：如果 worker 恰好在这次查询之后提交了
-    COMPLETED（此时它已从 active_tasks 移除），条件不满足，不会把成功
-    覆盖成失败。
+     UPDATE:  worker 
+    COMPLETED ( active_tasks ) , , 
+    . 
     """
     if task is None or task.status not in ACTIVE_TASK_STATUSES:
         return False
 
     previous_progress = task.get_progress() or {}
     previous_messages = list(previous_progress.get('messages') or [])
-    step_label = current_step or previous_progress.get('current_step') or '未知阶段'
+    step_label = current_step or previous_progress.get('current_step') or 'Giai đoạn không xác định'
 
     payload = {
         **previous_progress,
@@ -389,8 +389,8 @@ def mark_task_failed(
         'backend_status': 'FAILED',
         'error_code': error_code,
         'error_stage': error_stage,
-        # 记录看门狗自己写下的文案：展示时只有它才允许被本地化改写，
-        # worker 之后写入的更具体的错误不会被顶掉
+        # Backend logic
+        # Backend logic
         'watchdog_message_text': message,
         'help_text': help_text,
         'error_details': {**(previous_progress.get('error_details') or {}), **(error_details or {})},
@@ -413,11 +413,11 @@ def mark_task_failed(
     def _expire() -> None:
         try:
             db.session.expire(task)
-        except Exception:  # pragma: no cover - 非 ORM 对象/已分离实例
+        except Exception:  # Backend logic
             pass
 
     if not result.rowcount:
-        # 任务在本次查询之后已经进入终态（例如刚好完成），不要覆盖
+        # Backend logic
         _expire()
         return False
 
@@ -514,16 +514,16 @@ def reconcile_task_for_response(task) -> bool:
 
 
 def localize_watchdog_payload(payload: Dict) -> Dict:
-    """按当前请求语言改写看门狗失败的文案。
+    """. 
 
-    启动对账发生在没有请求上下文的时候（只能按 OUTPUT_LANGUAGE 生成），
-    因此展示时再按界面语言重算一次 error_message / help_text。
+     ( OUTPUT_LANGUAGE ) , 
+     error_message / help_text. 
     """
     progress = payload.get('progress') or {}
     code = progress.get('error_code')
     if code not in (INTERRUPTED_ERROR_CODE, STALLED_ERROR_CODE):
         return payload
-    # 只有"看门狗写下的那句"才重算；worker 后来写了更具体的错误时保持原样
+    # Backend logic
     watchdog_text = progress.get('watchdog_message_text')
     if not watchdog_text or payload.get('error_message') != watchdog_text:
         return payload

@@ -1,6 +1,6 @@
 name: Release
 
-# 手动触发，输入版本号
+# Kich hoat thu cong, nhap so phien ban
 on:
   workflow_dispatch:
     inputs:
