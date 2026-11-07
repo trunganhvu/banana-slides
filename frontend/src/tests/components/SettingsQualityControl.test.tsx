@@ -94,12 +94,12 @@ describe('Settings quality control', () => {
       </MemoryRouter>
     );
 
-    const label = await screen.findByText(/|Enable Quality Control/);
+    const label = await screen.findByText(/Bật kiểm soát chất lượng ảnh|Enable Quality Control/);
     const switchButton = label.parentElement?.querySelector('button');
     expect(switchButton).toBeTruthy();
 
     await userEvent.click(switchButton!);
-    await userEvent.click(screen.getByRole('button', { name: /|Save Settings/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Lưu cài đặt|Save Settings/ }));
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(

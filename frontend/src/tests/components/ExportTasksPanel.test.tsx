@@ -56,9 +56,9 @@ describe('ExportTasksPanel', () => {
     render(<ExportTasksPanel projectId="project-1" />);
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: /|Download/ })).toHaveLength(2);
+      expect(screen.getAllByRole('button', { name: /Tải xuống|Download/ })).toHaveLength(2);
     });
-    const downloadButtons = screen.getAllByRole('button', { name: /|Download/ });
+    const downloadButtons = screen.getAllByRole('button', { name: /Tải xuống|Download/ });
 
     await userEvent.click(downloadButtons[0]);
     await userEvent.click(downloadButtons[1]);
@@ -101,9 +101,9 @@ describe('ExportTasksPanel', () => {
 
     render(<ExportTasksPanel projectId="project-1" />);
 
-    expect(await screen.findByText(/|does not mean the backend export failed/)).toBeInTheDocument();
+    expect(await screen.findByText(/không có nghĩa là quá trình xuất backend thất bại|does not mean the backend export failed/)).toBeInTheDocument();
     expect(screen.getByText(/HTTP 504/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /|Check Again/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Kiểm tra lại|Check Again/ })).toBeInTheDocument();
     expect(screen.queryByText(/^$|^Export Failed$/)).not.toBeInTheDocument();
   });
 
@@ -146,6 +146,6 @@ describe('ExportTasksPanel', () => {
     expect(screen.getByText('CodexTextProvider')).toBeInTheDocument();
     expect(screen.getByText('gpt-5.4')).toBeInTheDocument();
     expect(screen.getByText(/120.*5/)).toBeInTheDocument();
-    expect(screen.getByText(/|Technical reason/)).toBeInTheDocument();
+    expect(screen.getByText(/Lý do kỹ thuật|Technical reason/)).toBeInTheDocument();
   });
 });

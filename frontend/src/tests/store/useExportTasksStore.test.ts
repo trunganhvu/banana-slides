@@ -253,7 +253,7 @@ describe('useExportTasksStore', () => {
     expect(useExportTasksStore.getState().tasks[0].status).toBe('PROCESSING')
     expect(useExportTasksStore.getState().tasks[0].monitoring?.state).toBe('retrying')
     expect(useExportTasksStore.getState().tasks[0].monitoring?.code).toBe('EXPORT_STATUS_SERVICE_UNAVAILABLE')
-    expect(useExportTasksStore.getState().tasks[0].monitoring?.message).toMatch(/|not marked failed/)
+    expect(useExportTasksStore.getState().tasks[0].monitoring?.message).toMatch(/không bị đánh dấu thất bại|not marked failed/)
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2000)

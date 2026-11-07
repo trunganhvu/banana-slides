@@ -1,11 +1,12 @@
 import { SettingsAdvanced, SettingsServiceRow, SettingsActions } from '@/components/settings/SettingsLayout';
 import { SettingsPageFrame } from '@/components/settings/SettingsPageFrame';
 import { SettingsProviderPicker } from '@/components/settings/SettingsProviderPicker';
+import { SettingsActiveProviderForm } from '@/components/settings/SettingsActiveProviderForm';
 import { SettingsApiGuidance } from '@/components/settings/SettingsApiGuidance';
 import { SettingsField } from '@/components/settings/SettingsField';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp, ArrowUpRight, Link2, Volume2, Info, RefreshCw, CheckCircle, Lightbulb } from 'lucide-react';
+import { Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp, ArrowUpRight, Link2, Volume2, Info, RefreshCw, CheckCircle, Lightbulb, Sparkles, Layers } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { appVersion } from '@/utils/appVersion';
 import { isDesktop } from '@/utils';
@@ -1181,11 +1182,6 @@ export const Settings: React.FC = () => {
   };
 
   const selectGlobalProvider = (provider: string, oauthConnected = settings?.openai_oauth_connected) => {
-    if (provider === 'codex' && !oauthConnected) {
-      pendingCodexSelection.current = () => selectGlobalProvider(provider, true);
-      setOauthDialogOpen(true);
-      return;
-    }
     handleFieldChange('ai_provider_format', provider, oauthConnected);
   };
 
@@ -1672,116 +1668,109 @@ export const Settings: React.FC = () => {
         {oauthPanel}
       </Modal>
       <div className="space-y-8">
-        {/* Default API config block */}
-        <div data-testid="global-api-config-section">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
-            <Key size={20} />
-            <span className="ml-2">{t('settings.sections.apiConfig')}</span>
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-foreground-tertiary mb-4">{t('settings.sections.apiConfigDesc')}</p>
-          <div className="space-y-3">
-            {/* Default provider pill selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
-                {t('settings.fields.aiProviderFormat')}
-              </label>
-              <SettingsProviderPicker
-                label={t('settings.fields.aiProviderFormat')}
-                globalProviderSources={globalProviderSources.map(option => ({ ...option,
-                  hint: option.value === 'volcengine' ? t('settings.volcenginePromo.providerHint')
-                    : null,
-                }))}
-                selectedGlobalProvider={selectedGlobalProvider}
-                providerPromotions={providerPromotions}
-                selectGlobalProvider={selectGlobalProvider}
-                disabledLabel={t('settings.openaiOAuth.disconnected')}
-              />
-              <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.aiProviderFormatDesc')}</p>
-              {formData.ai_provider_format === 'sensenova' && (
-                <p data-testid="sensenova-global-image-hint" className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                  {t('settings.fields.sensenovaImageHint')}
-                </p>
-              )}
+        {/* Quick Guide Banner */}
+        <div className="rounded-xl border border-banana-200 bg-banana-50/80 p-4 dark:border-banana-800/60 dark:bg-banana-950/20">
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-banana-400/20 p-2 text-banana-700 dark:bg-banana-400/10 dark:text-banana-300 shrink-0 mt-0.5">
+              <Sparkles size={20} />
             </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-foreground-primary">
+                {isVi ? 'Hướng dẫn cấu hình nhanh' : 'Quick Configuration Guide'}
+              </h3>
+              <p className="mt-1 text-xs text-gray-700 dark:text-foreground-secondary leading-relaxed">
+                {isVi
+                  ? 'Để tạo slide, bạn chỉ cần chọn 1 Nhà cung cấp AI (khuyên dùng Google Gemini vì có gói miễn phí và tạo được cả văn bản lẫn hình ảnh) và điền API Key tương ứng. Các dịch vụ bổ trợ bên dưới (MinerU, Baidu OCR, ElevenLabs) là tùy chọn nâng cao không bắt buộc.'
+                  : 'To generate slides, you only need to configure 1 AI Provider (Google Gemini is recommended with its free tier and text + image support) and enter its API key. Auxiliary services below (MinerU, Baidu OCR, ElevenLabs) are optional.'}
+              </p>
+            </div>
+          </div>
+        </div>
 
-            {/* Gemini/OpenAI/Volcengine: API Key + Base URL */}
-            {API_KEY_PROVIDERS.has(formData.ai_provider_format) && (
-              <div className="space-y-3 pl-3 border-l-2 border-banana-300 dark:border-banana-600">
-                <Input
-                  label={t('settings.fields.apiBaseUrl')}
-                  type="text"
-                  placeholder={t('settings.fields.apiBaseUrlPlaceholder')}
-                  value={formData.api_base_url}
-                  onChange={(e) => handleFieldChange('api_base_url', e.target.value)}
-                />
-                <p className="-mt-2 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.apiBaseUrlDesc')}</p>
-                {formData.ai_provider_format === 'volcengine' &&
-                  formData.api_base_url &&
-                  formData.api_base_url !== VOLCENGINE_AGENTPLANS_BASE_URL && (
-                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-700 dark:bg-amber-950/40">
-                      <p className="flex-1 text-xs text-amber-800 dark:text-amber-200">{t('settings.fields.volcengineBaseUrlHint')}</p>
-                      <button
-                        type="button"
-                        onClick={() => handleFieldChange('api_base_url', VOLCENGINE_AGENTPLANS_BASE_URL)}
-                        className="shrink-0 rounded-md bg-amber-500 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-600"
-                      >
-                        {t('settings.fields.volcengineBaseUrlReset')}
-                      </button>
-                    </div>
-                  )}
-                <div>
-                  <Input
-                    label={t('settings.fields.apiKey')}
-                    type="password"
-                    placeholder={
-                      settings && (settings.api_key_length as number) > 0
-                        ? t('settings.fields.apiKeySet', { length: settings.api_key_length })
-                        : t('settings.fields.apiKeyPlaceholder')
-                    }
-                    value={formData.api_key}
-                    onChange={(e) => handleFieldChange('api_key', e.target.value)}
-                  />
-                  <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.apiKeyDesc')}</p>
-                </div>
-              </div>
-            )}
-
-            {/* LazyLLM vendor: Vendor API Key */}
-            {isLazyllmVendor(formData.ai_provider_format) && (
-              <GlobalVendorKeyInput vendor={formData.ai_provider_format} formData={formData} setFormData={setFormData} settings={settings} t={t} />
-            )}
+        {/* AI Provider & Active Key Form Section */}
+        <div data-testid="global-api-config-section" className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
+              <Key size={20} />
+              <span className="ml-2">{isVi ? 'Nhà cung cấp AI & API Key' : 'AI Provider & API Key'}</span>
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-foreground-tertiary">
+              {isVi
+                ? 'Chọn nhà cung cấp AI bạn muốn sử dụng (qua dropdown hoặc tab) để hiển thị form điền key tương ứng.'
+                : 'Select the AI provider you want to use (via dropdown or tabs) to display its credential form.'}
+            </p>
           </div>
 
-          <SettingsApiGuidance
-            t={t} usesVolcengineCampaignPromo={usesVolcengineCampaignPromo}
-            providerFormat={formData.ai_provider_format} volcengineAgentPlansUrl={volcengineAgentPlansUrl}
-            volcengineLogoUrl={volcengineLogoUrl} isVi={isVi} activeVolcenginePromoKey={activeVolcenginePromoKey}
-            activeApiKeyHelpKey={activeApiKeyHelpKey} activeApiKeyTipKey={activeApiKeyTipKey}
-            activeApiKeyHelpUrl={activeApiKeyHelpUrl} copyToClipboard={copyToClipboard}
+          {/* Provider Selector (Dropdown + Tabs) */}
+          <SettingsProviderPicker
+            label={t('settings.fields.aiProviderFormat')}
+            globalProviderSources={globalProviderSources.map(option => ({
+              ...option,
+              hint: option.value === 'volcengine' ? t('settings.volcenginePromo.providerHint') : null,
+            }))}
+            selectedGlobalProvider={selectedGlobalProvider}
+            providerPromotions={providerPromotions}
+            selectGlobalProvider={selectGlobalProvider}
+            disabledLabel={t('settings.openaiOAuth.disconnected')}
+            isVi={isVi}
+          />
+
+          {/* Form điền Key của riêng Provider được chọn */}
+          <SettingsActiveProviderForm
+            provider={formData.ai_provider_format}
+            formData={formData}
+            setFormData={setFormData}
+            settings={settings}
+            handleFieldChange={handleFieldChange}
+            t={t}
+            isVi={isVi}
+            oauthConnecting={oauthConnecting}
+            handleOAuthLogin={handleOAuthLogin}
+            handleOAuthDisconnect={handleOAuthDisconnect}
+            manualCallbackOpen={manualCallbackOpen}
+            setManualCallbackOpen={setManualCallbackOpen}
+            manualCallbackUrl={manualCallbackUrl}
+            setManualCallbackUrl={setManualCallbackUrl}
+            manualCallbackSubmitting={manualCallbackSubmitting}
+            handleManualCallback={handleManualCallback}
             applyVolcengineRecommendedModels={applyVolcengineRecommendedModels}
+            volcengineAgentPlansUrl={volcengineAgentPlansUrl}
+            volcengineLogoUrl={volcengineLogoUrl}
+            copyToClipboard={copyToClipboard}
           />
         </div>
 
         {/* Model config block */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
-            <FileText size={20} />
-            <span className="ml-2">{t('settings.sections.modelConfig')}</span>
-          </h2>
+        <div className="space-y-3">
+          <div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary flex items-center">
+                <FileText size={20} />
+                <span className="ml-2">{t('settings.sections.modelConfig')}</span>
+              </h2>
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 dark:bg-background-secondary dark:text-foreground-tertiary">
+                {isVi ? 'Tùy chọn nâng cao' : 'Optional Override'}
+              </span>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1">
+              {isVi
+                ? 'Mặc định hệ thống tự động sử dụng mô hình tối ưu theo Nhà cung cấp AI bạn đã chọn ở trên. Chỉ chỉnh sửa phần này nếu bạn muốn dùng riêng lẻ từng mô hình.'
+                : 'By default, the system uses optimal models for the AI provider selected above. Only customize if you want specific per-model overrides.'}
+            </p>
+          </div>
           <div className="space-y-4">
             {modelConfigItems.map(renderModelConfigGroup)}
           </div>
         </div>
 
-        {/* Remaining config blocks */}
-        <div className="space-y-8">
+        {/* General & Output Config */}
+        <div className="space-y-6">
           {settingsSections.filter((section) =>
-            section.title !== t('settings.sections.performanceConfig') &&
-            section.title !== t('settings.sections.textReasoning') &&
-            section.title !== t('settings.sections.imageReasoning')
+            section.title === t('settings.sections.imageConfig') ||
+            section.title === t('settings.sections.outputLanguage')
           ).map((section) => (
             <div key={section.title}>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-3 flex items-center">
                 {section.icon}
                 <span className="ml-2">{section.title}</span>
               </h2>
@@ -1790,6 +1779,44 @@ export const Settings: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Auxiliary Services (Optional - Not required for slides) */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-5 dark:border-border-primary dark:bg-background-secondary/50 space-y-6">
+          <div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary flex items-center">
+                <Layers size={20} className="text-gray-500" />
+                <span className="ml-2">{isVi ? 'Dịch vụ bổ trợ (Tùy chọn)' : 'Auxiliary Services (Optional)'}</span>
+              </h2>
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-gray-200/70 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                {isVi ? 'Không bắt buộc' : 'Optional'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-foreground-tertiary mt-1">
+              {isVi
+                ? 'Các dịch vụ chuyên biệt cho việc phân tích tài liệu PDF phức tạp (MinerU), nhận diện chữ trong ảnh (Baidu OCR) và thuyết minh âm thanh (ElevenLabs). Hoàn toàn không bắt buộc đối với việc tạo slide thông thường.'
+                : 'Specialized services for complex PDF parsing (MinerU), OCR text recognition (Baidu OCR), and voice narration (ElevenLabs). Not required for standard slide generation.'}
+            </p>
+          </div>
+
+          <div className="space-y-6 pt-2 border-t border-gray-200/80 dark:border-border-primary/80">
+            {settingsSections.filter((section) =>
+              section.title === t('settings.sections.mineruConfig') ||
+              section.title === t('settings.sections.baiduOcr') ||
+              section.title === t('settings.sections.elevenlabs')
+            ).map((section) => (
+              <div key={section.title} className="bg-white dark:bg-background-secondary p-4 rounded-lg border border-gray-200/60 dark:border-border-primary/60">
+                <h3 className="text-base font-medium text-gray-800 dark:text-foreground-primary mb-3 flex items-center">
+                  {section.icon}
+                  <span className="ml-2">{section.title}</span>
+                </h3>
+                <div className="space-y-4">
+                  {section.fields.map((field) => renderField(field))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Advanced settings (collapsible) */}

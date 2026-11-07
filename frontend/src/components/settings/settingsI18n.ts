@@ -14,6 +14,9 @@ export const settingsI18n = {
         vendorApiKeys: "Cấu hình API Key nhà cung cấp",
         advancedSettings: "Cài đặt nâng cao",
         elevenlabs: "Tổng hợp giọng nói ElevenLabs",
+        auxiliaryServices: "Dịch vụ bổ trợ (Tùy chọn)",
+        auxiliaryServicesDesc: "Các dịch vụ bổ trợ chuyên biệt cho phân tích PDF phức tạp, nhận diện chữ OCR và thuyết minh giọng nói. Không bắt buộc đối với việc tạo slide thông thường.",
+        generalConfig: "Cài đặt chung & Đầu ra",
         about: "Giới thiệu"
       },
       about: {
@@ -246,6 +249,9 @@ export const settingsI18n = {
         vendorApiKeys: "Vendor API Key Configuration",
         advancedSettings: "Advanced Settings",
         elevenlabs: "ElevenLabs Text-to-Speech",
+        auxiliaryServices: "Auxiliary Services (Optional)",
+        auxiliaryServicesDesc: "Specialized services for complex PDF parsing, OCR text recognition, and voiceover narration. Not required for standard slide generation.",
+        generalConfig: "General & Output Settings",
         about: "About"
       },
       about: {

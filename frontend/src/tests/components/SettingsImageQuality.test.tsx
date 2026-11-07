@@ -104,7 +104,7 @@ describe('Settings image quality tier', () => {
     expect(screen.getByTestId('openai-image-api-protocol-select')).toBeTruthy();
 
     await userEvent.selectOptions(select, 'max');
-    await userEvent.click(screen.getByRole('button', { name: /|Save Settings/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Lưu cài đặt|Save Settings/ }));
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('Settings image quality tier', () => {
     const select = await screen.findByTestId('openai-image-quality-select');
     expect(select).toBeTruthy();
     await userEvent.selectOptions(select, 'xhigh');
-    await userEvent.click(screen.getByRole('button', { name: /|Save Settings/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Lưu cài đặt|Save Settings/ }));
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(

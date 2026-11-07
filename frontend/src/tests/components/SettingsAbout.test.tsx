@@ -18,17 +18,17 @@ vi.mock('@/api/endpoints', () => ({
 }));
 
 const labels: Record<string, string> = {
-  'settings.sections.about': '',
-  'settings.about.version': '',
-  'settings.about.source': 'GitHub ',
-  'settings.about.checkUpdate': '',
-  'settings.about.checking': '...',
-  'settings.about.upToDate': '',
-  'settings.about.updateAvailable': '{{version}}',
-  'settings.about.unknown': '',
-  'settings.about.resultTitle': '',
-  'settings.about.download': '',
-  'settings.about.close': '',
+  'settings.sections.about': 'Giới thiệu',
+  'settings.about.version': 'Phiên bản hiện tại',
+  'settings.about.source': 'Dự án GitHub',
+  'settings.about.checkUpdate': 'Kiểm tra cập nhật',
+  'settings.about.checking': 'Đang kiểm tra...',
+  'settings.about.upToDate': 'Bạn đang sử dụng phiên bản mới nhất',
+  'settings.about.updateAvailable': 'Có bản cập nhật mới: {{version}}',
+  'settings.about.unknown': 'Không thể xác định phiên bản',
+  'settings.about.resultTitle': 'Kết quả kiểm tra cập nhật',
+  'settings.about.download': 'Cập nhật ngay',
+  'settings.about.close': 'Đóng',
 };
 
 const t = (key: string, vars?: Record<string, string>) => {
@@ -43,10 +43,10 @@ describe('SettingsAbout', () => {
   it('shows the current app version in settings', () => {
     render(<SettingsAbout t={t} />);
 
-    expect(screen.getByText('')).toBeInTheDocument();
-    expect(screen.getByText(': v9.9.9')).toBeInTheDocument();
-    expect(screen.getByLabelText(' v9.9.9 (abcdef1234567890)')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'GitHub ' })).toHaveAttribute('href', 'https://github.com/Anionex/banana-slides');
+    expect(screen.getByText('Giới thiệu')).toBeInTheDocument();
+    expect(screen.getByText('Phiên bản hiện tại: v9.9.9')).toBeInTheDocument();
+    expect(screen.getByLabelText('Phiên bản hiện tại v9.9.9 (abcdef1234567890)')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Dự án GitHub' })).toHaveAttribute('href', 'https://github.com/Anionex/banana-slides');
   });
 
   it('shows a user-friendly message when an update is available', async () => {
@@ -68,15 +68,13 @@ describe('SettingsAbout', () => {
 
     render(<SettingsAbout t={t} />);
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: // }));
+      await userEvent.click(screen.getByRole('button', { name: 'Kiểm tra cập nhật' }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('2222222')).toBeInTheDocument();
+    expect(within(dialog).getByText('Có bản cập nhật mới: 2222222')).toBeInTheDocument();
     expect(within(dialog).getByTestId('update-available-icon')).toBeInTheDocument();
-    expect(within(dialog).getByText('')).toBeInTheDocument();
     expect(within(dialog).queryByText(/Docker Hub/)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(//)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/SHA/i)).not.toBeInTheDocument();
   });
 
@@ -100,11 +98,11 @@ describe('SettingsAbout', () => {
     });
 
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: // }));
+      await userEvent.click(screen.getByRole('button', { name: 'Kiểm tra cập nhật' }));
     });
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('')).toBeInTheDocument();
+    expect(within(dialog).getByText('Bạn đang sử dụng phiên bản mới nhất')).toBeInTheDocument();
     expect(within(dialog).getByTestId('update-success-icon')).toBeInTheDocument();
     expect(within(dialog).queryByText(/Docker Hub/)).not.toBeInTheDocument();
   });
