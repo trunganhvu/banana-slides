@@ -27,6 +27,7 @@ import * as api from '@/api/endpoints';
 import type { OutputLanguage, UpdateCheckInfo } from '@/api/endpoints';
 import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
+import { useApiKeyReminderStore } from '@/store/useApiKeyReminderStore';
 
 // Configuration item type definition
 type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
@@ -992,6 +993,7 @@ export const Settings: React.FC = () => {
       if (response.data) {
         setSettings(response.data);
         setFormData(formDataFromSettings(response.data));
+        useApiKeyReminderStore.getState().updateSettings(response.data);
       }
     } catch (error: any) {
       console.error('Tải cài đặt thất bại:', error);
@@ -1048,6 +1050,7 @@ export const Settings: React.FC = () => {
       const response = await api.updateSettings(payload);
       if (response.data) {
         setSettings(response.data);
+        useApiKeyReminderStore.getState().updateSettings(response.data);
         show({ message: t('settings.messages.saveSuccess'), type: 'success' });
         show({ message: t('settings.messages.testServiceTip'), type: 'info' });
         // Clear all sensitive fields after save

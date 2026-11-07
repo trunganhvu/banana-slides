@@ -9,7 +9,7 @@ import { TemplateSetupPage } from './pages/TemplateSetupPage';
 import { SlidePreview } from './pages/SlidePreview';
 import { SettingsPage } from './pages/Settings';
 import { useProjectStore } from './store/useProjectStore';
-import { useToast, AccessCodeGuard, DesktopTitleBar, UpdateChecker } from './components/shared';
+import { useToast, AccessCodeGuard, DesktopTitleBar, UpdateChecker, ApiKeyReminderModal } from './components/shared';
 import { getDesktopTopInset } from './components/shared/UpdateChecker';
 import { isDesktop } from '@/utils';
 
@@ -33,7 +33,6 @@ function App() {
     }
   }, [error, setError, show]);
 
-
   return (
     <>
       <UpdateChecker />
@@ -55,6 +54,7 @@ function App() {
                   <Route path="/project/:projectId/preview" element={<SlidePreview />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
+                <ApiKeyReminderModal />
                 <ToastContainer />
               </Router>
             );

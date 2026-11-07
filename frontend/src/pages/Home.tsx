@@ -9,6 +9,7 @@ import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, associateMaterialsToProject, createPptRenovationProject } from '@/api/endpoints';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useApiKeyReminderStore } from '@/store/useApiKeyReminderStore';
 import { devLog } from '@/utils/logger';
 import { useTheme } from '@/hooks/useTheme';
 import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
@@ -202,6 +203,7 @@ export const Home: React.FC = () => {
   const { show, ToastContainer } = useToast();
 
   const [activeTab, setActiveTab] = useState<CreationType>('idea');
+  const { isConfigured, openModal } = useApiKeyReminderStore();
   const [multiTemplateMode, setMultiTemplateMode] = useState(false);
   const [freeContent, setFreeContent] = useState('');
   const [reportMode, setReportMode] = useState(false);
@@ -592,6 +594,16 @@ export const Home: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    if (isConfigured === false) {
+      openModal();
+      show({
+        message: !i18n.language?.startsWith('en')
+          ? 'Vui lòng cấu hình API Key trong Cài đặt trước khi tạo slide'
+          : 'Please configure an API Key in Settings before creating slides',
+        type: 'warning',
+      });
+      return;
+    }
     if (structured && !reportFields.topic.trim()) {
       show({ message: !i18n.language?.startsWith('en') ? 'Vui lòng nhập chủ đề để tiếp tục' : 'Enter a topic to continue', type: 'error' });
       return;
@@ -742,6 +754,16 @@ export const Home: React.FC = () => {
 
   // Create blank project without AI outline
   const handleCreateBlank = async () => {
+    if (isConfigured === false) {
+      openModal();
+      show({
+        message: !i18n.language?.startsWith('en')
+          ? 'Vui lòng cấu hình API Key trong Cài đặt trước khi tạo slide'
+          : 'Please configure an API Key in Settings before creating slides',
+        type: 'warning',
+      });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const styleDesc = templateStyle.trim() ? templateStyle.trim() : undefined;
@@ -849,9 +871,23 @@ export const Home: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              icon={<Settings size={16} className="md:w-[18px] md:h-[18px]" />}
+              icon={
+                <span className="relative inline-flex items-center justify-center">
+                  <Settings size={16} className="md:w-[18px] md:h-[18px]" />
+                  {isConfigured === false && (
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white dark:border-background-secondary" />
+                    </span>
+                  )}
+                </span>
+              }
               onClick={() => navigate('/settings')}
-              className="text-xs md:text-sm hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              className={`text-xs md:text-sm transition-all duration-200 font-medium ${
+                isConfigured === false
+                  ? 'bg-amber-100/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 ring-1 ring-amber-400/50 hover:bg-amber-200/70 shadow-sm'
+                  : 'hover:bg-banana-100/60 hover:shadow-sm hover:scale-105'
+              }`}
             >
               <span className="hidden md:inline">{t('nav.settings')}</span>
             </Button>

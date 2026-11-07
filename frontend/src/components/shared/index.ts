@@ -33,3 +33,4 @@ export { TextStyleSelector } from './TextStyleSelector';
 export { Pagination } from './Pagination';
 export { DesktopTitleBar } from './DesktopTitleBar';
 export { UpdateChecker } from './UpdateChecker';
+export { ApiKeyReminderModal } from './ApiKeyReminderModal';

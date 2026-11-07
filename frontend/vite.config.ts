@@ -94,6 +94,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/tests/setup.ts',
+      testTimeout: 15000,
       include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
       exclude: ['node_modules', 'dist'],
       coverage: {

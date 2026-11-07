@@ -5,6 +5,7 @@ import { Settings, ImagePlus, FolderOpen, Globe, Sun, Moon, Monitor, ChevronDown
 import { useTheme } from '@/hooks/useTheme';
 import { useT } from '@/hooks/useT';
 import { DESKTOP_TITLEBAR_HEIGHT, isDesktop } from '@/utils';
+import { useApiKeyReminderStore } from '@/store/useApiKeyReminderStore';
 import logoUrl from '@/assets/logo.png';
 
 const titleBarI18n = {
@@ -40,6 +41,7 @@ export function DesktopTitleBar() {
   const [platform, setPlatform] = useState<string>('');
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const isConfigured = useApiKeyReminderStore(s => s.isConfigured);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { i18n } = useTranslation();
@@ -150,8 +152,19 @@ export function DesktopTitleBar() {
         <button className={navBtnClass} onClick={() => navigate('/history')}>
           <span>{t('history')}</span>
         </button>
-        <button className={navBtnClass} onClick={() => navigate('/settings')}>
-          <Settings size={14} />
+        <button
+          className={`${navBtnClass} ${isConfigured === false ? 'text-amber-500 font-semibold' : ''}`}
+          onClick={() => navigate('/settings')}
+        >
+          <span className="relative inline-flex items-center justify-center">
+            <Settings size={14} />
+            {isConfigured === false && (
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+              </span>
+            )}
+          </span>
           <span>{t('settings')}</span>
         </button>
 
