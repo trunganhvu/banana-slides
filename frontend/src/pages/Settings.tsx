@@ -2,6 +2,7 @@ import { SettingsAdvanced, SettingsServiceRow, SettingsActions } from '@/compone
 import { SettingsPageFrame } from '@/components/settings/SettingsPageFrame';
 import { SettingsProviderPicker } from '@/components/settings/SettingsProviderPicker';
 import { SettingsActiveProviderForm } from '@/components/settings/SettingsActiveProviderForm';
+import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
 import { SettingsApiGuidance } from '@/components/settings/SettingsApiGuidance';
 import { SettingsField } from '@/components/settings/SettingsField';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -1741,27 +1742,13 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Model config block */}
-        <div className="space-y-3">
-          <div>
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary flex items-center">
-                <FileText size={20} />
-                <span className="ml-2">{t('settings.sections.modelConfig')}</span>
-              </h2>
-              <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 dark:bg-background-secondary dark:text-foreground-tertiary">
-                {isVi ? 'Tùy chọn nâng cao' : 'Optional Override'}
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1">
-              {isVi
-                ? 'Mặc định hệ thống tự động sử dụng mô hình tối ưu theo Nhà cung cấp AI bạn đã chọn ở trên. Chỉ chỉnh sửa phần này nếu bạn muốn dùng riêng lẻ từng mô hình.'
-                : 'By default, the system uses optimal models for the AI provider selected above. Only customize if you want specific per-model overrides.'}
-            </p>
-          </div>
-          <div className="space-y-4">
-            {modelConfigItems.map(renderModelConfigGroup)}
-          </div>
-        </div>
+        <SettingsModelConfigSection
+          modelConfigItems={modelConfigItems}
+          renderModelConfigGroup={renderModelConfigGroup}
+          formData={formData}
+          isVi={isVi}
+          t={t}
+        />
 
         {/* General & Output Config */}
         <div className="space-y-6">
