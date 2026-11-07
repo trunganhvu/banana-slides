@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, ChevronDown, ChevronUp, Sparkles, SlidersHorizontal, Image, Eye } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp, Sparkles, SlidersHorizontal, Image, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/shared';
+import { SettingsInlineServiceTest, type InlineServiceTestState } from './SettingsInlineServiceTest';
 import type { useT } from '@/hooks/useT';
 
 interface ModelConfigItem {
@@ -30,6 +31,9 @@ interface Props {
   };
   isVi: boolean;
   t: ReturnType<typeof useT>;
+  serviceTestStates?: Record<string, InlineServiceTestState>;
+  triggerTest?: (testKey: string) => void;
+  dismissTest?: (testKey: string) => void;
 }
 
 export const SettingsModelConfigSection: React.FC<Props> = ({
@@ -38,6 +42,9 @@ export const SettingsModelConfigSection: React.FC<Props> = ({
   formData,
   isVi,
   t,
+  serviceTestStates = {},
+  triggerTest,
+  dismissTest,
 }) => {
   const hasCustomModels = Boolean(
     formData.text_model ||
@@ -195,6 +202,63 @@ export const SettingsModelConfigSection: React.FC<Props> = ({
           {/* Model Form Items */}
           <div className="bg-white dark:bg-background-secondary p-4 rounded-xl border border-gray-200/80 dark:border-border-primary/80 space-y-4">
             {visibleItems.map(renderModelConfigGroup)}
+
+            {/* Inline Tests for the Active Model Tab */}
+            {triggerTest && (
+              <div className="pt-4 mt-2 border-t border-gray-100 dark:border-border-primary/60 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-foreground-primary flex items-center gap-1.5">
+                      <Zap size={13} className="text-amber-500" />
+                      {isVi ? 'Kiểm tra dịch vụ mô hình' : 'Test Model Service'}
+                    </h4>
+                    <p className="text-[11px] text-gray-500 dark:text-foreground-tertiary mt-0.5">
+                      {isVi
+                        ? 'Xác minh mô hình đã chọn có phản hồi chính xác hay không.'
+                        : 'Verify that the selected model responds accurately.'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(activeTab === 'all' || activeTab === 'text') && (
+                      <SettingsInlineServiceTest
+                        testKey="text-model"
+                        label={isVi ? 'Kiểm tra mô hình văn bản' : 'Test Text Model'}
+                        icon={<Zap size={13} className="text-amber-500" />}
+                        testState={serviceTestStates['text-model']}
+                        onTest={() => triggerTest('text-model')}
+                        onDismiss={dismissTest ? () => dismissTest('text-model') : undefined}
+                        isVi={isVi}
+                      />
+                    )}
+
+                    {(activeTab === 'all' || activeTab === 'image') && (
+                      <SettingsInlineServiceTest
+                        testKey="image-model"
+                        label={isVi ? 'Kiểm tra mô hình tạo ảnh' : 'Test Image Model'}
+                        icon={<Sparkles size={13} className="text-purple-500" />}
+                        testState={serviceTestStates['image-model']}
+                        onTest={() => triggerTest('image-model')}
+                        onDismiss={dismissTest ? () => dismissTest('image-model') : undefined}
+                        isVi={isVi}
+                      />
+                    )}
+
+                    {(activeTab === 'all' || activeTab === 'caption') && (
+                      <SettingsInlineServiceTest
+                        testKey="caption-model"
+                        label={isVi ? 'Kiểm tra nhận diện ảnh' : 'Test Vision Model'}
+                        icon={<Eye size={13} className="text-blue-500" />}
+                        testState={serviceTestStates['caption-model']}
+                        onTest={() => triggerTest('caption-model')}
+                        onDismiss={dismissTest ? () => dismissTest('caption-model') : undefined}
+                        isVi={isVi}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

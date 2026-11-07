@@ -1,8 +1,9 @@
-import { SettingsAdvanced, SettingsServiceRow, SettingsActions } from '@/components/settings/SettingsLayout';
+import { SettingsAdvanced, SettingsActions } from '@/components/settings/SettingsLayout';
 import { SettingsPageFrame } from '@/components/settings/SettingsPageFrame';
 import { SettingsProviderPicker } from '@/components/settings/SettingsProviderPicker';
 import { SettingsActiveProviderForm } from '@/components/settings/SettingsActiveProviderForm';
 import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
+import { SettingsInlineServiceTest } from '@/components/settings/SettingsInlineServiceTest';
 import { SettingsApiGuidance } from '@/components/settings/SettingsApiGuidance';
 import { SettingsField } from '@/components/settings/SettingsField';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -1230,6 +1231,14 @@ export const Settings: React.FC = () => {
       if (formData.ai_provider_format) {
         testSettings.ai_provider_format = formData.ai_provider_format;
       }
+      // If lazyllm vendor selected, supply its key
+      const activeLazyKey = formData.lazyllm_api_keys?.[formData.ai_provider_format];
+      if (activeLazyKey) {
+        testSettings.api_key = activeLazyKey;
+      }
+      if (formData.lazyllm_api_keys && Object.keys(formData.lazyllm_api_keys).length > 0) {
+        testSettings.lazyllm_api_keys = formData.lazyllm_api_keys;
+      }
       if (formData.text_model) testSettings.text_model = formData.text_model;
       if (formData.image_model) testSettings.image_model = formData.image_model;
       if (formData.image_caption_model) testSettings.image_caption_model = formData.image_caption_model;
@@ -1321,6 +1330,54 @@ export const Settings: React.FC = () => {
       updateServiceTest(key, { status: 'error', message: errorMessage });
       show({ message: `${t('settings.serviceTest.testFailed')}: ${errorMessage}`, type: 'error' });
     }
+  };
+
+  const TEST_CONFIGS: Record<string, {
+    key: string;
+    action: (settings?: any) => Promise<any>;
+    formatDetail: (data: any) => string;
+  }> = {
+    'baidu-ocr': {
+      key: 'baidu-ocr',
+      action: api.testBaiduOcr,
+      formatDetail: (data: any) => (data?.recognized_text ? t('settings.serviceTest.results.recognizedText', { text: data.recognized_text }) : ''),
+    },
+    'text-model': {
+      key: 'text-model',
+      action: api.testTextModel,
+      formatDetail: (data: any) => (data?.reply ? t('settings.serviceTest.results.modelReply', { reply: data.reply }) : ''),
+    },
+    'caption-model': {
+      key: 'caption-model',
+      action: api.testCaptionModel,
+      formatDetail: (data: any) => (data?.caption ? t('settings.serviceTest.results.captionDesc', { caption: data.caption }) : ''),
+    },
+    'baidu-inpaint': {
+      key: 'baidu-inpaint',
+      action: api.testBaiduInpaint,
+      formatDetail: (data: any) => (data?.image_size ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] }) : ''),
+    },
+    'image-model': {
+      key: 'image-model',
+      action: api.testImageModel,
+      formatDetail: (data: any) => (data?.image_size ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] }) : ''),
+    },
+    'mineru-pdf': {
+      key: 'mineru-pdf',
+      action: api.testMineruPdf,
+      formatDetail: (data: any) => (data?.content_preview ? t('settings.serviceTest.results.parsePreview', { preview: data.content_preview }) : data?.message || ''),
+    },
+  };
+
+  const triggerTest = (testKey: string) => {
+    const config = TEST_CONFIGS[testKey];
+    if (config) {
+      handleServiceTest(config.key, config.action, config.formatDetail);
+    }
+  };
+
+  const dismissTest = (testKey: string) => {
+    updateServiceTest(testKey, { status: 'idle' });
   };
 
   const renderField = (field: FieldConfig) => <SettingsField
@@ -1738,6 +1795,9 @@ export const Settings: React.FC = () => {
             volcengineAgentPlansUrl={volcengineAgentPlansUrl}
             volcengineLogoUrl={volcengineLogoUrl}
             copyToClipboard={copyToClipboard}
+            serviceTestStates={serviceTestStates}
+            triggerTest={triggerTest}
+            dismissTest={dismissTest}
           />
         </div>
 
@@ -1748,6 +1808,9 @@ export const Settings: React.FC = () => {
           formData={formData}
           isVi={isVi}
           t={t}
+          serviceTestStates={serviceTestStates}
+          triggerTest={triggerTest}
+          dismissTest={dismissTest}
         />
 
         {/* General & Output Config */}
@@ -1801,6 +1864,56 @@ export const Settings: React.FC = () => {
                 <div className="space-y-4">
                   {section.fields.map((field) => renderField(field))}
                 </div>
+
+                {/* Inline Service Test for MinerU */}
+                {section.title === t('settings.sections.mineruConfig') && (
+                  <div className="pt-3 mt-4 border-t border-gray-100 dark:border-border-primary/60">
+                    <SettingsInlineServiceTest
+                      testKey="mineru-pdf"
+                      label={isVi ? 'Kiểm tra phân tích PDF MinerU' : 'Test MinerU PDF Parsing'}
+                      description={t('settings.serviceTest.tests.mineruPdf.description')}
+                      icon={<FileText size={13} />}
+                      testState={serviceTestStates['mineru-pdf']}
+                      onTest={() => triggerTest('mineru-pdf')}
+                      onDismiss={() => dismissTest('mineru-pdf')}
+                      isVi={isVi}
+                      disabled={!formData.mineru_token && !settings?.mineru_token_length}
+                      disabledReason={isVi ? 'Chưa cấu hình MinerU token' : 'MinerU token not set'}
+                    />
+                  </div>
+                )}
+
+                {/* Inline Service Tests for Baidu OCR & Inpainting */}
+                {section.title === t('settings.sections.baiduOcr') && (
+                  <div className="pt-3 mt-4 border-t border-gray-100 dark:border-border-primary/60 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <SettingsInlineServiceTest
+                        testKey="baidu-ocr"
+                        label={isVi ? 'Kiểm tra Baidu OCR' : 'Test Baidu OCR'}
+                        description={t('settings.serviceTest.tests.baiduOcr.description')}
+                        icon={<FileText size={13} />}
+                        testState={serviceTestStates['baidu-ocr']}
+                        onTest={() => triggerTest('baidu-ocr')}
+                        onDismiss={() => dismissTest('baidu-ocr')}
+                        isVi={isVi}
+                        disabled={!formData.baidu_api_key && !settings?.baidu_api_key_length}
+                        disabledReason={isVi ? 'Chưa cấu hình Baidu API Key' : 'Baidu API Key not set'}
+                      />
+                      <SettingsInlineServiceTest
+                        testKey="baidu-inpaint"
+                        label={isVi ? 'Kiểm tra vá ảnh Baidu' : 'Test Baidu Inpaint'}
+                        description={t('settings.serviceTest.tests.baiduInpaint.description')}
+                        icon={<Image size={13} />}
+                        testState={serviceTestStates['baidu-inpaint']}
+                        onTest={() => triggerTest('baidu-inpaint')}
+                        onDismiss={() => dismissTest('baidu-inpaint')}
+                        isVi={isVi}
+                        disabled={!formData.baidu_api_key && !settings?.baidu_api_key_length}
+                        disabledReason={isVi ? 'Chưa cấu hình Baidu API Key' : 'Baidu API Key not set'}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1829,96 +1942,6 @@ export const Settings: React.FC = () => {
                 </div>
               ))}
         </SettingsAdvanced>
-
-        {/* Service test area */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-2 flex items-center">
-            <FileText size={20} />
-            <span className="ml-2">{t('settings.serviceTest.title')}</span>
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-foreground-tertiary">
-            {t('settings.serviceTest.description')}
-          </p>
-          <div className="pl-4 border-l-4 border-yellow-300 dark:border-yellow-600">
-            <p className="text-sm text-gray-700 dark:text-foreground-secondary flex items-start gap-1.5">
-              <Lightbulb size={15} className="flex-shrink-0 mt-0.5" />
-              {t('settings.serviceTest.tip')}
-            </p>
-          </div>
-          <div className="space-y-4">
-            {[
-              {
-                key: 'baidu-ocr',
-                titleKey: 'settings.serviceTest.tests.baiduOcr.title',
-                descriptionKey: 'settings.serviceTest.tests.baiduOcr.description',
-                resultKey: 'settings.serviceTest.results.recognizedText',
-                action: api.testBaiduOcr,
-                formatDetail: (data: any) => (data?.recognized_text ? t('settings.serviceTest.results.recognizedText', { text: data.recognized_text }) : ''),
-              },
-              {
-                key: 'text-model',
-                titleKey: 'settings.serviceTest.tests.textModel.title',
-                descriptionKey: 'settings.serviceTest.tests.textModel.description',
-                resultKey: 'settings.serviceTest.results.modelReply',
-                action: api.testTextModel,
-                formatDetail: (data: any) => (data?.reply ? t('settings.serviceTest.results.modelReply', { reply: data.reply }) : ''),
-              },
-              {
-                key: 'caption-model',
-                titleKey: 'settings.serviceTest.tests.captionModel.title',
-                descriptionKey: 'settings.serviceTest.tests.captionModel.description',
-                resultKey: 'settings.serviceTest.results.captionDesc',
-                action: api.testCaptionModel,
-                formatDetail: (data: any) => (data?.caption ? t('settings.serviceTest.results.captionDesc', { caption: data.caption }) : ''),
-              },
-              {
-                key: 'baidu-inpaint',
-                titleKey: 'settings.serviceTest.tests.baiduInpaint.title',
-                descriptionKey: 'settings.serviceTest.tests.baiduInpaint.description',
-                resultKey: 'settings.serviceTest.results.imageSize',
-                action: api.testBaiduInpaint,
-                formatDetail: (data: any) => (data?.image_size ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] }) : ''),
-              },
-              {
-                key: 'image-model',
-                titleKey: 'settings.serviceTest.tests.imageModel.title',
-                descriptionKey: 'settings.serviceTest.tests.imageModel.description',
-                resultKey: 'settings.serviceTest.results.imageSize',
-                action: api.testImageModel,
-                formatDetail: (data: any) => (data?.image_size ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] }) : ''),
-              },
-              {
-                key: 'mineru-pdf',
-                titleKey: 'settings.serviceTest.tests.mineruPdf.title',
-                descriptionKey: 'settings.serviceTest.tests.mineruPdf.description',
-                resultKey: 'settings.serviceTest.results.parsePreview',
-                action: api.testMineruPdf,
-                formatDetail: (data: any) => (data?.content_preview ? t('settings.serviceTest.results.parsePreview', { preview: data.content_preview }) : data?.message || ''),
-              },
-            ].map((item) => {
-              const testState = serviceTestStates[item.key] || { status: 'idle' as TestStatus };
-              const isLoadingTest = testState.status === 'loading';
-              return (
-                <SettingsServiceRow key={item.key} title={t(item.titleKey)} description={t(item.descriptionKey)} action={
-                  <Button variant="secondary" size="sm" loading={isLoadingTest} onClick={() => handleServiceTest(item.key, item.action, item.formatDetail)}>
-                    {isLoadingTest ? t('settings.serviceTest.testing') : t('settings.serviceTest.startTest')}
-                  </Button>
-                }>
-                  {testState.status === 'success' && (
-                    <p className="text-sm text-green-600">
-                      {testState.message}{testState.detail ? `${testState.detail}` : ''}
-                    </p>
-                  )}
-                  {testState.status === 'error' && (
-                    <p className="text-sm text-red-600">
-                      {testState.message}
-                    </p>
-                  )}
-                </SettingsServiceRow>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Action buttons */}
         <SettingsActions>

@@ -15,6 +15,7 @@ import {
   Check,
 } from 'lucide-react';
 import { Button, Input } from '@/components/shared';
+import { SettingsInlineServiceTest, type InlineServiceTestState } from './SettingsInlineServiceTest';
 import type { Settings as SettingsType } from '@/types';
 import type { useT } from '@/hooks/useT';
 
@@ -45,6 +46,9 @@ export interface SettingsActiveProviderFormProps {
   volcengineAgentPlansUrl: string;
   volcengineLogoUrl: string;
   copyToClipboard: (text: string) => void;
+  serviceTestStates?: Record<string, InlineServiceTestState>;
+  triggerTest?: (testKey: string) => void;
+  dismissTest?: (testKey: string) => void;
 }
 
 const PROVIDER_METADATA: Record<
@@ -212,6 +216,9 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
   volcengineAgentPlansUrl,
   volcengineLogoUrl,
   copyToClipboard,
+  serviceTestStates = {},
+  triggerTest,
+  dismissTest,
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -591,6 +598,51 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Provider Connectivity & Service Testing */}
+      {triggerTest && (
+        <div className="pt-4 border-t border-gray-100 dark:border-border-primary/60 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-foreground-primary flex items-center gap-1.5">
+                <Zap size={13} className="text-amber-500" />
+                {isVi ? 'Kiểm tra kết nối dịch vụ' : 'Test Service Connection'}
+              </h4>
+              <p className="text-[11px] text-gray-500 dark:text-foreground-tertiary mt-0.5">
+                {isVi
+                  ? 'Kiểm tra ngay API Key và điểm cuối của nhà cung cấp này để xác minh kết nối hoạt động bình thường.'
+                  : 'Verify this provider credentials and endpoints to ensure connection is working properly.'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <SettingsInlineServiceTest
+                testKey="text-model"
+                label={isVi ? 'Kiểm tra văn bản' : 'Test Text Model'}
+                icon={<Zap size={13} className="text-amber-500" />}
+                testState={serviceTestStates['text-model']}
+                onTest={() => triggerTest('text-model')}
+                onDismiss={dismissTest ? () => dismissTest('text-model') : undefined}
+                isVi={isVi}
+                disabled={!isKeyConfigured}
+                disabledReason={isVi ? 'Chưa cấu hình key' : 'Key not set'}
+              />
+
+              <SettingsInlineServiceTest
+                testKey="image-model"
+                label={isVi ? 'Kiểm tra tạo ảnh' : 'Test Image Model'}
+                icon={<Sparkles size={13} className="text-purple-500" />}
+                testState={serviceTestStates['image-model']}
+                onTest={() => triggerTest('image-model')}
+                onDismiss={dismissTest ? () => dismissTest('image-model') : undefined}
+                isVi={isVi}
+                disabled={!isKeyConfigured}
+                disabledReason={isVi ? 'Chưa cấu hình key' : 'Key not set'}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

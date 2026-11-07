@@ -74,6 +74,7 @@ def temporary_settings_override(settings_override: dict):
         None
     """
     original_values = {}
+    original_env_values = {}
 
     try:
         active_format = (
@@ -88,6 +89,21 @@ def temporary_settings_override(settings_override: dict):
             key_config, _ = provider_keys
             original_values[key_config] = current_app.config.get(key_config)
             current_app.config[key_config] = settings_override["api_key"]
+
+        # Support LazyLLM vendor API key override in tests
+        if active_format and active_format.lower() in LAZYLLM_VENDORS:
+            vendor = active_format.lower()
+            env_key = f"{vendor.upper()}_API_KEY"
+            if settings_override.get("api_key"):
+                original_env_values[env_key] = os.environ.get(env_key)
+                os.environ[env_key] = settings_override["api_key"]
+
+        if settings_override.get("lazyllm_api_keys"):
+            for vendor, k in settings_override["lazyllm_api_keys"].items():
+                if k:
+                    env_key = f"{vendor.upper()}_API_KEY"
+                    original_env_values[env_key] = os.environ.get(env_key)
+                    os.environ[env_key] = k
 
         if settings_override.get("api_base_url") and provider_keys:
             _, base_config = provider_keys
@@ -194,6 +210,12 @@ def temporary_settings_override(settings_override: dict):
                 current_app.config[key] = value
             else:
                 current_app.config.pop(key, None)
+
+        for key, value in original_env_values.items():
+            if value is not None:
+                os.environ[key] = value
+            else:
+                os.environ.pop(key, None)
 
 
 @settings_bp.route("/", methods=["GET"], strict_slashes=False)
