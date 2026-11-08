@@ -21,6 +21,7 @@ import { StatusBadge, MaterialSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplatePickerModal } from '@/components/template/TemplatePickerModal';
 import { getImageUrl } from '@/api/client';
+import { generateStyleFromContent } from '@/api/endpoints';
 import type { DescriptionContent, Material, Page, TemplateAsset } from '@/types';
 
 const drawerI18n = {
@@ -45,8 +46,13 @@ const drawerI18n = {
       narrationPlaceholder: "No script yet — write one here",
       templateChange: "Change",
       templateLabel: "Template image",
-      templateStyle: "Template prompt",
-      templateStylePlaceholder: "Describe the layout and style you want for this page",
+      templateStyle: "Mô tả phong cách trang",
+      templateStylePlaceholder: "Mô tả bố cục và phong cách bạn muốn cho trang này (để trống sẽ tự động tạo theo nội dung)",
+      templateAutoGenerate: "Tự động tạo",
+      generatingStyle: "Đang tạo...",
+      generateStyleSuccess: "Đã tạo mô tả phong cách thành công",
+      generateStyleFailed: "Tạo mô tả phong cách thất bại",
+      noContentForStyle: "Vui lòng nhập tiêu đề hoặc nội dung trang trước",
       templateNone: "Inherits project template",
       templateAuto: "AI matched",
       templateManual: "Manually set",
@@ -87,8 +93,13 @@ const drawerI18n = {
       narrationPlaceholder: 'No script yet — write one here',
       templateChange: 'Change',
       templateLabel: 'Template image',
-      templateStyle: 'Template prompt',
-      templateStylePlaceholder: 'Describe the layout and style you want for this page',
+      templateStyle: 'Page style description',
+      templateStylePlaceholder: 'Describe the layout and style you want for this page (leave blank to auto-generate from content)',
+      templateAutoGenerate: 'Auto-generate',
+      generatingStyle: 'Generating...',
+      generateStyleSuccess: 'Style generated successfully',
+      generateStyleFailed: 'Failed to generate style',
+      noContentForStyle: 'Please enter a page title or content first',
       templateNone: 'Inherits project template',
       templateAuto: 'AI matched',
       templateManual: 'Manually set',
@@ -141,17 +152,19 @@ export const getDescriptionText = (description?: DescriptionContent | null): str
  * coerce here, at the one entry point, so neither the editors nor the save path
  * has to guard again.
  */
+export const LEGACY_MAP: Record<string, string> = {
+  '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
+  '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
+  '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
+  '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
+  '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
+  '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
+  '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
+};
+
+export const normKey = (k: string) => LEGACY_MAP[k] || k;
+
 export const getExtraFields = (description?: DescriptionContent | null): Record<string, string> => {
-  const LEGACY_MAP: Record<string, string> = {
-    '\u914d\u56fe\u4e0e\u7d20\u6750': 'Hình ảnh & Tư liệu',
-    '\u7248\u5f0f\u4e0e\u91cd\u70b9': 'Bố cục & Trọng tâm',
-    '\u6f14\u8bb2\u8005\u5907\u6ce8': 'Ghi chú thuyết trình',
-    '\u89c6\u89c9\u5143\u7d20': 'Yếu tố thị giác',
-    '\u89c6\u89c9\u7126\u70b9': 'Điểm nhấn thị giác',
-    '\u6392\u7248\u5e03\u5c40': 'Bố cục trình bày',
-    '\u6392\u7248\u5efa\u8bae': 'Gợi ý bố cục',
-  };
-  const normKey = (k: string) => LEGACY_MAP[k] || k;
   const toText = (value: unknown) => (typeof value === 'string' ? value : String(value ?? ''));
   const normalize = (fields: Record<string, unknown>): Record<string, string> =>
     Object.fromEntries(Object.entries(fields).map(([key, value]) => [normKey(key), toText(value)]));
@@ -501,6 +514,37 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
     [pageId, onUpdatePageTemplate]
   );
 
+  const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
+
+  const pagePoints = page?.outline_content?.points;
+
+  const handleAutoGenerateStyle = useCallback(async () => {
+    const pageText = [
+      title,
+      description,
+      ...(pagePoints || []),
+    ].filter(Boolean).join('\n');
+    if (!pageText.trim()) {
+      showToast({ message: t('props.noContentForStyle'), type: 'warning' });
+      return;
+    }
+    setIsGeneratingStyle(true);
+    try {
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'zh';
+      const res = await generateStyleFromContent(pageText.trim(), lang);
+      const generated = res.data?.style_description;
+      if (generated) {
+        setTemplateStyle(generated);
+        saveTemplateStyle(generated);
+        showToast({ message: t('props.generateStyleSuccess'), type: 'success' });
+      }
+    } catch {
+      showToast({ message: t('props.generateStyleFailed'), type: 'error' });
+    } finally {
+      setIsGeneratingStyle(false);
+    }
+  }, [title, description, pagePoints, i18n.language, showToast, t, saveTemplateStyle]);
+
   const handlePickTemplate = useCallback(
     async (assetId: string | null) => {
       if (!pageId || !onUpdatePageTemplate) return;
@@ -834,9 +878,21 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-gray-600 dark:text-foreground-secondary">
-                          {t('props.templateStyle')}
-                        </label>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-gray-600 dark:text-foreground-secondary">
+                            {t('props.templateStyle')}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleAutoGenerateStyle}
+                            disabled={isGeneratingStyle}
+                            className="flex items-center gap-1 text-[11px] text-banana-600 dark:text-banana hover:underline disabled:opacity-50"
+                            title={t('props.templateAutoGenerate')}
+                          >
+                            <Sparkles size={11} className={isGeneratingStyle ? 'animate-spin' : ''} />
+                            {isGeneratingStyle ? t('props.generatingStyle') : t('props.templateAutoGenerate')}
+                          </button>
+                        </div>
                         <textarea
                           data-testid="drawer-template-style-input"
                           {...focusProps('templateStyle')}

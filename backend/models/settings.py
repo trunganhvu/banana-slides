@@ -2,6 +2,7 @@
 import json
 from datetime import datetime, timezone
 from . import db
+from config import is_placeholder_api_key
 
 
 def _utcnow_naive():
@@ -170,11 +171,18 @@ class Settings(db.Model):
             if self.image_caption_api_base_url is not None
             else image_caption_api_defaults['api_base_url']
         )
+        def _key_len(k):
+            return len(k) if k and not is_placeholder_api_key(k) else 0
+
         return {
             'id': self.id,
             'ai_provider_format': effective_provider,
             'api_base_url': api_base_url,
-            'api_key_length': len(api_key) if api_key else 0,
+            'raw_api_base_url': self.api_base_url,
+            'raw_text_api_base_url': self.text_api_base_url,
+            'raw_image_api_base_url': self.image_api_base_url,
+            'raw_image_caption_api_base_url': self.image_caption_api_base_url,
+            'api_key_length': _key_len(api_key),
             'image_resolution': self._val('image_resolution', d),
             'image_aspect_ratio': self._val('image_aspect_ratio', d),
             'image_quality': self._val('image_quality', d) or 'auto',
@@ -195,20 +203,20 @@ class Settings(db.Model):
             'enable_image_reasoning': self.enable_image_reasoning,
             'image_thinking_budget': self.image_thinking_budget,
             'enable_image_quality_control': self.enable_image_quality_control,
-            'baidu_api_key_length': len(baidu_api_key) if baidu_api_key else 0,
+            'baidu_api_key_length': _key_len(baidu_api_key),
             'text_model_source': text_model_source,
             'image_model_source': image_model_source,
             'image_caption_model_source': image_caption_model_source,
             'lazyllm_api_keys_info': self._get_lazyllm_api_keys_info(self._val('lazyllm_api_keys', d)),
-            'text_api_key_length': len(text_api_key) if text_api_key else 0,
+            'text_api_key_length': _key_len(text_api_key),
             'text_api_base_url': text_api_base_url,
-            'image_api_key_length': len(image_api_key) if image_api_key else 0,
+            'image_api_key_length': _key_len(image_api_key),
             'image_api_base_url': image_api_base_url,
-            'image_caption_api_key_length': len(image_caption_api_key) if image_caption_api_key else 0,
+            'image_caption_api_key_length': _key_len(image_caption_api_key),
             'image_caption_api_base_url': image_caption_api_base_url,
             'openai_image_api_protocol': self._val('openai_image_api_protocol', d) or 'auto',
             'elevenlabs_enabled': self.elevenlabs_enabled,
-            'elevenlabs_api_key_length': len(elevenlabs_api_key) if elevenlabs_api_key else 0,
+            'elevenlabs_api_key_length': _key_len(elevenlabs_api_key),
             'elevenlabs_voice_id': self.elevenlabs_voice_id or '',
             'openai_oauth_connected': self.is_openai_oauth_connected(),
             'openai_oauth_account_id': self.openai_oauth_account_id if self.is_openai_oauth_connected() else None,
@@ -261,7 +269,7 @@ class Settings(db.Model):
             return {}
         try:
             keys = json.loads(data)
-            return {vendor: len(key) for vendor, key in keys.items() if key}
+            return {vendor: len(key) for vendor, key in keys.items() if key and not is_placeholder_api_key(key)}
         except (json.JSONDecodeError, TypeError):
             return {}
 

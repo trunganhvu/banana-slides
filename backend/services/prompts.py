@@ -953,13 +953,38 @@ Hãy viết thành một đoạn văn mô tả súc tích, mạch lạc để AI
     return prompt
 
 
-def get_style_from_content_prompt(content_text: str) -> str:
+def get_style_from_content_prompt(content: str = "", content_text: str = "", language: str = 'zh') -> str:
     """Tạo phong cách thiết kế gợi ý từ nội dung văn bản."""
-    prompt = f"""Dựa vào nội dung bài thuyết trình dưới đây, hãy đề xuất phong cách thiết kế slide phù hợp nhất:
-{content_text}
+    actual_content = (content or content_text or "").strip()
+    is_en = (language or '').lower().startswith('en')
+    if is_en:
+        prompt = f"""You are a senior PPT visual design director. Analyze the given presentation topic/outline/content and generate a tailored, professional visual style description for this presentation.
 
-Nêu rõ bảng màu, phong cách hình ảnh và ngôn ngữ bố cục được khuyến nghị.
-"""
+[Input Content]:
+{actual_content}
+
+[Style Modeling Requirements]:
+Your generated style description MUST cover these 4 core dimensions:
+1. **Visual Description**: Global visual language, design paradigm (e.g. flat, minimalist, futuristic, editorial), lighting, and overall mood.
+2. **Color & Material**: Background color (with exact hex codes e.g. #0B1F3B), text color, primary accent color (with usage cap e.g. <=3%), secondary colors, material finish (flat color block, matte paper, frosted glass), and shadow rules.
+3. **Content & Typography**: Grid alignment, page partitioning, divider lines, and font classification (serif, sans-serif, weight hierarchy).
+4. **Illustration & Rendering**: Illustration style (vector line art, flat 2D, 3D clay, etc.), chart specifications, and final rendering aesthetic quality.
+
+Output ONLY the structured style description text without any conversational preamble or markdown code blocks."""
+    else:
+        prompt = f"""Bạn là một giám đốc thiết kế thuyết trình chuyên nghiệp. Dựa vào chủ đề, dàn ý hoặc nội dung dưới đây, hãy tạo ra một mô tả phong cách thiết kế thị giác (visual style) phù hợp nhất cho bài thuyết trình:
+
+[Nội dung]:
+{actual_content}
+
+[Quy chuẩn mô tả phong cách]:
+Mô tả phong cách cần súc tích, mạch lạc (khoảng 2-4 đoạn), bao gồm các khía cạnh sau để AI vẽ slide bám sát:
+1. **Mô tả thị giác**: Ngôn ngữ thị giác chủ đạo (ví dụ: tối giản hiện đại, công nghệ tương lai, kinh doanh thanh lịch, giáo dục thân thiện), ánh sáng và cảm xúc tổng thể.
+2. **Bảng màu & Chất liệu**: Màu nền cụ thể (kèm mã màu hex gợi ý, ví dụ #0B1F3B hoặc #F8F7F2), màu chữ, màu điểm nhấn chính (dưới 5%) và đường kẻ phân chia; chất liệu bề mặt (phẳng mượt, mờ nhám, kính trong).
+3. **Nội dung & Kiểu chữ**: Bố cục lưới, căn chỉnh, tỉ lệ thẻ nội dung và phông chữ (sans-serif hiện đại, nét thanh mảnh rõ ràng, phân cấp mạch lạc).
+4. **Minh họa & Kết xuất**: Phong cách hình minh họa/biểu tượng (vector 2D tối giản, biểu tượng phẳng, sắc nét, chất lượng cao 4K).
+
+Chỉ xuất trực tiếp đoạn văn bản mô tả phong cách, không thêm lời chào, giải thích ngoài lề hay khối mã markdown."""
     return prompt
 
 

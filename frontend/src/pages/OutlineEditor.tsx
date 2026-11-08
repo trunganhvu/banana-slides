@@ -392,9 +392,9 @@ export const OutlineEditor: React.FC = () => {
     const doGenerate = async (lockPageCount?: boolean) => {
       try {
         const result = await generateOutlineStream(lockPageCount);
-        const { currentProject: updatedProject } = useProjectStore.getState();
+        const { currentProject: updatedProject, error: storeError } = useProjectStore.getState();
         const pageCount = updatedProject?.pages.length ?? 0;
-        if (result?.active && (!result.complete || pageCount === 0)) {
+        if (!storeError && result?.active && (!result.complete || pageCount === 0)) {
           show({ message: t('outline.messages.generateIncomplete'), type: 'warning' });
         }
       } catch (error: any) {
@@ -430,9 +430,9 @@ export const OutlineEditor: React.FC = () => {
     void (async () => {
       try {
         const result = await generateOutlineStream();
-        const { currentProject: updatedProject } = useProjectStore.getState();
+        const { currentProject: updatedProject, error: storeError } = useProjectStore.getState();
         const pageCount = updatedProject?.pages.length ?? 0;
-        if (result?.active && (!result.complete || pageCount === 0)) {
+        if (!storeError && result?.active && (!result.complete || pageCount === 0)) {
           show({ message: t('outline.messages.generateIncomplete'), type: 'warning' });
         }
       } catch (error: any) {

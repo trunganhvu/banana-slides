@@ -116,10 +116,11 @@ def resolve_lazyllm_source(source: str, registry_name: str = 'chat') -> str:
 
 def collect_env_lazyllm_api_keys() -> str | None:
     """Scan env vars for {VENDOR}_API_KEY and return JSON string, or None."""
+    from config import is_placeholder_api_key
     keys = {}
     for vendor in ALLOWED_LAZYLLM_VENDORS:
         val = os.getenv(f"{vendor.upper()}_API_KEY", "")
-        if val:
+        if val and not is_placeholder_api_key(val):
             keys[vendor] = val
     return json.dumps(keys) if keys else None
 
@@ -151,7 +152,9 @@ def get_lazyllm_api_key(source: str, namespace: str = "BANANA") -> str:
     except Exception:
         pass
 
-    return os.getenv(f"{source_upper}_API_KEY", "")
+    val = os.getenv(f"{source_upper}_API_KEY", "")
+    from config import is_placeholder_api_key
+    return "" if is_placeholder_api_key(val) else val
 
 
 def ensure_lazyllm_namespace_key(source: str, namespace: str = "BANANA") -> bool:

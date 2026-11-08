@@ -861,6 +861,8 @@ def generate_images_task(task_id: str, project_id: str, ai_service, file_service
                             project_for_template = Project.query.get(project_id)
                             page_ref_image_path, page_style_text = resolve_page_template(
                                 page_obj, project_for_template, file_service)
+                            if not page_ref_image_path and not page_style_text:
+                                page_style_text = (project_for_template.template_style if project_for_template else None) or "Phong cách hiện đại, tối giản, thanh lịch, nền sáng chuyên nghiệp, phân cấp thị giác rõ ràng, phông chữ sắc nét tinh tế."
                             has_template_image = bool(page_ref_image_path)
 
                             # Generate image prompt
@@ -1069,8 +1071,36 @@ def generate_single_page_image_task(task_id: str, project_id: str, page_id: str,
                 )
                 ref_image_path = None
             if not ref_image_path and not page_style_text:
-                raise ValueError(
-                    "No template image or style description found for page")
+                if not use_template:
+                    raise ValueError(
+                        "No template image or style description found for page")
+                # If a template image was configured but is physically missing, fail as required by tests
+                if getattr(page, 'template_asset_id', None) or (project_for_template and getattr(project_for_template, 'template_image_path', None)):
+                    raise ValueError(
+                        "No template image or style description found for page")
+                try:
+                    content_parts = []
+                    if project_for_template and getattr(project_for_template, 'title', None):
+                        content_parts.append(project_for_template.title)
+                    page_outline = page.get_outline_content() or {}
+                    if page_outline.get('title'):
+                        content_parts.append(page_outline['title'])
+                    if page_outline.get('points'):
+                        content_parts.extend(page_outline['points'])
+                    desc_obj = page.get_description_content() or {}
+                    if desc_obj.get('text'):
+                        content_parts.append(desc_obj['text'][:300])
+                    content_for_style = "\n".join([cp for cp in content_parts if cp]).strip()
+                    if not content_for_style:
+                        content_for_style = "Trang trình chiếu chuyên nghiệp"
+                    page_style_text = ai_service.generate_style_from_content(content_for_style, language=language)
+                except Exception as e:
+                    logger.warning(f"Worker auto-generate style for page {page_id} failed: {e}")
+                    page_style_text = "Phong cách hiện đại, tối giản, thanh lịch, nền sáng chuyên nghiệp, phân cấp thị giác rõ ràng, phông chữ sắc nét tinh tế."
+                page.template_style_text = page_style_text
+                if project_for_template and not project_for_template.template_style:
+                    project_for_template.template_style = page_style_text
+                _commit_with_retry()
             has_template_image = bool(ref_image_path)
 
             # Generate image prompt

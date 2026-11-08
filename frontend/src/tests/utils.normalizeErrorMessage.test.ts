@@ -8,15 +8,15 @@ describe('normalizeErrorMessage', () => {
   });
 
   test('maps style extraction image-input failures to actionable export guidance', () => {
-    const message = normalizeErrorMessage(': : caption_provider ');
-    expect(message).toContain('');
-    expect(message).toContain('image caption');
+    const message = normalizeErrorMessage('Trích xuất phong cách thất bại: Không hỗ trợ ảnh đầu vào: caption_provider');
+    expect(message).toContain('Xuất PPTX');
+    expect(message).toContain('thị giác');
   });
 
   test('maps generic style extraction failures to editable pptx guidance', () => {
-    const message = normalizeErrorMessage(': ');
-    expect(message).toContain(' PPTX ');
-    expect(message).toContain('');
+    const message = normalizeErrorMessage('Trích xuất phong cách thất bại: lỗi');
+    expect(message).toContain('Xuất PPTX');
+    expect(message).toContain('Cài đặt');
   });
 
   test('maps codex oauth 401 failures to relogin guidance', () => {
@@ -89,6 +89,26 @@ describe('normalizeErrorMessage', () => {
       'MinerU parsing failed: File upload failed: 403 Forbidden'
     );
     expect(message).toContain('Access denied');
-    expect(message).not.toContain('');
+    expect(message).not.toContain('Truy cập bị từ chối');
+  });
+
+  test('maps invalid gemini api key error to actionable settings guidance', () => {
+    const raw = "400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'API key not valid. Please pass a valid API key.', 'status': 'INVALID_ARGUMENT'}}";
+    const message = normalizeErrorMessage(raw);
+    expect(message).toContain('API Key');
+    expect(message).toContain('Cài đặt');
+  });
+
+  test('maps missing api key error to actionable settings guidance', () => {
+    const raw = "GOOGLE_API_KEY (from database settings or environment) is required";
+    const message = normalizeErrorMessage(raw);
+    expect(message).toContain('API Key');
+    expect(message).toContain('Cài đặt');
+  });
+
+  test('maps missing template error to clear vietnamese guidance', () => {
+    const raw = 'No template image or style description found for page';
+    const message = normalizeErrorMessage(raw);
+    expect(message).toContain('mẫu phong cách');
   });
 });

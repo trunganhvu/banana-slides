@@ -361,3 +361,45 @@ def test_image_prompt_includes_page_style_block(client, stub_submit_task, app):
         outline=[], page={'title': 'p1'}, page_desc='hello world',
         page_index=2, has_template=True)
     assert '<page_style>' not in prompt_without
+
+
+def test_single_page_generation_auto_generates_style_when_none_provided(
+        client, stub_submit_task, monkeypatch, app):
+    """When no template or style is given, generation auto-creates a style matching content."""
+    from controllers import page_controller
+    from models import Page, Project
+
+    project_id = _make_project(client)
+    page_resp = client.post(
+        f'/api/projects/{project_id}/pages',
+        json={
+            'order_index': 0,
+            'outline_content': {'title': 'AI Overview', 'points': ['Deep Learning', 'Neural Networks']},
+            'description_content': {'text': 'A modern presentation on AI architecture.'},
+        },
+    )
+    page_id = page_resp.get_json()['data']['page_id']
+
+    class StubAI:
+        @staticmethod
+        def extract_image_urls_from_markdown(_text):
+            return []
+
+        @staticmethod
+        def generate_style_from_content(content, language='zh'):
+            return "Auto-generated clean modern visual style"
+
+    monkeypatch.setattr(page_controller, 'get_ai_service', lambda: StubAI())
+    response = client.post(
+        f'/api/projects/{project_id}/pages/{page_id}/generate/image',
+        json={'force_regenerate': True},
+    )
+
+    assert response.status_code == 202
+    assert stub_submit_task[-1]['func'] == 'generate_single_page_image_task'
+
+    with app.app_context():
+        page = Page.query.get(page_id)
+        proj = Project.query.get(project_id)
+        assert page.template_style_text == "Auto-generated clean modern visual style"
+        assert proj.template_style == "Auto-generated clean modern visual style"

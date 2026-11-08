@@ -533,6 +533,21 @@ def generate_outline(project_id):
             project.status = 'DESCRIPTIONS_GENERATED'
         else:
             project.status = 'OUTLINE_GENERATED'
+
+        # Auto-generate template style if not set
+        if not project.template_style and not project.template_image_path:
+            try:
+                content_for_style = project.title or project.idea_prompt or project.outline_text or ""
+                if not content_for_style and pages_list:
+                    content_for_style = "\n".join([p.get_outline_content().get('title', '') for p in pages_list if p.get_outline_content()])
+                if content_for_style:
+                    auto_style = ai_service.generate_style_from_content(content_for_style, language=language)
+                    if auto_style:
+                        project.template_style = auto_style
+                        logger.info(f"Auto-generated template style for project {project_id}")
+            except Exception as style_err:
+                logger.warning(f"Failed to auto-generate template style: {style_err}")
+
         project.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -548,6 +563,18 @@ def generate_outline(project_id):
         db.session.rollback()
         logger.error(f"generate_outline failed: {str(e)}", exc_info=True)
         return error_response('AI_SERVICE_ERROR', str(e), 503)
+
+
+def _format_stream_error(exc: Exception, action_name: str = 'tạo') -> str:
+    err_msg = str(exc)
+    err_lower = err_msg.lower()
+    if any(x in err_lower for x in ['api key', 'api_key', 'unauthorized', '401', '403', 'forbidden', 'invalid_argument', 'is required']):
+        return 'API Key không hợp lệ hoặc chưa được cấu hình. Vui lòng kiểm tra lại trong phần Cài đặt.'
+    elif any(x in err_lower for x in ['429', 'rate limit', 'resource_exhausted', 'quota']):
+        return 'Dịch vụ AI bị giới hạn tần suất yêu cầu hoặc vượt quá hạn mức. Vui lòng thử lại sau.'
+    elif any(x in err_lower for x in ['timeout', 'timed out', 'deadline']):
+        return f'Quá thời gian kết nối dịch vụ AI trong quá trình {action_name}. Vui lòng thử lại.'
+    return f'Đã xảy ra lỗi trong quá trình {action_name}: {err_msg}'
 
 
 @project_bp.route('/<project_id>/generate/outline/stream', methods=['POST'])
@@ -573,9 +600,11 @@ def generate_outline_stream(project_id):
 
     # Capture app reference for use inside the generator (which runs outside request context)
     app = current_app._get_current_object()
+    from utils.client_settings import extract_client_settings_from_request, client_settings_scope
+    client_override = extract_client_settings_from_request(request)
 
     def sse_generate():
-        with app.app_context():
+        with app.app_context(), client_settings_scope(client_override):
             try:
                 # Re-fetch project inside app context to attach to this session
                 proj = db.session.get(Project, project_id)
@@ -636,15 +665,31 @@ def generate_outline_stream(project_id):
                     proj.status = 'DESCRIPTIONS_GENERATED'
                 else:
                     proj.status = 'OUTLINE_GENERATED'
+
+                # Auto-generate template style if not set
+                if not proj.template_style and not proj.template_image_path:
+                    try:
+                        content_for_style = proj.title or proj.idea_prompt or proj.outline_text or ""
+                        if not content_for_style and pages_list:
+                            content_for_style = "\n".join([p.get_outline_content().get('title', '') for p in pages_list if p.get_outline_content()])
+                        if content_for_style:
+                            auto_style = ai_service.generate_style_from_content(content_for_style, language=language)
+                            if auto_style:
+                                proj.template_style = auto_style
+                                logger.info(f"Auto-generated template style for project {project_id}")
+                    except Exception as style_err:
+                        logger.warning(f"Failed to auto-generate template style: {style_err}")
+
                 proj.updated_at = datetime.utcnow()
                 db.session.commit()
 
-                logger.info(f":  {project_id}, {len(pages_list)} ")
+                logger.info(f"Hoàn tất tạo dàn ý stream: {project_id}, {len(pages_list)} trang")
 
                 yield _sse_event('done', {
                     'total': len(pages_list),
                     'pages': [p.to_dict() for p in pages_list],
                     'complete': stream_complete,
+                    'template_style': proj.template_style,
                 })
 
             except Exception as e:
@@ -653,7 +698,7 @@ def generate_outline_stream(project_id):
                 except Exception as rollback_exc:
                     logger.warning(f"Session rollback failed: {rollback_exc}", exc_info=True)
                 logger.error(f"generate_outline_stream failed: {str(e)}", exc_info=True)
-                yield _sse_event('error', {'message': 'Đã xảy ra lỗi nội bộ trong quá trình tạo'})
+                yield _sse_event('error', {'message': _format_stream_error(e, 'tạo dàn ý')})
 
     return Response(
         stream_with_context(sse_generate()),
@@ -905,9 +950,11 @@ def generate_descriptions_stream(project_id):
     detail_level = data.get('detail_level', 'default')
 
     app = current_app._get_current_object()
+    from utils.client_settings import extract_client_settings_from_request, client_settings_scope
+    client_override = extract_client_settings_from_request(request)
 
     def sse_generate():
-        with app.app_context():
+        with app.app_context(), client_settings_scope(client_override):
             try:
                 proj = db.session.get(Project, project_id)
                 ai_service = get_ai_service()
@@ -1010,7 +1057,7 @@ def generate_descriptions_stream(project_id):
                 except Exception as recover_exc:
                     logger.warning(f"Failed to recover page statuses: {recover_exc}", exc_info=True)
 
-                yield _sse_event('error', {'message': 'Đã xảy ra lỗi nội bộ trong quá trình tạo'})
+                yield _sse_event('error', {'message': _format_stream_error(e, 'tạo mô tả')})
 
     return Response(
         stream_with_context(sse_generate()),
@@ -1073,16 +1120,31 @@ def generate_images(project_id):
             getattr(p, 'template_asset_id', None) or getattr(p, 'template_style_text', None)
             for p in pages
         )
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+
         if not ref_image_path and not project.template_style and not has_page_template:
-            return bad_request("Vui lòng tải ảnh mẫu lên trước hoặc thêm mô tả phong cách. ")
-        
+            try:
+                content_for_style = project.title or project.idea_prompt or project.outline_text or ""
+                if not content_for_style and pages:
+                    content_for_style = "\n".join([p.get_outline_content().get('title', '') for p in pages if p.get_outline_content()])
+                if not content_for_style:
+                    content_for_style = "Bài thuyết trình chuyên nghiệp"
+                ai_service = get_ai_service()
+                auto_style = ai_service.generate_style_from_content(content_for_style, language=language)
+                if auto_style:
+                    project.template_style = auto_style
+                    db.session.commit()
+            except Exception as e:
+                logger.warning(f"Failed to auto-generate project style: {e}")
+                project.template_style = "Phong cách hiện đại, tối giản, thanh lịch, nền sáng chuyên nghiệp, phân cấp thị giác rõ ràng, phông chữ sắc nét tinh tế."
+                db.session.commit()
+
         # Reconstruct outline from pages with part structure
         outline = _reconstruct_outline_from_pages(pages)
         
         # Backend logic
         max_workers = data.get('max_workers', current_app.config.get('MAX_IMAGE_WORKERS', 8))
         use_template = data.get('use_template', True)
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
         
         # Create task
         task = Task(

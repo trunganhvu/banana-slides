@@ -18,15 +18,15 @@ describe('TextStyleSelector Component', () => {
 
   it('renders correctly with default props', () => {
     render(<TextStyleSelector value="" onChange={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /Generate from content|/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Extract from image|/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Generate from content|Tự động tạo theo nội dung/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Extract from image|Trích xuất từ hình ảnh/i })).toBeInTheDocument();
   });
 
   it('shows error toast when sourceContent is empty and generate button clicked', () => {
     const handleToast = vi.fn();
     render(<TextStyleSelector value="" onChange={vi.fn()} onToast={handleToast} sourceContent="" />);
 
-    const generateBtn = screen.getByRole('button', { name: /Generate from content|/i });
+    const generateBtn = screen.getByRole('button', { name: /Generate from content|Tự động tạo theo nội dung/i });
     fireEvent.click(generateBtn);
 
     expect(handleToast).toHaveBeenCalledWith(
@@ -49,15 +49,15 @@ describe('TextStyleSelector Component', () => {
         value=""
         onChange={handleChange}
         onToast={handleToast}
-        sourceContent=""
+        sourceContent="AI Presentation"
       />
     );
 
-    const generateBtn = screen.getByRole('button', { name: /Generate from content|/i });
+    const generateBtn = screen.getByRole('button', { name: /Generate from content|Tự động tạo theo nội dung/i });
     fireEvent.click(generateBtn);
 
     await waitFor(() => {
-      expect(endpoints.generateStyleFromContent).toHaveBeenCalledWith('', expect.any(String));
+      expect(endpoints.generateStyleFromContent).toHaveBeenCalledWith('AI Presentation', expect.any(String));
       expect(handleChange).toHaveBeenCalledWith('\n#0B0F19');
       expect(handleToast).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -79,11 +79,11 @@ describe('TextStyleSelector Component', () => {
         value=""
         onChange={handleChange}
         onToast={handleToast}
-        sourceContent=""
+        sourceContent="AI Presentation"
       />
     );
 
-    const generateBtn = screen.getByRole('button', { name: /Generate from content|/i });
+    const generateBtn = screen.getByRole('button', { name: /Generate from content|Tự động tạo theo nội dung/i });
     fireEvent.click(generateBtn);
 
     await waitFor(() => {

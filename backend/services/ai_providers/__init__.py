@@ -142,9 +142,10 @@ def _resolve_setting(key: str, fallback: Optional[str] = None) -> Optional[str]:
     # 1) Try Flask app.config
     try:
         from flask import current_app
+        from config import is_placeholder_api_key
         if current_app and hasattr(current_app, 'config') and key in current_app.config:
             val = current_app.config[key]
-            if val:
+            if val and not (('KEY' in key or 'TOKEN' in key) and is_placeholder_api_key(str(val))):
                 logger.debug("Setting %s resolved from app.config", key)
                 return str(val)
     except RuntimeError:
@@ -153,8 +154,10 @@ def _resolve_setting(key: str, fallback: Optional[str] = None) -> Optional[str]:
     # 2) Try environment
     env_val = os.getenv(key)
     if env_val:
-        logger.debug("Setting %s resolved from environment", key)
-        return env_val
+        from config import is_placeholder_api_key
+        if not (('KEY' in key or 'TOKEN' in key) and is_placeholder_api_key(env_val)):
+            logger.debug("Setting %s resolved from environment", key)
+            return env_val
 
     # 3) Fallback
     if fallback is not None:

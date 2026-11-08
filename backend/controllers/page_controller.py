@@ -512,6 +512,7 @@ def generate_page_image(project_id, page_id):
         # while legacy/single-template projects keep it on the project.
         ref_image_path, page_style_text = resolve_page_template(
             page, project, file_service)
+        had_template_image_binding = bool(ref_image_path)
         if not use_template:
             ref_image_path = None
         if ref_image_path and not Path(ref_image_path).is_file():
@@ -522,7 +523,34 @@ def generate_page_image(project_id, page_id):
             )
             ref_image_path = None
         if not ref_image_path and not page_style_text:
-            return bad_request("No template image or style description found for page")
+            if not use_template or had_template_image_binding:
+                return bad_request("No template image or style description found for page")
+            # Auto-generate style from content when not provided by user
+            try:
+                content_parts = []
+                if project and getattr(project, 'title', None):
+                    content_parts.append(project.title)
+                page_outline = page.get_outline_content() or {}
+                if page_outline.get('title'):
+                    content_parts.append(page_outline['title'])
+                if page_outline.get('points'):
+                    content_parts.extend(page_outline['points'])
+                desc_obj = page.get_description_content() or {}
+                if desc_obj.get('text'):
+                    content_parts.append(desc_obj['text'][:300])
+                content_for_style = "\n".join([cp for cp in content_parts if cp]).strip()
+                if not content_for_style:
+                    content_for_style = "Trang trình chiếu chuyên nghiệp"
+                ai_service = get_ai_service()
+                page_style_text = ai_service.generate_style_from_content(content_for_style, language=language)
+            except Exception as e:
+                logger.warning(f"Auto-generate style for page {page_id} failed: {e}")
+                page_style_text = "Phong cách hiện đại, tối giản, thanh lịch, nền sáng chuyên nghiệp, phân cấp thị giác rõ ràng, phông chữ sắc nét tinh tế."
+            
+            page.template_style_text = page_style_text
+            if project and not project.template_style:
+                project.template_style = page_style_text
+            db.session.commit()
         
         # Generate prompt
         page_data = page.get_outline_content() or {}

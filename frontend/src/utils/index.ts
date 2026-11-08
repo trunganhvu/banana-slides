@@ -145,10 +145,31 @@ export function normalizeErrorMessage(
   );
 
   // Handle specific error messages
-  if (message.includes('no template image found')) {
+  if (
+    message.includes('api key')
+    || message.includes('api_key')
+    || message.includes('apikey')
+    || (message.includes('400') && message.includes('invalid_argument'))
+  ) {
+    if (
+      message.includes('not valid')
+      || message.includes('invalid')
+      || message.includes('required')
+      || message.includes('not configured')
+      || message.includes('missing')
+      || message.includes('chưa cấu hình')
+      || message.includes('không hợp lệ')
+      || message.includes('invalid_argument')
+    ) {
+      return isVi
+        ? 'API Key không hợp lệ hoặc chưa được cấu hình. Vui lòng kiểm tra lại trong phần Cài đặt.'
+        : 'API Key is invalid or not configured. Please check your settings.';
+    }
+  }
+  if (message.includes('no template image') || message.includes('no template')) {
     return isVi
-      ? 'Dự án hiện tại chưa có mẫu phong cách. Vui lòng chọn hoặc tải lên ảnh mẫu trước khi tạo.'
-      : 'No template found. Please select or upload a template image first.';
+      ? 'Dự án hiện tại chưa có mẫu phong cách hoặc mô tả phong cách. Vui lòng chọn mẫu slide hoặc nhập mô tả phong cách trước khi tạo ảnh.'
+      : 'No template image or style description found. Please select a template or enter a style description first.';
   } else if (message.includes('page must have description content')) {
     return isVi
       ? 'Trang này chưa có mô tả. Vui lòng tạo hoặc nhập mô tả trước.'
@@ -203,8 +224,8 @@ export function normalizeErrorMessage(
     return isVi
       ? 'Kết nối mạng bị gián đoạn khiến thao tác thất bại, vui lòng thử lại.'
       : 'The connection was interrupted and the operation failed. Please try again later.';
-  } else if (message.includes('Trích xuất phong cách thất bại') || message.includes('style extraction failed')) {
-    if (message.includes('Không hỗ trợ ảnh đầu vào') || message.includes('support image input')) {
+  } else if (message.includes('trích xuất phong cách thất bại') || message.includes('style extraction failed')) {
+    if (message.includes('không hỗ trợ ảnh đầu vào') || message.includes('support image input')) {
       return isVi
         ? 'Xuất PPTX chỉnh sửa thất bại: Mô hình trích xuất không hỗ trợ ảnh đầu vào. Vui lòng đổi mô hình hỗ trợ thị giác trong Cài đặt.'
         : 'Editable PPTX export failed: the current style extraction model does not support image input. Switch to a vision-capable image caption model and try again.';

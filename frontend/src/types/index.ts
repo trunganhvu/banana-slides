@@ -213,6 +213,10 @@ export interface Settings {
   id: number;
   ai_provider_format: string;
   api_base_url?: string;
+  raw_api_base_url?: string | null;
+  raw_text_api_base_url?: string | null;
+  raw_image_api_base_url?: string | null;
+  raw_image_caption_api_base_url?: string | null;
   api_key_length: number;
   image_resolution: string;
   image_quality?: string;

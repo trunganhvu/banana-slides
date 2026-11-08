@@ -579,6 +579,20 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
   );
 };
 
+const resolveFormBaseUrl = (rawBase: string | null | undefined, effectiveBase: string | undefined, provider: string): string => {
+  if (rawBase !== undefined) {
+    return rawBase || '';
+  }
+  if (!effectiveBase) return '';
+  if (provider === 'volcengine') {
+    return effectiveBase;
+  }
+  if (KNOWN_DEFAULT_BASE_URLS.has(effectiveBase)) {
+    return '';
+  }
+  return effectiveBase;
+};
+
 const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
   const providerFormat = resolveLazyllmVendor(data.ai_provider_format || 'gemini', data.lazyllm_api_keys_info).toLowerCase();
   const textModelSource = (data.text_model_source || '').toLowerCase();
@@ -587,7 +601,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
 
   return {
     ai_provider_format: providerFormat,
-    api_base_url: data.api_base_url || '',
+    api_base_url: resolveFormBaseUrl(data.raw_api_base_url, data.api_base_url, providerFormat),
     api_key: '',
     image_resolution: data.image_resolution || '2K',
     image_quality: data.image_quality || 'auto',
@@ -611,11 +625,11 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     image_caption_model_source: imageCaptionModelSource,
     lazyllm_api_keys: {},
     text_api_key: '',
-    text_api_base_url: data.text_api_base_url || '',
+    text_api_base_url: resolveFormBaseUrl(data.raw_text_api_base_url, data.text_api_base_url, textModelSource),
     image_api_key: '',
-    image_api_base_url: data.image_api_base_url || '',
+    image_api_base_url: resolveFormBaseUrl(data.raw_image_api_base_url, data.image_api_base_url, imageModelSource),
     image_caption_api_key: '',
-    image_caption_api_base_url: data.image_caption_api_base_url || '',
+    image_caption_api_base_url: resolveFormBaseUrl(data.raw_image_caption_api_base_url, data.image_caption_api_base_url, imageCaptionModelSource),
     openai_image_api_protocol: data.openai_image_api_protocol || 'auto',
     elevenlabs_api_key: '',
   };
@@ -1010,12 +1024,16 @@ export const Settings: React.FC = () => {
         // Restore keys from clientConfig or session cache so inputs are never empty
         if (clientConfig) {
           if (clientConfig.api_key) form.api_key = clientConfig.api_key;
+          if (clientConfig.api_base_url !== undefined) form.api_base_url = clientConfig.api_base_url;
           if (clientConfig.mineru_token) form.mineru_token = clientConfig.mineru_token;
           if (clientConfig.baidu_api_key) form.baidu_api_key = clientConfig.baidu_api_key;
           if (clientConfig.elevenlabs_api_key) form.elevenlabs_api_key = clientConfig.elevenlabs_api_key;
           if (clientConfig.text_api_key) form.text_api_key = clientConfig.text_api_key;
+          if (clientConfig.text_api_base_url !== undefined) form.text_api_base_url = clientConfig.text_api_base_url;
           if (clientConfig.image_api_key) form.image_api_key = clientConfig.image_api_key;
+          if (clientConfig.image_api_base_url !== undefined) form.image_api_base_url = clientConfig.image_api_base_url;
           if (clientConfig.image_caption_api_key) form.image_caption_api_key = clientConfig.image_caption_api_key;
+          if (clientConfig.image_caption_api_base_url !== undefined) form.image_caption_api_base_url = clientConfig.image_caption_api_base_url;
           if (clientConfig.lazyllm_api_keys) {
             form.lazyllm_api_keys = { ...clientConfig.lazyllm_api_keys };
           }
@@ -1026,12 +1044,16 @@ export const Settings: React.FC = () => {
           if (sessionSaved) {
             const parsed = JSON.parse(sessionSaved);
             if (!form.api_key && parsed.api_key) form.api_key = parsed.api_key;
+            if (parsed.api_base_url !== undefined && !form.api_base_url) form.api_base_url = parsed.api_base_url;
             if (!form.mineru_token && parsed.mineru_token) form.mineru_token = parsed.mineru_token;
             if (!form.baidu_api_key && parsed.baidu_api_key) form.baidu_api_key = parsed.baidu_api_key;
             if (!form.elevenlabs_api_key && parsed.elevenlabs_api_key) form.elevenlabs_api_key = parsed.elevenlabs_api_key;
             if (!form.text_api_key && parsed.text_api_key) form.text_api_key = parsed.text_api_key;
+            if (parsed.text_api_base_url !== undefined && !form.text_api_base_url) form.text_api_base_url = parsed.text_api_base_url;
             if (!form.image_api_key && parsed.image_api_key) form.image_api_key = parsed.image_api_key;
+            if (parsed.image_api_base_url !== undefined && !form.image_api_base_url) form.image_api_base_url = parsed.image_api_base_url;
             if (!form.image_caption_api_key && parsed.image_caption_api_key) form.image_caption_api_key = parsed.image_caption_api_key;
+            if (parsed.image_caption_api_base_url !== undefined && !form.image_caption_api_base_url) form.image_caption_api_base_url = parsed.image_caption_api_base_url;
             if (parsed.lazyllm_api_keys) {
               form.lazyllm_api_keys = { ...parsed.lazyllm_api_keys, ...form.lazyllm_api_keys };
             }
@@ -1120,6 +1142,9 @@ export const Settings: React.FC = () => {
           text_api_key: effectiveTextKey,
           image_api_key: effectiveImageKey,
           image_caption_api_key: effectiveImageCaptionKey,
+          text_api_base_url: otherData.text_api_base_url,
+          image_api_base_url: otherData.image_api_base_url,
+          image_caption_api_base_url: otherData.image_caption_api_base_url,
         });
 
         // Save non-sensitive settings to backend
@@ -1143,6 +1168,7 @@ export const Settings: React.FC = () => {
         // Keep entered keys visible in the inputs!
         setFormData(prev => ({
           ...prev,
+          api_base_url: otherData.api_base_url ?? '',
           api_key: effectiveApiKey,
           lazyllm_api_keys: effectiveLazyKeys,
           mineru_token: effectiveMineru || prev.mineru_token,
@@ -1151,6 +1177,9 @@ export const Settings: React.FC = () => {
           text_api_key: effectiveTextKey || prev.text_api_key,
           image_api_key: effectiveImageKey || prev.image_api_key,
           image_caption_api_key: effectiveImageCaptionKey || prev.image_caption_api_key,
+          text_api_base_url: otherData.text_api_base_url ?? '',
+          image_api_base_url: otherData.image_api_base_url ?? '',
+          image_caption_api_base_url: otherData.image_caption_api_base_url ?? '',
         }));
       } else {
         const response = await api.updateSettings(payload);
@@ -1168,12 +1197,16 @@ export const Settings: React.FC = () => {
           try {
             sessionStorage.setItem('banana_saved_keys', JSON.stringify({
               api_key: api_key || '',
+              api_base_url: otherData.api_base_url ?? '',
               mineru_token: mineru_token || '',
               baidu_api_key: baidu_api_key || '',
               elevenlabs_api_key: elevenlabs_api_key || '',
               text_api_key: text_api_key || '',
+              text_api_base_url: otherData.text_api_base_url ?? '',
               image_api_key: image_api_key || '',
+              image_api_base_url: otherData.image_api_base_url ?? '',
               image_caption_api_key: image_caption_api_key || '',
+              image_caption_api_base_url: otherData.image_caption_api_base_url ?? '',
               lazyllm_api_keys: nonEmptyKeys,
             }));
           } catch (_) {}
@@ -1181,6 +1214,7 @@ export const Settings: React.FC = () => {
           // Keep entered keys visible in the inputs!
           setFormData(prev => ({
             ...prev,
+            api_base_url: otherData.api_base_url ?? '',
             api_key: api_key || prev.api_key,
             lazyllm_api_keys: { ...prev.lazyllm_api_keys, ...nonEmptyKeys },
             mineru_token: mineru_token || prev.mineru_token,
@@ -1189,6 +1223,9 @@ export const Settings: React.FC = () => {
             text_api_key: text_api_key || prev.text_api_key,
             image_api_key: image_api_key || prev.image_api_key,
             image_caption_api_key: image_caption_api_key || prev.image_caption_api_key,
+            text_api_base_url: otherData.text_api_base_url ?? '',
+            image_api_base_url: otherData.image_api_base_url ?? '',
+            image_caption_api_base_url: otherData.image_caption_api_base_url ?? '',
           }));
         }
       }

@@ -4,6 +4,27 @@ Backend configuration file
 import os
 import sys
 from datetime import timedelta
+from typing import Optional
+
+
+def is_placeholder_api_key(val: Optional[str]) -> bool:
+    """Check if an API key is a dummy placeholder string from .env.example."""
+    if not val:
+        return True
+    s = val.strip().lower()
+    return (
+        s.startswith(('your-', 'you-'))
+        or 'api-key-here' in s
+        or 'your-access-code' in s
+    )
+
+
+def _clean_env_key(key: str, default: str = '') -> str:
+    val = os.getenv(key, default)
+    if not val or is_placeholder_api_key(val):
+        return ''
+    return val.strip()
+
 
 # Backend logic
 # Backend logic
@@ -44,7 +65,7 @@ class Config:
     ALLOWED_REFERENCE_FILE_EXTENSIONS = {'pdf', 'docx', 'pptx', 'doc', 'ppt', 'xlsx', 'xls', 'csv', 'txt', 'md'}
     
     # Backend logic
-    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
+    GOOGLE_API_KEY = _clean_env_key('GOOGLE_API_KEY')
     GOOGLE_API_BASE = os.getenv('GOOGLE_API_BASE') or ''
     
     # Provider format: gemini | openai | volcengine | vertex | lazyllm
@@ -59,7 +80,7 @@ class Config:
     GENAI_MAX_RETRIES = int(os.getenv('GENAI_MAX_RETRIES', '2'))  # Backend logic
     
     # Backend logic
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')  # Backend logic
+    OPENAI_API_KEY = _clean_env_key('OPENAI_API_KEY')  # Backend logic
     OPENAI_API_BASE = os.getenv('OPENAI_API_BASE') or 'https://api.inferera.com/v1'
     OPENAI_TIMEOUT = float(os.getenv('OPENAI_TIMEOUT', '480.0'))  # Backend logic
     OPENAI_MAX_RETRIES = int(os.getenv('OPENAI_MAX_RETRIES', '2'))  # Backend logic
@@ -68,13 +89,13 @@ class Config:
     TEXT_MAX_OUTPUT_TOKENS = int(os.getenv("TEXT_MAX_OUTPUT_TOKENS", os.getenv("ANTHROPIC_MAX_TOKENS", "32768")))
 
     # Backend logic
-    VOLCENGINE_API_KEY = os.getenv('VOLCENGINE_API_KEY', '') or os.getenv('ARK_API_KEY', '')
+    VOLCENGINE_API_KEY = _clean_env_key('VOLCENGINE_API_KEY') or _clean_env_key('ARK_API_KEY')
     VOLCENGINE_API_BASE = os.getenv('VOLCENGINE_API_BASE') or 'https://ark.cn-beijing.volces.com/api/plan/v3'
 
     # Backend logic
     # Backend logic
     # Backend logic
-    ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '') or os.getenv('ANTHROPIC_AUTH_TOKEN', '')
+    ANTHROPIC_API_KEY = _clean_env_key('ANTHROPIC_API_KEY') or _clean_env_key('ANTHROPIC_AUTH_TOKEN')
     ANTHROPIC_API_BASE = os.getenv('ANTHROPIC_API_BASE', '') or os.getenv('ANTHROPIC_BASE_URL', 'https://api.anthropic.com')
     ANTHROPIC_VERSION = os.getenv('ANTHROPIC_VERSION', '2023-06-01')
     ANTHROPIC_MAX_TOKENS = TEXT_MAX_OUTPUT_TOKENS  # legacy alias
@@ -86,13 +107,13 @@ class Config:
 
     # Backend logic
     # Backend logic
-    TEXT_API_KEY = os.getenv('TEXT_API_KEY', '')
+    TEXT_API_KEY = _clean_env_key('TEXT_API_KEY')
     TEXT_API_BASE = os.getenv('TEXT_API_BASE', '')
     # Backend logic
-    IMAGE_API_KEY = os.getenv('IMAGE_API_KEY', '')
+    IMAGE_API_KEY = _clean_env_key('IMAGE_API_KEY')
     IMAGE_API_BASE = os.getenv('IMAGE_API_BASE', '')
     # Backend logic
-    IMAGE_CAPTION_API_KEY = os.getenv('IMAGE_CAPTION_API_KEY', '')
+    IMAGE_CAPTION_API_KEY = _clean_env_key('IMAGE_CAPTION_API_KEY')
     IMAGE_CAPTION_API_BASE = os.getenv('IMAGE_CAPTION_API_BASE', '')
     
     # Backend logic
@@ -100,7 +121,7 @@ class Config:
     IMAGE_MODEL = os.getenv('IMAGE_MODEL', 'gemini-3-pro-image-preview')
 
     # Backend logic
-    MINERU_TOKEN = os.getenv('MINERU_TOKEN', '')
+    MINERU_TOKEN = _clean_env_key('MINERU_TOKEN')
     MINERU_API_BASE = os.getenv('MINERU_API_BASE', 'https://mineru.net')
     
     # Backend logic
@@ -140,7 +161,7 @@ class Config:
     INPAINTING_PROVIDER = os.getenv('INPAINTING_PROVIDER', 'gemini')  # Backend logic
 
     # Backend logic
-    BAIDU_API_KEY = os.getenv('BAIDU_API_KEY', '') or os.getenv('BAIDU_OCR_API_KEY', '')
+    BAIDU_API_KEY = _clean_env_key('BAIDU_API_KEY') or _clean_env_key('BAIDU_OCR_API_KEY')
 
     # Backend logic
     TTS_DEFAULT_VOICE_ZH = os.getenv('TTS_DEFAULT_VOICE_ZH', 'vi-VN-HoaiMyNeural')

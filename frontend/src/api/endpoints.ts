@@ -1,4 +1,6 @@
 import { apiClient, getBaseURL } from './client';
+import { getCachedClientHeaders } from '@/utils/clientKeyStorage';
+import i18n from '@/i18n';
 import type { Project, Task, ApiResponse, CreateProjectRequest, Page, Material, TemplateAsset } from '@/types';
 import type { Settings } from '../types/index';
 
@@ -163,7 +165,9 @@ export const generateOutlineStream = async (
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language': i18n.language || 'zh',
       ...(accessCode ? { 'X-Access-Code': accessCode } : {}),
+      ...(getCachedClientHeaders() || {}),
     },
     body: JSON.stringify({ language: lang, lock_page_count: lockPageCount }),
   });
@@ -276,7 +280,9 @@ export const generateDescriptionsStream = async (
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language': i18n.language || 'zh',
       ...(accessCode ? { 'X-Access-Code': accessCode } : {}),
+      ...(getCachedClientHeaders() || {}),
     },
     body: JSON.stringify({ language: lang, detail_level: detailLevel || 'default' }),
   });
