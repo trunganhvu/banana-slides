@@ -16,6 +16,12 @@ export interface ClientKeysConfig {
   mineru_token?: string;
   baidu_api_key?: string;
   elevenlabs_api_key?: string;
+  text_api_key?: string;
+  text_api_base_url?: string;
+  image_api_key?: string;
+  image_api_base_url?: string;
+  image_caption_api_key?: string;
+  image_caption_api_base_url?: string;
   updatedAt?: number;
 }
 
@@ -201,6 +207,15 @@ function updateCachedHeaders(config: ClientKeysConfig | null) {
   }
   if (config.elevenlabs_api_key) {
     headers['X-Client-Elevenlabs-Key'] = config.elevenlabs_api_key;
+  }
+  if (config.text_api_key) {
+    headers['X-Client-Text-Api-Key'] = config.text_api_key;
+  }
+  if (config.image_api_key) {
+    headers['X-Client-Image-Api-Key'] = config.image_api_key;
+  }
+  if (config.image_caption_api_key) {
+    headers['X-Client-Image-Caption-Api-Key'] = config.image_caption_api_key;
   }
 
   cachedHeaders = headers;

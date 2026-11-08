@@ -330,7 +330,7 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
               <CheckCircle2 size={13} className="text-emerald-500" />
               {currentKeyValue
-                ? isVi ? 'Đã nhập key mới (chưa lưu)' : 'New key entered (unsaved)'
+                ? isVi ? `Đã cấu hình (${currentKeyValue.length} ký tự)` : `Configured (${currentKeyValue.length} chars)`
                 : isVi ? `Đã thiết lập (${keyLength} ký tự)` : `Configured (${keyLength} chars)`}
             </span>
           ) : (

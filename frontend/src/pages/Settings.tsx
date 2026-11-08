@@ -6,7 +6,6 @@ import { SettingsModelConfigSection } from '@/components/settings/SettingsModelC
 import { SettingsInlineServiceTest } from '@/components/settings/SettingsInlineServiceTest';
 import { SettingsApiGuidance } from '@/components/settings/SettingsApiGuidance';
 import { SettingsField } from '@/components/settings/SettingsField';
-import { SettingsClientStorageSelector } from '@/components/settings/SettingsClientStorageSelector';
 import {
   getClientStorageMode,
   setClientStorageMode,
@@ -650,7 +649,7 @@ export const Settings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
-  const [storageMode, setStorageMode] = useState<'client' | 'server'>(getClientStorageMode());
+  const [storageMode, setStorageMode] = useState<'client' | 'server'>('client');
   const [serviceTestStates, setServiceTestStates] = useState<Record<string, ServiceTestState>>({});
   const [oauthConnecting, setOauthConnecting] = useState(false);
   const [oauthDialogOpen, setOauthDialogOpen] = useState(false);
@@ -1006,7 +1005,40 @@ export const Settings: React.FC = () => {
       const response = await api.getSettings();
       if (response.data) {
         setSettings(response.data);
-        setFormData(formDataFromSettings(response.data));
+        const form = formDataFromSettings(response.data);
+
+        // Restore keys from clientConfig or session cache so inputs are never empty
+        if (clientConfig) {
+          if (clientConfig.api_key) form.api_key = clientConfig.api_key;
+          if (clientConfig.mineru_token) form.mineru_token = clientConfig.mineru_token;
+          if (clientConfig.baidu_api_key) form.baidu_api_key = clientConfig.baidu_api_key;
+          if (clientConfig.elevenlabs_api_key) form.elevenlabs_api_key = clientConfig.elevenlabs_api_key;
+          if (clientConfig.text_api_key) form.text_api_key = clientConfig.text_api_key;
+          if (clientConfig.image_api_key) form.image_api_key = clientConfig.image_api_key;
+          if (clientConfig.image_caption_api_key) form.image_caption_api_key = clientConfig.image_caption_api_key;
+          if (clientConfig.lazyllm_api_keys) {
+            form.lazyllm_api_keys = { ...clientConfig.lazyllm_api_keys };
+          }
+        }
+
+        try {
+          const sessionSaved = sessionStorage.getItem('banana_saved_keys');
+          if (sessionSaved) {
+            const parsed = JSON.parse(sessionSaved);
+            if (!form.api_key && parsed.api_key) form.api_key = parsed.api_key;
+            if (!form.mineru_token && parsed.mineru_token) form.mineru_token = parsed.mineru_token;
+            if (!form.baidu_api_key && parsed.baidu_api_key) form.baidu_api_key = parsed.baidu_api_key;
+            if (!form.elevenlabs_api_key && parsed.elevenlabs_api_key) form.elevenlabs_api_key = parsed.elevenlabs_api_key;
+            if (!form.text_api_key && parsed.text_api_key) form.text_api_key = parsed.text_api_key;
+            if (!form.image_api_key && parsed.image_api_key) form.image_api_key = parsed.image_api_key;
+            if (!form.image_caption_api_key && parsed.image_caption_api_key) form.image_caption_api_key = parsed.image_caption_api_key;
+            if (parsed.lazyllm_api_keys) {
+              form.lazyllm_api_keys = { ...parsed.lazyllm_api_keys, ...form.lazyllm_api_keys };
+            }
+          }
+        } catch (_) {}
+
+        setFormData(form);
         useApiKeyReminderStore.getState().updateSettings(response.data);
       }
     } catch (error: any) {
@@ -1063,19 +1095,31 @@ export const Settings: React.FC = () => {
 
       if (storageMode === 'client') {
         const cachedClient = getCachedClientConfig();
+        const effectiveApiKey = api_key || (cachedClient?.api_key ?? '');
+        const effectiveLazyKeys = {
+          ...(cachedClient?.lazyllm_api_keys || {}),
+          ...nonEmptyKeys,
+        };
+        const effectiveMineru = mineru_token || cachedClient?.mineru_token;
+        const effectiveBaidu = baidu_api_key || cachedClient?.baidu_api_key;
+        const effectiveElevenLabs = elevenlabs_api_key || cachedClient?.elevenlabs_api_key;
+        const effectiveTextKey = text_api_key || cachedClient?.text_api_key;
+        const effectiveImageKey = image_api_key || cachedClient?.image_api_key;
+        const effectiveImageCaptionKey = image_caption_api_key || cachedClient?.image_caption_api_key;
+
         await saveClientKeys({
           ai_provider_format: otherData.ai_provider_format,
-          api_key: api_key || (cachedClient?.api_key ?? ''),
+          api_key: effectiveApiKey,
           api_base_url: otherData.api_base_url,
-          lazyllm_api_keys: {
-            ...(cachedClient?.lazyllm_api_keys || {}),
-            ...nonEmptyKeys,
-          },
+          lazyllm_api_keys: effectiveLazyKeys,
           text_model: otherData.text_model,
           image_model: otherData.image_model,
-          mineru_token: mineru_token || cachedClient?.mineru_token,
-          baidu_api_key: baidu_api_key || cachedClient?.baidu_api_key,
-          elevenlabs_api_key: elevenlabs_api_key || cachedClient?.elevenlabs_api_key,
+          mineru_token: effectiveMineru,
+          baidu_api_key: effectiveBaidu,
+          elevenlabs_api_key: effectiveElevenLabs,
+          text_api_key: effectiveTextKey,
+          image_api_key: effectiveImageKey,
+          image_caption_api_key: effectiveImageCaptionKey,
         });
 
         // Save non-sensitive settings to backend
@@ -1095,11 +1139,18 @@ export const Settings: React.FC = () => {
             : 'API Key saved!',
           type: 'success',
         });
+
+        // Keep entered keys visible in the inputs!
         setFormData(prev => ({
           ...prev,
-          api_key: '', mineru_token: '', baidu_api_key: '', elevenlabs_api_key: '',
-          lazyllm_api_keys: {},
-          text_api_key: '', image_api_key: '', image_caption_api_key: '',
+          api_key: effectiveApiKey,
+          lazyllm_api_keys: effectiveLazyKeys,
+          mineru_token: effectiveMineru || prev.mineru_token,
+          baidu_api_key: effectiveBaidu || prev.baidu_api_key,
+          elevenlabs_api_key: effectiveElevenLabs || prev.elevenlabs_api_key,
+          text_api_key: effectiveTextKey || prev.text_api_key,
+          image_api_key: effectiveImageKey || prev.image_api_key,
+          image_caption_api_key: effectiveImageCaptionKey || prev.image_caption_api_key,
         }));
       } else {
         const response = await api.updateSettings(payload);
@@ -1112,12 +1163,32 @@ export const Settings: React.FC = () => {
               : 'API Key saved!',
             type: 'success',
           });
-          // Clear all sensitive fields after save
+
+          // Save keys into session storage so page reload still displays them
+          try {
+            sessionStorage.setItem('banana_saved_keys', JSON.stringify({
+              api_key: api_key || '',
+              mineru_token: mineru_token || '',
+              baidu_api_key: baidu_api_key || '',
+              elevenlabs_api_key: elevenlabs_api_key || '',
+              text_api_key: text_api_key || '',
+              image_api_key: image_api_key || '',
+              image_caption_api_key: image_caption_api_key || '',
+              lazyllm_api_keys: nonEmptyKeys,
+            }));
+          } catch (_) {}
+
+          // Keep entered keys visible in the inputs!
           setFormData(prev => ({
             ...prev,
-            api_key: '', mineru_token: '', baidu_api_key: '', elevenlabs_api_key: '',
-            lazyllm_api_keys: {},
-            text_api_key: '', image_api_key: '', image_caption_api_key: '',
+            api_key: api_key || prev.api_key,
+            lazyllm_api_keys: { ...prev.lazyllm_api_keys, ...nonEmptyKeys },
+            mineru_token: mineru_token || prev.mineru_token,
+            baidu_api_key: baidu_api_key || prev.baidu_api_key,
+            elevenlabs_api_key: elevenlabs_api_key || prev.elevenlabs_api_key,
+            text_api_key: text_api_key || prev.text_api_key,
+            image_api_key: image_api_key || prev.image_api_key,
+            image_caption_api_key: image_caption_api_key || prev.image_caption_api_key,
           }));
         }
       }
@@ -1789,39 +1860,7 @@ export const Settings: React.FC = () => {
         {oauthPanel}
       </Modal>
       <div className="space-y-8">
-        {/* Quick Guide Banner */}
-        <div className="rounded-xl border border-banana-200 bg-banana-50/80 p-4 dark:border-banana-800/60 dark:bg-banana-950/20">
-          <div className="flex items-start gap-3">
-            <div className="rounded-lg bg-banana-400/20 p-2 text-banana-700 dark:bg-banana-400/10 dark:text-banana-300 shrink-0 mt-0.5">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-foreground-primary">
-                {isVi ? 'Hướng dẫn cấu hình nhanh' : 'Quick Configuration Guide'}
-              </h3>
-              <p className="mt-1 text-xs text-gray-700 dark:text-foreground-secondary leading-relaxed">
-                {isVi
-                  ? 'Để tạo slide, bạn chỉ cần chọn 1 Nhà cung cấp AI (khuyên dùng Google Gemini vì có gói miễn phí và tạo được cả văn bản lẫn hình ảnh) và điền API Key tương ứng. Các dịch vụ bổ trợ bên dưới (MinerU, Baidu OCR, ElevenLabs) là tùy chọn nâng cao không bắt buộc.'
-                  : 'To generate slides, you only need to configure 1 AI Provider (Google Gemini is recommended with its free tier and text + image support) and enter its API key. Auxiliary services below (MinerU, Baidu OCR, ElevenLabs) are optional.'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Provider & Active Key Form Section */}
         <div data-testid="global-api-config-section" className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
-              <Key size={20} />
-              <span className="ml-2">{isVi ? 'Nhà cung cấp AI & API Key' : 'AI Provider & API Key'}</span>
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary">
-              {isVi
-                ? 'Chọn nhà cung cấp AI bạn muốn sử dụng (qua dropdown hoặc tab) để hiển thị form điền key tương ứng.'
-                : 'Select the AI provider you want to use (via dropdown or tabs) to display its credential form.'}
-            </p>
-          </div>
-
           {/* Provider Selector (Dropdown + Tabs) */}
           <SettingsProviderPicker
             label={t('settings.fields.aiProviderFormat')}
