@@ -2,7 +2,7 @@ import React from 'react';
 import { BookOpen, Github } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const GITHUB_REPO = 'Anionex/banana-slides';
+const GITHUB_REPO = 'trunganhvu/banana-slides';
 const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
 const DOCS_URL = 'https://docs.bananaslides.online';
 

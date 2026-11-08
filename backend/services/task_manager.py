@@ -2658,7 +2658,7 @@ def analyze_template_task(task_id: str, project_id: str, asset_id: str,
                 _commit_with_retry()
 
                 image_abs_path = file_service.get_absolute_path(asset.image_path)
-                language = (app.config.get('OUTPUT_LANGUAGE') or 'zh').lower()
+                language = (app.config.get('OUTPUT_LANGUAGE') or 'vi').lower()
 
                 result = ai_service.analyze_template(image_abs_path, language=language)
 
@@ -2723,7 +2723,7 @@ def auto_match_templates_task(task_id: str, project_id: str,
         with task_scope(task_id), text_resource_limiter.slot(label=f'auto_match:{project_id}'):
             try:
                 _set_task_processing(task_id)
-                language = (app.config.get('OUTPUT_LANGUAGE') or 'zh').lower()
+                language = (app.config.get('OUTPUT_LANGUAGE') or 'vi').lower()
 
                 if page_id:
                     page = Page.query.filter_by(

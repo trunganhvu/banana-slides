@@ -166,7 +166,7 @@ const initialFormData = {
   enable_image_quality_control: false,
   max_description_workers: 5,
   max_image_workers: 8,
-  output_language: 'zh' as OutputLanguage,
+  output_language: 'vi' as OutputLanguage,
   // Reasoning mode configurations
   enable_text_reasoning: false,
   text_max_output_tokens: 32768,
@@ -600,7 +600,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     mineru_api_base: data.mineru_api_base || '',
     mineru_token: '',
     image_caption_model: data.image_caption_model || '',
-    output_language: data.output_language || 'zh',
+    output_language: (data.output_language as OutputLanguage) || 'vi',
     enable_text_reasoning: data.enable_text_reasoning || false,
     text_max_output_tokens: data.text_max_output_tokens ?? 32768,
     text_thinking_budget: data.text_thinking_budget || 1024,
@@ -1091,11 +1091,10 @@ export const Settings: React.FC = () => {
 
         show({
           message: !i18n.language?.startsWith('en')
-            ? 'Đã mã hóa và lưu API Key an toàn trên thiết bị này (AES-256)!'
-            : 'API Keys encrypted & saved securely on this device (AES-256)!',
+            ? 'Đã lưu API Key!'
+            : 'API Key saved!',
           type: 'success',
         });
-        show({ message: t('settings.messages.testServiceTip'), type: 'info' });
         setFormData(prev => ({
           ...prev,
           api_key: '', mineru_token: '', baidu_api_key: '', elevenlabs_api_key: '',
@@ -1107,8 +1106,12 @@ export const Settings: React.FC = () => {
         if (response.data) {
           setSettings(response.data);
           useApiKeyReminderStore.getState().updateSettings(response.data);
-          show({ message: t('settings.messages.saveSuccess'), type: 'success' });
-          show({ message: t('settings.messages.testServiceTip'), type: 'info' });
+          show({
+            message: !i18n.language?.startsWith('en')
+              ? 'Đã lưu API Key!'
+              : 'API Key saved!',
+            type: 'success',
+          });
           // Clear all sensitive fields after save
           setFormData(prev => ({
             ...prev,

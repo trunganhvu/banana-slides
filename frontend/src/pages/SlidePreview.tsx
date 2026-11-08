@@ -1799,7 +1799,7 @@ export const SlidePreview: React.FC = () => {
 
       const hasKey = (res.data.elevenlabs_api_key_length ?? 0) > 0;
       setElevenLabsApiKeyConfigured(hasKey);
-      setOutputLanguage((res.data.output_language as string | undefined) || 'zh');
+      setOutputLanguage((res.data.output_language as string | undefined) || 'vi');
       if (!hasKey) setElevenLabsEnabled(false);
 
       if (hasKey && elevenLabsEnabled && elevenLabsVoices.length === 0) {

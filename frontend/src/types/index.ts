@@ -224,7 +224,7 @@ export interface Settings {
   mineru_api_base?: string;
   mineru_token_length: number;
   image_caption_model?: string;
-  output_language: 'zh' | 'en' | 'ja' | 'auto';
+  output_language: 'vi' | 'zh' | 'en' | 'ja' | 'auto';
   
   description_generation_mode: 'streaming' | 'parallel';
   

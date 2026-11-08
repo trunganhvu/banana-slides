@@ -148,7 +148,7 @@ def _current_language() -> str:
             return str(configured).lower()
     except Exception:  # Backend logic
         pass
-    return (os.getenv('OUTPUT_LANGUAGE') or 'zh').lower()
+    return (os.getenv('OUTPUT_LANGUAGE') or 'vi').lower()
 
 
 def _texts() -> Dict[str, str]:

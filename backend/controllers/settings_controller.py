@@ -347,10 +347,12 @@ def update_settings():
 
         if "output_language" in data:
             language = data["output_language"]
-            if language in ["zh", "en", "ja", "auto"]:
+            if not language:
+                settings.output_language = None
+            elif language in ["vi", "zh", "en", "ja", "auto"]:
                 settings.output_language = language
             else:
-                return bad_request("Output language must be 'zh', 'en', 'ja', or 'auto'")
+                return bad_request("Output language must be 'vi', 'zh', 'en', 'ja', or 'auto'")
 
         if "text_max_output_tokens" in data:
             value = data["text_max_output_tokens"]

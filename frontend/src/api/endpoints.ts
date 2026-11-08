@@ -1257,7 +1257,7 @@ export const dissociateFileFromProject = async (
 
 // API client endpoint
 
-export type OutputLanguage = 'zh' | 'ja' | 'en' | 'auto';
+export type OutputLanguage = 'vi' | 'zh' | 'ja' | 'en' | 'auto';
 
 export interface OutputLanguageOption {
   value: OutputLanguage;
