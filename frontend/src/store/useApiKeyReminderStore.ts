@@ -1,12 +1,18 @@
 import { create } from 'zustand';
 import type { Settings } from '@/types';
 import * as api from '@/api/endpoints';
+import { hasClientKeyConfigured } from '@/utils/clientKeyStorage';
 
 /**
  * Checks whether the current application settings have a valid AI API key configured.
  * Checks active provider first, plus per-model overrides and LazyLLM credentials.
  */
 export function isAiKeyConfigured(settings: Settings | null | undefined): boolean {
+  // 0. Check client-side encrypted key storage first
+  if (hasClientKeyConfigured()) {
+    return true;
+  }
+
   if (!settings) return false;
 
   const provider = (settings.ai_provider_format || 'gemini').toLowerCase();

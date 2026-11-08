@@ -6,6 +6,15 @@ import { SettingsModelConfigSection } from '@/components/settings/SettingsModelC
 import { SettingsInlineServiceTest } from '@/components/settings/SettingsInlineServiceTest';
 import { SettingsApiGuidance } from '@/components/settings/SettingsApiGuidance';
 import { SettingsField } from '@/components/settings/SettingsField';
+import { SettingsClientStorageSelector } from '@/components/settings/SettingsClientStorageSelector';
+import {
+  getClientStorageMode,
+  setClientStorageMode,
+  saveClientKeys,
+  loadClientKeys,
+  clearClientKeys,
+  getCachedClientConfig,
+} from '@/utils/clientKeyStorage';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp, ArrowUpRight, Link2, Volume2, Info, RefreshCw, CheckCircle, Lightbulb, Sparkles, Layers } from 'lucide-react';
@@ -641,6 +650,7 @@ export const Settings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
+  const [storageMode, setStorageMode] = useState<'client' | 'server'>(getClientStorageMode());
   const [serviceTestStates, setServiceTestStates] = useState<Record<string, ServiceTestState>>({});
   const [oauthConnecting, setOauthConnecting] = useState(false);
   const [oauthDialogOpen, setOauthDialogOpen] = useState(false);
@@ -989,6 +999,10 @@ export const Settings: React.FC = () => {
   const loadSettings = async () => {
     setIsLoading(true);
     try {
+      const clientConfig = await loadClientKeys();
+      if (clientConfig && clientConfig.storageMode) {
+        setStorageMode(clientConfig.storageMode);
+      }
       const response = await api.getSettings();
       if (response.data) {
         setSettings(response.data);
@@ -1047,19 +1061,62 @@ export const Settings: React.FC = () => {
         payload.lazyllm_api_keys = nonEmptyKeys;
       }
 
-      const response = await api.updateSettings(payload);
-      if (response.data) {
-        setSettings(response.data);
-        useApiKeyReminderStore.getState().updateSettings(response.data);
-        show({ message: t('settings.messages.saveSuccess'), type: 'success' });
+      if (storageMode === 'client') {
+        const cachedClient = getCachedClientConfig();
+        await saveClientKeys({
+          ai_provider_format: otherData.ai_provider_format,
+          api_key: api_key || (cachedClient?.api_key ?? ''),
+          api_base_url: otherData.api_base_url,
+          lazyllm_api_keys: {
+            ...(cachedClient?.lazyllm_api_keys || {}),
+            ...nonEmptyKeys,
+          },
+          text_model: otherData.text_model,
+          image_model: otherData.image_model,
+          mineru_token: mineru_token || cachedClient?.mineru_token,
+          baidu_api_key: baidu_api_key || cachedClient?.baidu_api_key,
+          elevenlabs_api_key: elevenlabs_api_key || cachedClient?.elevenlabs_api_key,
+        });
+
+        // Save non-sensitive settings to backend
+        const payloadWithoutKeys = {
+          ...otherData,
+          ai_provider_format: otherData.ai_provider_format,
+        };
+        const response = await api.updateSettings(payloadWithoutKeys);
+        if (response.data) {
+          setSettings(response.data);
+          useApiKeyReminderStore.getState().updateSettings(response.data);
+        }
+
+        show({
+          message: !i18n.language?.startsWith('en')
+            ? 'Đã mã hóa và lưu API Key an toàn trên thiết bị này (AES-256)!'
+            : 'API Keys encrypted & saved securely on this device (AES-256)!',
+          type: 'success',
+        });
         show({ message: t('settings.messages.testServiceTip'), type: 'info' });
-        // Clear all sensitive fields after save
         setFormData(prev => ({
           ...prev,
           api_key: '', mineru_token: '', baidu_api_key: '', elevenlabs_api_key: '',
           lazyllm_api_keys: {},
           text_api_key: '', image_api_key: '', image_caption_api_key: '',
         }));
+      } else {
+        const response = await api.updateSettings(payload);
+        if (response.data) {
+          setSettings(response.data);
+          useApiKeyReminderStore.getState().updateSettings(response.data);
+          show({ message: t('settings.messages.saveSuccess'), type: 'success' });
+          show({ message: t('settings.messages.testServiceTip'), type: 'info' });
+          // Clear all sensitive fields after save
+          setFormData(prev => ({
+            ...prev,
+            api_key: '', mineru_token: '', baidu_api_key: '', elevenlabs_api_key: '',
+            lazyllm_api_keys: {},
+            text_api_key: '', image_api_key: '', image_caption_api_key: '',
+          }));
+        }
       }
     } catch (error: any) {
       console.error('Lưu cài đặt thất bại:', error);

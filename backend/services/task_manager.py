@@ -271,12 +271,26 @@ class TaskManager:
         with self.lock:
             executor = self.executor
 
+        # Capture client-level settings override from current request context if present
+        client_override = None
+        try:
+            from flask import has_request_context
+            if has_request_context():
+                from utils.client_settings import extract_client_settings_from_request
+                client_override = extract_client_settings_from_request()
+        except Exception:
+            pass
+
         def _run(tid, *run_args, **run_kwargs):
             # Backend logic
             # Backend logic
             task_watchdog.touch(tid, 'Bắt đầu thực thi')
             task_watchdog.bind_thread(tid)
             try:
+                if client_override:
+                    from utils.client_settings import client_settings_scope
+                    with client_settings_scope(client_override):
+                        return func(tid, *run_args, **run_kwargs)
                 return func(tid, *run_args, **run_kwargs)
             finally:
                 task_watchdog.unbind_thread()

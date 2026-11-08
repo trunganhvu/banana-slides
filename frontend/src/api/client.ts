@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { isDesktop } from '@/utils';
 import i18n from '@/i18n';
+import { getCachedClientHeaders } from '@/utils/clientKeyStorage';
 
 const DESKTOP_BACKEND_PORT_STORAGE_KEY = '__desktop_backend_port__';
 
@@ -108,6 +109,12 @@ apiClient.interceptors.request.use(
     const accessCode = localStorage.getItem('banana-access-code');
     if (accessCode && config.headers) {
       config.headers['X-Access-Code'] = accessCode;
+    }
+
+    // Attach client-scoped encrypted API keys if active
+    const clientHeaders = getCachedClientHeaders();
+    if (clientHeaders && config.headers) {
+      Object.assign(config.headers, clientHeaders);
     }
 
     // API client endpoint

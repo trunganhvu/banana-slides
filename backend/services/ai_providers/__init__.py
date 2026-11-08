@@ -57,6 +57,7 @@ def get_provider_format() -> str:
     Get the configured AI provider format
 
     Priority:
+        0. Client request/thread-local override (per-client browser credentials)
         1. Flask app.config['AI_PROVIDER_FORMAT'] (from database settings)
         2. Environment variable AI_PROVIDER_FORMAT
         3. Default: 'gemini'
@@ -65,6 +66,15 @@ def get_provider_format() -> str:
         "gemini", "openai", "vertex", "lazyllm", or a lazyllm vendor name
         (e.g., "doubao", "qwen", "deepseek")
     """
+    # 0) Try client override first
+    try:
+        from utils.client_settings import get_current_client_override
+        client_override = get_current_client_override()
+        if client_override and client_override.get('ai_provider_format'):
+            return str(client_override['ai_provider_format']).lower()
+    except Exception:
+        pass
+
     # Try to get from Flask app config first (database settings)
     try:
         from flask import current_app
@@ -88,10 +98,47 @@ def _resolve_setting(key: str, fallback: Optional[str] = None) -> Optional[str]:
     next level instead of reaching providers as a broken base URL.
 
     Resolution order:
+        0. Client request/thread-local override (per-client browser credentials)
         1. Flask ``app.config`` (populated from the database Settings page)
         2. OS environment variable
         3. *fallback* argument (may be ``None``)
     """
+    # 0) Try client override first
+    try:
+        from utils.client_settings import get_current_client_override
+        client_override = get_current_client_override()
+        if client_override:
+            if key in ('GOOGLE_API_KEY', 'OPENAI_API_KEY', 'VOLCENGINE_API_KEY', 'ANTHROPIC_API_KEY'):
+                client_key = client_override.get('api_key')
+                if client_key:
+                    return str(client_key)
+            elif key in ('GOOGLE_API_BASE', 'OPENAI_API_BASE', 'VOLCENGINE_API_BASE', 'ANTHROPIC_API_BASE'):
+                client_base = client_override.get('api_base_url')
+                if client_base:
+                    return str(client_base)
+            elif key == 'MINERU_TOKEN':
+                token = client_override.get('mineru_token')
+                if token:
+                    return str(token)
+            elif key == 'BAIDU_API_KEY':
+                bkey = client_override.get('baidu_api_key')
+                if bkey:
+                    return str(bkey)
+            elif key == 'ELEVENLABS_API_KEY':
+                ekey = client_override.get('elevenlabs_api_key')
+                if ekey:
+                    return str(ekey)
+            elif key == 'TEXT_MODEL':
+                tm = client_override.get('text_model')
+                if tm:
+                    return str(tm)
+            elif key == 'IMAGE_MODEL':
+                im = client_override.get('image_model')
+                if im:
+                    return str(im)
+    except Exception:
+        pass
+
     # 1) Try Flask app.config
     try:
         from flask import current_app

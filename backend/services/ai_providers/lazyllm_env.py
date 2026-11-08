@@ -130,9 +130,27 @@ def get_lazyllm_api_key(source: str, namespace: str = "BANANA") -> str:
 
     Expected format: {SOURCE}_API_KEY, e.g. QWEN_API_KEY.
     """
+    source_lower = (source or "").lower()
     source_upper = (source or "").upper()
     if not source_upper:
         return ""
+
+    try:
+        from utils.client_settings import get_current_client_override
+        client_override = get_current_client_override()
+        if client_override:
+            lazy_keys = client_override.get('lazyllm_api_keys')
+            if isinstance(lazy_keys, dict) and source_lower in lazy_keys:
+                val = lazy_keys[source_lower]
+                if val:
+                    return str(val)
+            if (client_override.get('ai_provider_format') or '').lower() == source_lower:
+                val = client_override.get('api_key')
+                if val:
+                    return str(val)
+    except Exception:
+        pass
+
     return os.getenv(f"{source_upper}_API_KEY", "")
 
 
