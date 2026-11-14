@@ -34,3 +34,5 @@ export { Pagination } from './Pagination';
 export { DesktopTitleBar } from './DesktopTitleBar';
 export { UpdateChecker } from './UpdateChecker';
 export { ApiKeyReminderModal } from './ApiKeyReminderModal';
+export { SettingsModal } from './SettingsModal';
+export { HistoryModal } from './HistoryModal';

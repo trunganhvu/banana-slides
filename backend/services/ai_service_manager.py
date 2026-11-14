@@ -18,17 +18,27 @@ Usage:
     outline = ai_service.generate_outline(project_context)
 """
 
+import hashlib
 import logging
 from threading import Lock
-from typing import Optional
+from typing import Optional, Tuple
 from flask import current_app, has_app_context
 from .ai_service import AIService
-from .ai_providers import get_text_provider, get_image_provider, get_caption_provider, TextProvider, ImageProvider
+from .ai_providers import (
+    get_text_provider,
+    get_image_provider,
+    get_caption_provider,
+    get_provider_format,
+    _resolve_setting,
+    TextProvider,
+    ImageProvider,
+)
 
 logger = logging.getLogger(__name__)
 
 # Global singleton instance
 _ai_service_instance: Optional[AIService] = None
+_last_config_signature: Optional[Tuple] = None
 _lock = Lock()
 
 # Provider cache to avoid re-initialization when models don't change
@@ -36,6 +46,47 @@ _text_provider_cache: dict = {}
 _image_provider_cache: dict = {}
 _caption_provider_cache: dict = {}
 _cache_lock = Lock()
+
+
+def _hash_secret(val: Optional[str]) -> str:
+    if not val:
+        return ""
+    return hashlib.sha256(str(val).encode("utf-8")).hexdigest()[:12]
+
+
+def _get_active_config_signature() -> Tuple:
+    """Compute a lightweight signature of current Gemini credentials, endpoint, and models."""
+    from config import get_config
+    config = get_config()
+    fmt = "gemini"
+    text_model = _resolve_setting("TEXT_MODEL") or (
+        current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
+        if has_app_context() and current_app and hasattr(current_app, "config")
+        else config.TEXT_MODEL
+    )
+    image_model = _resolve_setting("IMAGE_MODEL") or (
+        current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
+        if has_app_context() and current_app and hasattr(current_app, "config")
+        else config.IMAGE_MODEL
+    )
+    caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or (
+        current_app.config.get("IMAGE_CAPTION_MODEL", config.IMAGE_CAPTION_MODEL)
+        if has_app_context() and current_app and hasattr(current_app, "config")
+        else config.IMAGE_CAPTION_MODEL
+    )
+    api_key = _resolve_setting("GOOGLE_API_KEY") or ""
+    api_base = _resolve_setting("GOOGLE_API_BASE") or ""
+    return (
+        fmt,
+        text_model,
+        image_model,
+        caption_model,
+        _hash_secret(api_key),
+        api_base,
+        "",
+        "",
+        "",
+    )
 
 
 def _get_cached_text_provider(model: str) -> TextProvider:
@@ -57,7 +108,7 @@ def _get_cached_text_provider(model: str) -> TextProvider:
         return _text_provider_cache[model]
 
 
-def _get_cached_image_provider(model: str) -> ImageProvider:
+def _get_cached_image_provider(model: str) -> Optional[ImageProvider]:
     """
     Get or create a cached image provider instance
     
@@ -70,45 +121,45 @@ def _get_cached_image_provider(model: str) -> ImageProvider:
     with _cache_lock:
         if model not in _image_provider_cache:
             logger.info(f"Creating new ImageProvider for model: {model}")
-            _image_provider_cache[model] = get_image_provider(model=model)
+            try:
+                _image_provider_cache[model] = get_image_provider(model=model)
+            except ValueError as e:
+                logger.warning(f"Deferred ImageProvider initialization ({model}): {e}")
+                return None
         else:
             logger.debug(f"Reusing cached ImageProvider for model: {model}")
         return _image_provider_cache[model]
 
 
-def _get_cached_caption_provider(model: str) -> TextProvider:
+def _get_cached_caption_provider(model: str) -> Optional[TextProvider]:
     """Get or create a cached caption provider instance"""
     with _cache_lock:
         if model not in _caption_provider_cache:
             logger.info(f"Creating new CaptionProvider for model: {model}")
-            _caption_provider_cache[model] = get_caption_provider(model=model)
+            try:
+                _caption_provider_cache[model] = get_caption_provider(model=model)
+            except ValueError as e:
+                logger.warning(f"Deferred CaptionProvider initialization ({model}): {e}")
+                return None
         return _caption_provider_cache[model]
 
 
 def get_ai_service(force_new: bool = False) -> AIService:
     """
     Get the singleton AIService instance with optimized provider caching
-    
-    This function creates and returns a singleton AIService instance that reuses
-    AI providers (TextProvider and ImageProvider) across requests, significantly
-    reducing initialization overhead.
-    
-    Args:
-        force_new: If True, forces creation of a new instance (useful for testing)
-        
-    Returns:
-        AIService singleton instance with cached providers
-        
-    Note:
-        The providers are cached per model name. If TEXT_MODEL or IMAGE_MODEL
-        changes in Flask config, new providers will be created automatically.
     """
-    global _ai_service_instance
+    global _ai_service_instance, _last_config_signature
     
-    if force_new:
+    current_sig = _get_active_config_signature()
+
+    if force_new or (_last_config_signature is not None and _last_config_signature != current_sig):
         with _lock:
-            logger.info("Force creating new AIService instance")
+            logger.info("Configuration change detected or force_new requested; refreshing AIService instance")
             _ai_service_instance = None
+            with _cache_lock:
+                _text_provider_cache.clear()
+                _image_provider_cache.clear()
+                _caption_provider_cache.clear()
     
     if _ai_service_instance is None:
         with _lock:
@@ -116,23 +167,12 @@ def get_ai_service(force_new: bool = False) -> AIService:
             if _ai_service_instance is None:
                 logger.info("Initializing AIService singleton with provider caching")
                 
-                # Get model names from Flask config or use defaults
-                from config import get_config
-                config = get_config()
-                
-                if has_app_context() and current_app and hasattr(current_app, "config"):
-                    text_model = current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
-                    image_model = current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
-                    caption_model = current_app.config.get("IMAGE_CAPTION_MODEL", config.IMAGE_CAPTION_MODEL)
-                else:
-                    text_model = config.TEXT_MODEL
-                    image_model = config.IMAGE_MODEL
-                    caption_model = config.IMAGE_CAPTION_MODEL
+                _, text_model, image_model, caption_model, *_ = current_sig
 
                 # Get cached providers
                 text_provider = _get_cached_text_provider(text_model)
                 image_provider = _get_cached_image_provider(image_model)
-                caption_provider = _get_cached_caption_provider(caption_model)
+                caption_provider = _get_cached_caption_provider(caption_model) or text_provider
 
                 # Create AIService with cached providers
                 _ai_service_instance = AIService(
@@ -140,6 +180,7 @@ def get_ai_service(force_new: bool = False) -> AIService:
                     image_provider=image_provider,
                     caption_provider=caption_provider
                 )
+                _last_config_signature = current_sig
 
                 logger.info(f"AIService singleton created with models: text={text_model}, image={image_model}, caption={caption_model}")
     
@@ -149,21 +190,12 @@ def get_ai_service(force_new: bool = False) -> AIService:
 def clear_ai_service_cache():
     """
     Clear the AIService singleton and provider cache
-    
-    This is useful when:
-    - Configuration changes (API keys, endpoints, models)
-    - Testing scenarios requiring fresh instances
-    - Memory cleanup needed
-    
-    Note:
-    - Uses nested locks to ensure atomic cache clearing operation
-    - Prevents race conditions where new instances could be created
-      with stale cached providers during the clearing process
     """
-    global _ai_service_instance
+    global _ai_service_instance, _last_config_signature
     
     with _lock:
         _ai_service_instance = None
+        _last_config_signature = None
         logger.info("AIService singleton cache cleared")
         with _cache_lock:
             _text_provider_cache.clear()

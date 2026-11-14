@@ -40,25 +40,27 @@ export const SettingsPageFrame: React.FC<{
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-banana-50 dark:from-background-primary to-yellow-50 dark:to-background-primary">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Card className="p-6 md:p-8">
-          <div className="space-y-8">
-            {/* UI element */}
-            <div className="flex items-center justify-between pb-6 border-b border-gray-200 dark:border-border-primary">
-              <div className="flex items-center">
+      <div className="container mx-auto px-2.5 sm:px-4 py-4 sm:py-8 max-w-4xl">
+        <Card className="p-3.5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl">
+          <div className="space-y-6 sm:space-y-8">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-gray-200 dark:border-border-primary">
+              <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
                 <Button
                   variant="secondary"
+                  size="sm"
                   icon={<Home size={18} />}
                   onClick={handleBack}
-                  className="mr-4 shrink-0 whitespace-nowrap"
+                  className="shrink-0 whitespace-nowrap px-2.5 sm:px-3"
+                  title={t("nav.backToHome")}
                 >
-                  {t("nav.backToHome")}
+                  <span className="hidden sm:inline">{t("nav.backToHome")}</span>
                 </Button>
                 <div className="min-w-0">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground-primary">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground-primary leading-tight">
                     {title || t("settings.title")}
                   </h1>
-                  <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-foreground-tertiary mt-0.5 sm:mt-1">
                     {subtitle || t("settings.subtitle")}
                   </p>
                 </div>

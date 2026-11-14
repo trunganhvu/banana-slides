@@ -15,42 +15,8 @@ export function isAiKeyConfigured(settings: Settings | null | undefined): boolea
 
   if (!settings) return false;
 
-  const provider = (settings.ai_provider_format || 'gemini').toLowerCase();
-
-  // 1. Text model specific credentials override
-  if ((settings.text_api_key_length ?? 0) > 0) {
-    return true;
-  }
-
-  // 2. Direct key providers
-  if (provider === 'gemini') {
-    return (settings.api_key_length ?? 0) > 0;
-  }
-
-  if (provider === 'openai') {
-    return (settings.api_key_length ?? 0) > 0 || Boolean(settings.openai_oauth_connected);
-  }
-
-  if (provider === 'volcengine') {
-    return (settings.api_key_length ?? 0) > 0;
-  }
-
-  if (provider === 'codex') {
-    return Boolean(settings.openai_oauth_connected);
-  }
-
-  // 3. LazyLLM vendors (deepseek, siliconflow, kimi, glm, minimax, etc.)
-  const vendorLength = settings.lazyllm_api_keys_info?.[provider] ?? 0;
-  if (vendorLength > 0) {
-    return true;
-  }
-
-  // 4. Fallback: global api_key_length
-  if ((settings.api_key_length ?? 0) > 0) {
-    return true;
-  }
-
-  return false;
+  // Google Gemini only
+  return (settings.api_key_length ?? 0) > 0 || (settings.text_api_key_length ?? 0) > 0;
 }
 
 const STORAGE_KEY_SNOOZE = 'banana_key_reminder_snoozed';

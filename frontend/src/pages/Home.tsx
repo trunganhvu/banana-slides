@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Search, Settings, FolderOpen, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X } from 'lucide-react';
-import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, TextStyleSelector } from '@/components/shared';
+import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, History, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X } from 'lucide-react';
+import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, SettingsModal, HistoryModal, Footer, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, associateMaterialsToProject, createPptRenovationProject } from '@/api/endpoints';
@@ -29,7 +29,7 @@ const homeI18n = {
   zh: {
     nav: {
       materialGenerate: 'Tạo tư liệu', materialCenter: 'Kho tư liệu',
-      history: 'Lịch sử dự án', settings: 'Cài đặt', help: 'Trợ giúp'
+      history: 'Lịch sử', settings: 'Cài đặt', help: 'Trợ giúp'
     },
     settings: {
       language: { label: 'Ngôn ngữ giao diện' },
@@ -222,6 +222,8 @@ export const Home: React.FC = () => {
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const [isMaterialCenterOpen, setIsMaterialCenterOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
@@ -807,20 +809,20 @@ export const Home: React.FC = () => {
       {!isDesktop && (
       <nav className="relative z-50 h-16 md:h-18 bg-white/40 dark:bg-background-primary backdrop-blur-2xl dark:backdrop-blur-none dark:border-b dark:border-border-primary">
 
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-full flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="flex items-center">
               <img
                 src={logoUrl}
-                alt="Banana Slides Banana Slides Logo"
-                className="h-10 md:h-12 w-auto rounded-lg object-contain"
+                alt="Banana Slides Logo"
+                className="h-8 sm:h-10 md:h-12 w-auto rounded-lg object-contain"
               />
             </div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-banana-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-banana-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
               Banana Slides
             </span>
           </div>
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             {/* Desktop: Material generator button */}
             <Button
               variant="ghost"
@@ -859,15 +861,25 @@ export const Home: React.FC = () => {
               className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
               title={t('nav.materialCenter')}
             />
+            {/* Desktop: History button */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/history')}
-              className="text-xs md:text-sm hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              icon={<History size={16} className="md:w-[18px] md:h-[18px]" />}
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium whitespace-nowrap"
             >
-              <span className="hidden sm:inline">{t('nav.history')}</span>
-              <span className="sm:hidden">{t('nav.history')}</span>
+              <span className="hidden md:inline">{t('nav.history')}</span>
             </Button>
+            {/* Mobile: History icon */}
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<History size={16} />}
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
+              title={t('nav.history')}
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -882,7 +894,7 @@ export const Home: React.FC = () => {
                   )}
                 </span>
               }
-              onClick={() => navigate('/settings')}
+              onClick={() => setIsSettingsModalOpen(true)}
               className={`text-xs md:text-sm transition-all duration-200 font-medium ${
                 isConfigured === false
                   ? 'bg-amber-100/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 ring-1 ring-amber-400/50 hover:bg-amber-200/70 shadow-sm'
@@ -965,15 +977,15 @@ export const Home: React.FC = () => {
       )}
 
       {/* Main content */}
-      <main className="relative max-w-5xl mx-auto px-3 md:px-4 py-8 md:py-12">
+      <main className="relative max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 md:py-12">
         {/* Hero header */}
-        <div className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-background-secondary backdrop-blur-sm rounded-full shadow-sm dark:shadow-none mb-4">
-            <span className="text-2xl animate-pulse"><Sparkles size={20} className="text-orange-500 dark:text-banana" /></span>
-            <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('home.tagline')}</span>
+        <div className="text-center mb-6 sm:mb-10 md:mb-16 space-y-3 sm:space-y-4 md:space-y-6">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/60 dark:bg-background-secondary backdrop-blur-sm rounded-full shadow-sm dark:shadow-none mb-2 sm:mb-4">
+            <span className="text-xl sm:text-2xl animate-pulse"><Sparkles size={18} className="text-orange-500 dark:text-banana" /></span>
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('home.tagline')}</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
             <span className="bg-gradient-to-r from-yellow-600 via-orange-500 to-pink-500 dark:from-banana-dark dark:via-banana dark:to-banana-light bg-clip-text text-transparent dark:italic" style={{
               backgroundSize: '200% auto',
               animation: 'gradient 3s ease infinite',
@@ -982,47 +994,28 @@ export const Home: React.FC = () => {
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-600 dark:text-foreground-secondary max-w-2xl mx-auto font-light">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-foreground-secondary max-w-2xl mx-auto font-light px-2">
             {t('home.subtitle')}
           </p>
-
-          {/* Feature tags */}
-          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pt-4">
-            {[
-              { icon: <Sparkles size={14} className="text-yellow-600 dark:text-banana" />, label: t('home.features.oneClick') },
-              { icon: <FileEdit size={14} className="text-blue-500 dark:text-blue-400" />, label: t('home.features.naturalEdit') },
-              { icon: <Search size={14} className="text-orange-500 dark:text-orange-400" />, label: t('home.features.regionEdit') },
-
-              { icon: <Paperclip size={14} className="text-green-600 dark:text-green-400" />, label: t('home.features.export') },
-            ].map((feature, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/70 dark:bg-background-secondary backdrop-blur-sm rounded-full text-xs md:text-sm text-gray-700 dark:text-foreground-secondary border border-gray-200/50 dark:border-border-primary shadow-sm dark:shadow-none hover:shadow-md dark:hover:border-border-hover transition-all hover:scale-105 cursor-default"
-              >
-                {feature.icon}
-                {feature.label}
-              </span>
-            ))}
-          </div>
         </div>
 
         {/* Creation card */}
-        <Card className="p-4 md:p-10 bg-white/90 dark:bg-background-secondary backdrop-blur-xl dark:backdrop-blur-none shadow-2xl dark:shadow-none border-0 dark:border dark:border-border-primary hover:shadow-3xl dark:hover:shadow-none transition-all duration-300 dark:rounded-2xl">
+        <Card className="p-3.5 sm:p-6 md:p-10 bg-white/90 dark:bg-background-secondary backdrop-blur-xl dark:backdrop-blur-none shadow-2xl dark:shadow-none border-0 dark:border dark:border-border-primary hover:shadow-3xl dark:hover:shadow-none transition-all duration-300 rounded-xl sm:rounded-2xl">
           {/* Tabs */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 md:mb-8">
+          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
             {(Object.keys(tabConfig) as CreationType[]).map((type) => {
               const config = tabConfig[type];
               return (
                 <button
                   key={type}
                   onClick={() => setActiveTab(type)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 md:py-3 rounded-lg dark:rounded-xl font-medium transition-all text-sm md:text-base touch-manipulation ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg dark:rounded-xl font-medium transition-all text-xs sm:text-sm md:text-base touch-manipulation ${
                     activeTab === type
                       ? 'bg-gradient-to-r from-banana-500 to-banana-600 dark:from-banana dark:to-banana text-black shadow-yellow dark:shadow-lg dark:shadow-banana/20'
                       : 'bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover active:bg-banana-100'
                   }`}
                 >
-                  <span className="scale-90 md:scale-100">{config.icon}</span>
+                  <span className="scale-75 sm:scale-90 md:scale-100 flex-shrink-0">{config.icon}</span>
                   <span className="truncate">{config.label}</span>
                 </button>
               );
@@ -1030,9 +1023,9 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Description */}
-          <div className="relative">
-            <p className="text-sm md:text-base mb-4 md:mb-6 leading-relaxed">
-              <span className="inline-flex items-center gap-2 text-gray-600 dark:text-foreground-tertiary">
+          <div className="relative mb-3 sm:mb-4 md:mb-6">
+            <p className="text-xs sm:text-sm md:text-base leading-relaxed">
+              <span className="inline-flex items-center gap-1.5 sm:gap-2 text-gray-600 dark:text-foreground-tertiary">
                 <Lightbulb size={16} className="text-banana-600 dark:text-banana flex-shrink-0" />
                 <span className="font-semibold">
                   {tabConfig[activeTab].description}
@@ -1144,10 +1137,10 @@ export const Home: React.FC = () => {
               </div>
             ) : (
             <>
-            {activeTab === 'idea' && <div className="flex gap-2 mb-4">
+            {activeTab === 'idea' && <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
               {[false, true].map(report => <button type="button" key={String(report)} aria-pressed={reportMode === report}
                 disabled={isSubmitting || isGlobalLoading} onClick={() => setReportMode(report)}
-                className={`px-3 py-2 rounded-lg text-sm ${reportMode === report ? 'bg-banana-100 text-gray-900' : 'text-gray-500'}`}>
+                className={`px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm active:scale-95 transition-all ${reportMode === report ? 'bg-banana-100 text-gray-900 font-medium shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-foreground-secondary'}`}>
                 {report ? (!i18n.language?.startsWith('en') ? 'Báo cáo định kỳ' : 'Report builder') : (!i18n.language?.startsWith('en') ? 'Nhập tự do' : 'Free input')}
               </button>)}
             </div>}
@@ -1264,16 +1257,16 @@ export const Home: React.FC = () => {
 
           {/* Template selector */}
           <div className="mb-6 md:mb-8 pt-4 border-t border-gray-100 dark:border-border-primary">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3 md:mb-4">
               <div className="flex items-center gap-2">
                 <Palette size={18} className="text-orange-600 dark:text-banana flex-shrink-0" />
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                   {t('home.template.title')}
                 </h3>
               </div>
               {/* Text-only style mode toggle */}
               <label className="flex items-center gap-2 cursor-pointer group">
-                <span className="text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                <span className="text-xs sm:text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                   {t('home.template.useTextStyle')}
                 </span>
                 <div className="relative">
@@ -1292,23 +1285,25 @@ export const Home: React.FC = () => {
                     }}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
+                  <div className="w-10 sm:w-11 h-5 sm:h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-4 sm:after:h-5 after:w-4 sm:after:w-5 after:transition-all peer-checked:bg-banana"></div>
                 </div>
               </label>
             </div>
             
             {/* Per-page template toggle */}
-            <label className="flex items-center gap-2 cursor-pointer group mb-3" title={t('home.template.multiModeHint')}>
+            <label className="flex items-start sm:items-center gap-2 cursor-pointer group mb-3" title={t('home.template.multiModeHint')}>
               <input
                 type="checkbox"
                 checked={multiTemplateMode}
                 onChange={(e) => setMultiTemplateMode(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-banana-500 focus:ring-banana-400"
+                className="mt-0.5 sm:mt-0 h-4 w-4 rounded border-gray-300 text-banana-500 focus:ring-banana-400"
               />
-              <span className="text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                {t('home.template.multiMode')}
-              </span>
-              <span className="text-xs text-gray-400">{t('home.template.multiModeHint')}</span>
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="text-xs sm:text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                  {t('home.template.multiMode')}
+                </span>
+                <span className="text-[11px] sm:text-xs text-gray-400 dark:text-foreground-tertiary">{t('home.template.multiModeHint')}</span>
+              </div>
             </label>
 
             {/* Display content based on mode */}
@@ -1367,6 +1362,16 @@ export const Home: React.FC = () => {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+      />
+      {/* Settings modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
+      {/* History modal */}
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
       />
       {/* Footer */}
       <Footer />

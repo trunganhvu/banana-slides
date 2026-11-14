@@ -179,19 +179,14 @@ function updateCachedHeaders(config: ClientKeysConfig | null) {
 
   const headers: Record<string, string> = {
     'X-Client-Storage-Mode': 'client',
+    'X-Client-Provider': 'gemini',
   };
 
-  if (config.ai_provider_format) {
-    headers['X-Client-Provider'] = config.ai_provider_format;
-  }
   if (config.api_key) {
     headers['X-Client-Api-Key'] = config.api_key;
   }
   if (config.api_base_url) {
     headers['X-Client-Api-Base'] = config.api_base_url;
-  }
-  if (config.lazyllm_api_keys && Object.keys(config.lazyllm_api_keys).length > 0) {
-    headers['X-Client-Lazyllm-Keys'] = JSON.stringify(config.lazyllm_api_keys);
   }
   if (config.text_model) {
     headers['X-Client-Text-Model'] = config.text_model;
@@ -207,15 +202,6 @@ function updateCachedHeaders(config: ClientKeysConfig | null) {
   }
   if (config.elevenlabs_api_key) {
     headers['X-Client-Elevenlabs-Key'] = config.elevenlabs_api_key;
-  }
-  if (config.text_api_key) {
-    headers['X-Client-Text-Api-Key'] = config.text_api_key;
-  }
-  if (config.image_api_key) {
-    headers['X-Client-Image-Api-Key'] = config.image_api_key;
-  }
-  if (config.image_caption_api_key) {
-    headers['X-Client-Image-Caption-Api-Key'] = config.image_caption_api_key;
   }
 
   cachedHeaders = headers;
@@ -245,9 +231,24 @@ export async function initClientKeyStorage(): Promise<ClientKeysConfig | null> {
     }
 
     const parsed: ClientKeysConfig = JSON.parse(plain);
-    updateCachedHeaders(parsed);
+    const isNonGemini = Boolean(
+      parsed.ai_provider_format && parsed.ai_provider_format.toLowerCase() !== 'gemini'
+    );
+    const normalized: ClientKeysConfig = isNonGemini
+      ? {
+          ...parsed,
+          ai_provider_format: 'gemini',
+          api_key: '',
+          api_base_url: '',
+          lazyllm_api_keys: {},
+        }
+      : {
+          ...parsed,
+          ai_provider_format: 'gemini',
+        };
+    updateCachedHeaders(normalized);
     isInitialized = true;
-    return parsed;
+    return normalized;
   } catch (error) {
     console.warn('Error initializing client key storage:', error);
     updateCachedHeaders(null);
@@ -270,6 +271,8 @@ export async function saveClientKeys(config: Partial<ClientKeysConfig>): Promise
   const updated: ClientKeysConfig = {
     ...current,
     ...config,
+    ai_provider_format: 'gemini',
+    lazyllm_api_keys: {},
     storageMode: 'client',
     updatedAt: Date.now(),
   };
@@ -319,24 +322,18 @@ export function setClientStorageMode(mode: 'client' | 'server'): void {
  * Synchronous check whether a valid key is configured on the client.
  */
 export function hasClientKeyConfigured(): boolean {
-  if (!inMemoryConfig || inMemoryConfig.storageMode !== 'client') {
-    // If not in memory yet, check if encrypted record exists in storage
+  if (!inMemoryConfig) {
+    // If not decrypted into memory yet, check if encrypted record exists in storage
     const hasRecord = Boolean(localStorage.getItem(STORAGE_KEY_ENC));
     const mode = localStorage.getItem(STORAGE_KEY_MODE);
     return hasRecord && mode !== 'server';
   }
 
-  const provider = (inMemoryConfig.ai_provider_format || 'gemini').toLowerCase();
-  if (inMemoryConfig.api_key && inMemoryConfig.api_key.trim().length > 0) {
-    return true;
+  if (inMemoryConfig.storageMode !== 'client') {
+    return false;
   }
 
-  const lazyKey = inMemoryConfig.lazyllm_api_keys?.[provider];
-  if (lazyKey && lazyKey.trim().length > 0) {
-    return true;
-  }
-
-  return false;
+  return Boolean(inMemoryConfig.api_key && inMemoryConfig.api_key.trim().length > 0);
 }
 
 /**

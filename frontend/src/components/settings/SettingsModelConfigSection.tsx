@@ -47,15 +47,12 @@ export const SettingsModelConfigSection: React.FC<Props> = ({
   dismissTest,
 }) => {
   const hasCustomModels = Boolean(
-    formData.text_model ||
-    formData.image_model ||
-    formData.image_caption_model ||
     formData.text_model_source ||
     formData.image_model_source ||
     formData.image_caption_model_source
   );
 
-  // Default to open if user has configured custom models, otherwise start collapsed
+  // Default to open if user has configured custom per-model sources, otherwise start collapsed
   const [isExpanded, setIsExpanded] = useState(hasCustomModels);
   const [activeTab, setActiveTab] = useState<'all' | 'text' | 'image' | 'caption'>('all');
 
@@ -80,24 +77,24 @@ export const SettingsModelConfigSection: React.FC<Props> = ({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-foreground-primary">
-                  {isVi ? 'Cấu hình mô hình chi tiết' : 'Detailed Model Configuration'}
+                  {isVi ? 'Cấu hình nguồn riêng cho từng tác vụ (Nâng cao / Tùy chọn)' : 'Per-Task Provider Overrides (Advanced / Optional)'}
                 </h3>
                 {hasCustomModels ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
                     <SlidersHorizontal size={11} />
-                    {isVi ? 'Đang tùy biến mô hình' : 'Custom Models Active'}
+                    {isVi ? 'Đang tách nguồn mô hình' : 'Custom Sources Active'}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
                     <Sparkles size={11} className="text-banana-500" />
-                    {isVi ? 'Tự động theo nhà cung cấp' : 'Auto via Provider'}
+                    {isVi ? 'Dùng chung nhà cung cấp chính' : 'Using Main Provider'}
                   </span>
                 )}
               </div>
               <p className="text-xs text-gray-500 dark:text-foreground-tertiary mt-0.5">
                 {isVi
-                  ? 'Mặc định hệ thống tự động sử dụng mô hình phù hợp theo Nhà cung cấp AI đã chọn. Chỉ mở rộng nếu muốn chỉ định mô hình riêng.'
-                  : 'By default, the system uses optimal models for the AI provider selected above. Only expand to customize individual models.'}
+                  ? 'Chỉ mở rộng nếu bạn muốn tách riêng: ví dụ dùng DeepSeek/Groq để tạo dàn ý văn bản nhưng dùng Gemini/OpenAI để vẽ ảnh.'
+                  : 'Only expand if you want to mix providers (e.g. DeepSeek/Groq for text outline + Gemini/OpenAI for image generation).'}
               </p>
             </div>
           </div>
@@ -110,7 +107,7 @@ export const SettingsModelConfigSection: React.FC<Props> = ({
           >
             {isExpanded
               ? isVi ? 'Thu gọn' : 'Collapse'
-              : isVi ? 'Tùy biến mô hình chi tiết' : 'Customize Models'}
+              : isVi ? 'Phối hợp nhiều Provider' : 'Mix Providers'}
           </Button>
         </div>
 

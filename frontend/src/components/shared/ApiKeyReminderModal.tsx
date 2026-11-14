@@ -9,14 +9,13 @@ import { useApiKeyReminderStore } from '@/store/useApiKeyReminderStore';
 const reminderI18n = {
   zh: {
     title: 'Chưa cấu hình API Key',
-    subtitle: 'Để tạo bài thuyết trình bằng AI, bạn cần cấu hình ít nhất một API Key hợp lệ',
-    desc: 'Hệ thống cần API Key để phân tích chủ đề, xây dựng dàn ý cấu trúc và vẽ minh họa từng trang slide.',
+    subtitle: 'Để tạo bài thuyết trình bằng AI, bạn cần cấu hình Google Gemini API Key hợp lệ',
+    desc: 'Hệ thống cần Google Gemini API Key để phân tích chủ đề, xây dựng dàn ý cấu trúc và vẽ minh họa từng trang slide.',
     guideTitle: 'Hướng dẫn cấu hình nhanh',
     guideStep1: 'Nhấp vào biểu tượng bánh răng Cài đặt ở góc trên bên phải màn hình (đang phát sáng báo hiệu).',
     guideStep2: 'Hoặc nhấp trực tiếp vào nút "Đi tới Cài đặt cấu hình" bên dưới.',
-    recommendationTitle: 'Các nhà cung cấp AI được khuyên dùng:',
-    geminiRec: 'Google Gemini: Khuyên dùng, có gói miễn phí, tốc độ cao, hỗ trợ cả dàn ý văn bản và tạo ảnh slide trực tiếp.',
-    otherRec: 'OpenAI / DeepSeek / SiliconFlow: Hỗ trợ văn bản sắc nét và suy luận sâu.',
+    recommendationTitle: 'Nhà cung cấp AI được hỗ trợ:',
+    geminiRec: 'Google Gemini: Có gói miễn phí qua Google AI Studio, tốc độ cao, hỗ trợ cả dàn ý văn bản và tạo ảnh slide trực tiếp.',
     btnGoSettings: 'Đi tới Cài đặt cấu hình',
     btnRemindLater: 'Nhắc tôi sau',
     pillText: 'Chưa cấu hình API Key • Nhấp để cấu hình',
@@ -24,14 +23,13 @@ const reminderI18n = {
   },
   en: {
     title: 'API Key Not Configured',
-    subtitle: 'To generate presentations with AI, you need to configure at least one valid API Key',
-    desc: 'The system requires an API Key to analyze topics, generate slide outlines, and render slide illustrations.',
+    subtitle: 'To generate presentations with AI, you need to configure a valid Google Gemini API Key',
+    desc: 'The system requires a Google Gemini API Key to analyze topics, generate slide outlines, and render slide illustrations.',
     guideTitle: 'Quick Setup Guide',
     guideStep1: 'Click the glowing Settings gear icon at the top right of the screen.',
     guideStep2: 'Or click the "Go to Settings" button below directly.',
-    recommendationTitle: 'Recommended AI Providers:',
-    geminiRec: 'Google Gemini: Highly recommended, free tier available, fast, supports both text outlines and direct slide image generation.',
-    otherRec: 'OpenAI / DeepSeek / SiliconFlow: High quality text and deep reasoning.',
+    recommendationTitle: 'Supported AI Provider:',
+    geminiRec: 'Google Gemini: Free tier available via Google AI Studio, fast, supports both text outlines and direct slide image generation.',
     btnGoSettings: 'Go to Settings',
     btnRemindLater: 'Remind me later',
     pillText: 'API Key Not Configured • Click to setup',
@@ -139,10 +137,6 @@ export const ApiKeyReminderModal: React.FC = () => {
               <div className="flex items-start gap-1.5 text-[11px] text-amber-800/90 dark:text-amber-300/80">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <span>{t.geminiRec}</span>
-              </div>
-              <div className="flex items-start gap-1.5 text-[11px] text-amber-800/90 dark:text-amber-300/80">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <span>{t.otherRec}</span>
               </div>
             </div>
           </div>

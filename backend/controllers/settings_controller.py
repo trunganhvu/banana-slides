@@ -19,12 +19,11 @@ from services.ai_service import AIService
 from services.file_parser_service import FileParserService
 from services.ai_providers.ocr.baidu_accurate_ocr_provider import create_baidu_accurate_ocr_provider
 from services.ai_providers.image.baidu_inpainting_provider import create_baidu_inpainting_provider
-from services.ai_providers import LAZYLLM_VENDORS
 from services.task_manager import task_manager
 from services.update_check_service import check_for_update
 
 logger = logging.getLogger(__name__)
-ALLOWED_PROVIDER_FORMATS = {"openai", "gemini", "volcengine", "lazyllm", "codex"} | LAZYLLM_VENDORS
+ALLOWED_PROVIDER_FORMATS = {"gemini"}
 # Backend logic
 ALLOWED_IMAGE_QUALITIES = ("auto", "low", "medium", "high", "xhigh", "max")
 
@@ -35,25 +34,19 @@ settings_bp = Blueprint(
 
 PROVIDER_API_CONFIG_KEYS = {
     "gemini": ("GOOGLE_API_KEY", "GOOGLE_API_BASE"),
-    "openai": ("OPENAI_API_KEY", "OPENAI_API_BASE"),
-    "volcengine": ("VOLCENGINE_API_KEY", "VOLCENGINE_API_BASE"),
 }
 
 
 def _provider_api_config_keys(provider_format):
-    """Return provider-specific config keys for the global API key/base override."""
-    return PROVIDER_API_CONFIG_KEYS.get((provider_format or "").lower())
+    """Return provider-specific config keys for the global API key/base override (Google Gemini only)."""
+    return PROVIDER_API_CONFIG_KEYS.get((provider_format or "gemini").lower(), PROVIDER_API_CONFIG_KEYS["gemini"])
 
 
 def _provider_api_env_defaults():
-    """Return provider API config values from .env-backed Config defaults."""
+    """Return Google Gemini API config values from .env-backed Config defaults."""
     return {
         "GOOGLE_API_KEY": Config.GOOGLE_API_KEY,
-        "OPENAI_API_KEY": Config.OPENAI_API_KEY,
-        "VOLCENGINE_API_KEY": Config.VOLCENGINE_API_KEY,
         "GOOGLE_API_BASE": Config.GOOGLE_API_BASE,
-        "OPENAI_API_BASE": Config.OPENAI_API_BASE,
-        "VOLCENGINE_API_BASE": Config.VOLCENGINE_API_BASE,
     }
 
 
@@ -74,45 +67,20 @@ def temporary_settings_override(settings_override: dict):
         None
     """
     original_values = {}
-    original_env_values = {}
 
     try:
-        active_format = (
-            settings_override.get("ai_provider_format")
-            or current_app.config.get("AI_PROVIDER_FORMAT")
-            or Config.AI_PROVIDER_FORMAT
-        )
-        provider_keys = _provider_api_config_keys(active_format)
+        key_config, base_config = _provider_api_config_keys("gemini")
 
-        # Backend logic
-        if settings_override.get("api_key") and provider_keys:
-            key_config, _ = provider_keys
+        if settings_override.get("api_key"):
             original_values[key_config] = current_app.config.get(key_config)
             current_app.config[key_config] = settings_override["api_key"]
 
-        # Support LazyLLM vendor API key override in tests
-        if active_format and active_format.lower() in LAZYLLM_VENDORS:
-            vendor = active_format.lower()
-            env_key = f"{vendor.upper()}_API_KEY"
-            if settings_override.get("api_key"):
-                original_env_values[env_key] = os.environ.get(env_key)
-                os.environ[env_key] = settings_override["api_key"]
-
-        if settings_override.get("lazyllm_api_keys"):
-            for vendor, k in settings_override["lazyllm_api_keys"].items():
-                if k:
-                    env_key = f"{vendor.upper()}_API_KEY"
-                    original_env_values[env_key] = os.environ.get(env_key)
-                    os.environ[env_key] = k
-
-        if settings_override.get("api_base_url") and provider_keys:
-            _, base_config = provider_keys
+        if settings_override.get("api_base_url"):
             original_values[base_config] = current_app.config.get(base_config)
             current_app.config[base_config] = settings_override["api_base_url"]
 
-        if settings_override.get("ai_provider_format"):
-            original_values["AI_PROVIDER_FORMAT"] = current_app.config.get("AI_PROVIDER_FORMAT")
-            current_app.config["AI_PROVIDER_FORMAT"] = settings_override["ai_provider_format"]
+        original_values["AI_PROVIDER_FORMAT"] = current_app.config.get("AI_PROVIDER_FORMAT")
+        current_app.config["AI_PROVIDER_FORMAT"] = "gemini"
 
         if settings_override.get("text_model"):
             original_values["TEXT_MODEL"] = current_app.config.get("TEXT_MODEL")
@@ -126,33 +94,15 @@ def temporary_settings_override(settings_override: dict):
             original_values["IMAGE_CAPTION_MODEL"] = current_app.config.get("IMAGE_CAPTION_MODEL")
             current_app.config["IMAGE_CAPTION_MODEL"] = settings_override["image_caption_model"]
 
-        # Per-model source overrides (empty string = clear, to fall back to global config)
-        for source_field, config_key in [
-            ("text_model_source", "TEXT_MODEL_SOURCE"),
-            ("image_model_source", "IMAGE_MODEL_SOURCE"),
-            ("image_caption_model_source", "IMAGE_CAPTION_MODEL_SOURCE"),
-        ]:
-            if source_field in settings_override:
+        # Clear any legacy per-model provider source overrides for Google Gemini-only tests
+        for config_key in (
+            "TEXT_MODEL_SOURCE",
+            "IMAGE_MODEL_SOURCE",
+            "IMAGE_CAPTION_MODEL_SOURCE",
+        ):
+            if config_key in current_app.config:
                 original_values[config_key] = current_app.config.get(config_key)
-                val = settings_override[source_field]
-                if val:
-                    current_app.config[config_key] = val
-                else:
-                    current_app.config.pop(config_key, None)
-
-        # Per-model API credentials override
-        for model_type in ('text', 'image', 'image_caption'):
-            prefix = model_type.upper()
-            key_field = f'{model_type}_api_key'
-            base_field = f'{model_type}_api_base_url'
-            if settings_override.get(key_field):
-                config_key = f'{prefix}_API_KEY'
-                original_values[config_key] = current_app.config.get(config_key)
-                current_app.config[config_key] = settings_override[key_field]
-            if settings_override.get(base_field):
-                config_key = f'{prefix}_API_BASE'
-                original_values[config_key] = current_app.config.get(config_key)
-                current_app.config[config_key] = settings_override[base_field]
+                current_app.config.pop(config_key, None)
 
         if settings_override.get("mineru_api_base"):
             original_values["MINERU_API_BASE"] = current_app.config.get("MINERU_API_BASE")
@@ -197,10 +147,6 @@ def temporary_settings_override(settings_override: dict):
             original_values["IMAGE_THINKING_BUDGET"] = current_app.config.get("IMAGE_THINKING_BUDGET")
             current_app.config["IMAGE_THINKING_BUDGET"] = settings_override["image_thinking_budget"]
 
-        if "openai_image_api_protocol" in settings_override:
-            original_values["OPENAI_IMAGE_API_PROTOCOL"] = current_app.config.get("OPENAI_IMAGE_API_PROTOCOL")
-            current_app.config["OPENAI_IMAGE_API_PROTOCOL"] = settings_override["openai_image_api_protocol"]
-
         yield
 
     finally:
@@ -210,12 +156,6 @@ def temporary_settings_override(settings_override: dict):
                 current_app.config[key] = value
             else:
                 current_app.config.pop(key, None)
-
-        for key, value in original_env_values.items():
-            if value is not None:
-                os.environ[key] = value
-            else:
-                os.environ.pop(key, None)
 
 
 @settings_bp.route("/", methods=["GET"], strict_slashes=False)
@@ -271,13 +211,16 @@ def update_settings():
 
         settings = Settings.get_settings()
 
-        # Update AI provider format configuration
+        was_non_gemini = (settings.ai_provider_format or "gemini").lower() != "gemini"
         if "ai_provider_format" in data:
-            provider_format = data["ai_provider_format"]
+            provider_format = str(data["ai_provider_format"] or "").lower()
             if provider_format not in ALLOWED_PROVIDER_FORMATS:
                 allowed_values = "', '".join(sorted(ALLOWED_PROVIDER_FORMATS))
                 return bad_request(f"AI provider format must be one of '{allowed_values}'")
-            settings.ai_provider_format = provider_format
+        settings.ai_provider_format = "gemini"
+        if was_non_gemini:
+            settings.api_base_url = None
+            settings.api_key = None
 
         # Update API configuration
         if "api_base_url" in data:
@@ -419,44 +362,15 @@ def update_settings():
         if "elevenlabs_voice_id" in data:
             settings.elevenlabs_voice_id = (data["elevenlabs_voice_id"] or "").strip() or None
 
-        # Update per-model provider source configuration
-        if "text_model_source" in data:
-            settings.text_model_source = (data["text_model_source"] or "").strip() or None
-
-        if "image_model_source" in data:
-            settings.image_model_source = (data["image_model_source"] or "").strip() or None
-
-        if "openai_image_api_protocol" in data:
-            protocol = data["openai_image_api_protocol"]
-            if protocol not in ("auto", "images", "chat"):
-                return bad_request("openai_image_api_protocol must be 'auto', 'images', or 'chat'")
-            settings.openai_image_api_protocol = protocol if protocol != "auto" else None
-
-        if "image_caption_model_source" in data:
-            settings.image_caption_model_source = (data["image_caption_model_source"] or "").strip() or None
-
-        # Update per-model API credentials (for gemini/openai per-model overrides)
+        # Enforce Google Gemini only — clear any legacy non-Google per-model/vendor configuration
+        settings.text_model_source = None
+        settings.image_model_source = None
+        settings.image_caption_model_source = None
+        settings.openai_image_api_protocol = None
+        settings.lazyllm_api_keys = None
         for model_type in ('text', 'image', 'image_caption'):
-            key_field = f'{model_type}_api_key'
-            base_field = f'{model_type}_api_base_url'
-
-            if key_field in data:
-                setattr(settings, key_field, data[key_field] or None)
-
-            if base_field in data:
-                setattr(settings, base_field, (data[base_field] or "").strip() or None)
-
-        if "lazyllm_api_keys" in data:
-            keys_data = data["lazyllm_api_keys"]
-            if isinstance(keys_data, dict):
-                # Merge with existing keys (only update non-empty values)
-                existing = settings.get_lazyllm_api_keys_dict()
-                for vendor, key in keys_data.items():
-                    if key:  # Only update if a new value is provided
-                        existing[vendor] = key
-                settings.lazyllm_api_keys = json.dumps(existing) if existing else None
-            elif keys_data is None:
-                settings.lazyllm_api_keys = None
+            setattr(settings, f'{model_type}_api_key', None)
+            setattr(settings, f'{model_type}_api_base_url', None)
 
         settings.updated_at = datetime.now(timezone.utc)
         db.session.commit()
@@ -679,13 +593,7 @@ def verify_api_key():
             except ValueError as ve:
                 # Backend logic
                 logger.warning(f"API key not configured: {str(ve)}")
-                provider_format = (settings.ai_provider_format or "").lower()
-                if provider_format == "lazyllm" or provider_format in LAZYLLM_VENDORS:
-                    source = (provider_format if provider_format in LAZYLLM_VENDORS
-                              else current_app.config.get("TEXT_MODEL_SOURCE") or Config.TEXT_MODEL_SOURCE or "unknown").upper()
-                    message = f"LazyLLM API key chưa cấu hình, Vui lòng thiết lập {source}_API_KEY"
-                else:
-                    message = "API key chưa cấu hình, Vui lòng cấu hình trong phần Cài đặt API key và API Base URL"
+                message = "Google Gemini API key chưa cấu hình, Vui lòng cấu hình trong phần Cài đặt API key và API Base URL"
                 return success_response({
                     "available": False,
                     "message": message
@@ -722,24 +630,24 @@ def verify_api_key():
 
 
 def _sync_settings_to_config(settings: Settings):
-    """Sync settings to Flask app config and clear AI service cache if needed"""
+    """Sync Google Gemini settings to Flask app config and clear AI service cache if needed"""
     # Track if AI-related settings changed
     ai_config_changed = False
-    
-    # Sync AI provider format (always sync, fall back to .env default when NULL)
-    new_format = settings.ai_provider_format or Config.AI_PROVIDER_FORMAT
+
+    # Enforce Google Gemini provider format
+    new_format = "gemini"
     old_format = current_app.config.get("AI_PROVIDER_FORMAT")
     if old_format != new_format:
         ai_config_changed = True
         logger.info(f"AI provider format changed: {old_format} -> {new_format}")
     current_app.config["AI_PROVIDER_FORMAT"] = new_format
-    
+
     env_api_defaults = _provider_api_env_defaults()
-    provider_keys = _provider_api_config_keys(new_format)
+    key_config, base_config = _provider_api_config_keys(new_format)
+    is_gemini_settings = (settings.ai_provider_format or "gemini").lower() == "gemini"
 
     target_api_config = dict(env_api_defaults)
-    if provider_keys:
-        key_config, base_config = provider_keys
+    if is_gemini_settings:
         if settings.api_key is not None:
             target_api_config[key_config] = settings.api_key
         if settings.api_base_url is not None:
@@ -820,60 +728,22 @@ def _sync_settings_to_config(settings: Settings):
     # Sync Baidu OCR settings (fall back to Config default when NULL)
     current_app.config["BAIDU_API_KEY"] = settings.baidu_api_key or Config.BAIDU_API_KEY
 
-    # Sync per-model provider source settings
-    for model_type, source_attr in [('TEXT', 'text_model_source'), ('IMAGE', 'image_model_source'), ('IMAGE_CAPTION', 'image_caption_model_source')]:
-        source_val = getattr(settings, source_attr, None)
-        config_key = f'{model_type}_MODEL_SOURCE'
-        if source_val:
-            old_source = current_app.config.get(config_key)
-            if old_source != source_val:
-                ai_config_changed = True
-            current_app.config[config_key] = source_val
-        else:
-            if config_key in current_app.config:
-                ai_config_changed = True
-            current_app.config.pop(config_key, None)
-
-    # Sync per-model API credentials (for gemini/openai per-model overrides)
-    for model_type in ('text', 'image', 'image_caption'):
-        prefix = model_type.upper()
-        for suffix, setting_suffix in [('_API_KEY', '_api_key'), ('_API_BASE', '_api_base_url')]:
-            config_key = f'{prefix}{suffix}'
-            val = getattr(settings, f'{model_type}{setting_suffix}', None)
-            if val:
-                if current_app.config.get(config_key) != val:
-                    ai_config_changed = True
-                current_app.config[config_key] = val
-            else:
-                if config_key in current_app.config:
-                    ai_config_changed = True
-                current_app.config.pop(config_key, None)
-
-    # Sync OpenAI image API protocol
-    config_key = 'OPENAI_IMAGE_API_PROTOCOL'
-    val = settings.openai_image_api_protocol
-    if val:
-        if current_app.config.get(config_key) != val:
-            ai_config_changed = True
-        current_app.config[config_key] = val
-    else:
+    # Clear legacy non-Google / per-model source and credential keys (Google Gemini only)
+    for config_key in (
+        "TEXT_MODEL_SOURCE",
+        "IMAGE_MODEL_SOURCE",
+        "IMAGE_CAPTION_MODEL_SOURCE",
+        "TEXT_API_KEY",
+        "TEXT_API_BASE",
+        "IMAGE_API_KEY",
+        "IMAGE_API_BASE",
+        "IMAGE_CAPTION_API_KEY",
+        "IMAGE_CAPTION_API_BASE",
+        "OPENAI_IMAGE_API_PROTOCOL",
+    ):
         if config_key in current_app.config:
             ai_config_changed = True
-        current_app.config.pop(config_key, None)
-
-    # Sync LazyLLM vendor API keys to environment variables
-    # (lazyllm_env.py reads from os.environ via {SOURCE}_API_KEY)
-    if settings.lazyllm_api_keys:
-        try:
-            keys = json.loads(settings.lazyllm_api_keys)
-            for vendor, key in keys.items():
-                if key:
-                    env_key = f"{vendor.upper()}_API_KEY"
-                    if os.environ.get(env_key) != key:
-                        ai_config_changed = True
-                    os.environ[env_key] = key
-        except (json.JSONDecodeError, TypeError):
-            pass
+            current_app.config.pop(config_key, None)
     
     # Clear AI service cache if AI-related configuration changed
     if ai_config_changed:
@@ -915,62 +785,19 @@ def _get_baidu_credentials():
 
 def _create_file_parser():
     """ Backend docstring """
-    from services.ai_providers import LAZYLLM_VENDORS
-
-    caption_source = current_app.config.get("IMAGE_CAPTION_MODEL_SOURCE")
-    global_format = current_app.config.get("AI_PROVIDER_FORMAT", "gemini")
-
-    # Determine effective caption provider format
-    if caption_source:
-        source_lower = caption_source.lower()
-        if source_lower == 'gemini':
-            caption_format = 'gemini'
-        elif source_lower == 'openai':
-            caption_format = 'openai'
-        elif source_lower == 'codex':
-            caption_format = 'codex'
-        elif source_lower in LAZYLLM_VENDORS:
-            caption_format = 'lazyllm'
-        else:
-            caption_format = global_format
-    else:
-        caption_format = global_format
-
-    # Resolve API credentials based on caption format
-    if caption_format == 'gemini':
-        google_key = current_app.config.get("IMAGE_CAPTION_API_KEY") or current_app.config.get("GOOGLE_API_KEY", "")
-        google_base = current_app.config.get("IMAGE_CAPTION_API_BASE") or current_app.config.get("GOOGLE_API_BASE", "")
-        openai_key = ""
-        openai_base = ""
-    elif caption_format == 'openai':
-        google_key = ""
-        google_base = ""
-        openai_key = current_app.config.get("IMAGE_CAPTION_API_KEY") or current_app.config.get("OPENAI_API_KEY", "")
-        openai_base = current_app.config.get("IMAGE_CAPTION_API_BASE") or current_app.config.get("OPENAI_API_BASE", "")
-    elif caption_format == 'codex':
-        google_key = ""
-        google_base = ""
-        openai_key = ""
-        openai_base = ""
-    else:
-        # lazyllm or global fallback
-        google_key = current_app.config.get("GOOGLE_API_KEY", "")
-        google_base = current_app.config.get("GOOGLE_API_BASE", "")
-        openai_key = current_app.config.get("OPENAI_API_KEY", "")
-        openai_base = current_app.config.get("OPENAI_API_BASE", "")
+    google_key = current_app.config.get("IMAGE_CAPTION_API_KEY") or current_app.config.get("GOOGLE_API_KEY", "")
+    google_base = current_app.config.get("IMAGE_CAPTION_API_BASE") or current_app.config.get("GOOGLE_API_BASE", "")
 
     return FileParserService(
         mineru_token=current_app.config.get("MINERU_TOKEN", ""),
         mineru_api_base=current_app.config.get("MINERU_API_BASE", ""),
         google_api_key=google_key,
         google_api_base=google_base,
-        openai_api_key=openai_key,
-        openai_api_base=openai_base,
+        openai_api_key="",
+        openai_api_base="",
         image_caption_model=current_app.config.get("IMAGE_CAPTION_MODEL", Config.IMAGE_CAPTION_MODEL),
-        lazyllm_image_caption_source=caption_source or getattr(
-            Config, 'IMAGE_CAPTION_MODEL_SOURCE', None
-        ),
-        provider_format=caption_format,
+        lazyllm_image_caption_source=None,
+        provider_format="gemini",
     )
 
 
@@ -994,8 +821,12 @@ def _test_baidu_ocr():
 
 def _test_text_model():
     """ Backend docstring """
-    ai_service = AIService()
-    reply = ai_service.text_provider.generate_text("Vui lòng chỉ trả lời OK. ", thinking_budget=64)
+    from services.ai_providers import get_text_provider, _resolve_setting
+    text_model = _resolve_setting("TEXT_MODEL") or current_app.config.get("TEXT_MODEL", Config.TEXT_MODEL)
+    provider = get_text_provider(model=text_model)
+    enable_reasoning = current_app.config.get("ENABLE_TEXT_REASONING", False)
+    budget = current_app.config.get("TEXT_THINKING_BUDGET", 64) if enable_reasoning else 0
+    reply = provider.generate_text("Vui lòng chỉ trả lời OK. ", thinking_budget=budget)
     return {"reply": reply.strip()}, "Kiểm tra mô hình văn bản thành công"
 
 
@@ -1274,28 +1105,21 @@ def run_settings_test(test_name: str):
         global_settings = Settings.get_settings()
 
         # Backend logic
-        test_settings = {}
-        if global_settings.api_key:
-            test_settings["api_key"] = global_settings.api_key
-        if global_settings.api_base_url:
-            test_settings["api_base_url"] = global_settings.api_base_url
-        if global_settings.ai_provider_format:
-            test_settings["ai_provider_format"] = global_settings.ai_provider_format
+        is_gemini_settings = (global_settings.ai_provider_format or "gemini").lower() == "gemini"
+        test_settings = {
+            "ai_provider_format": "gemini",
+        }
+        if is_gemini_settings:
+            if global_settings.api_key:
+                test_settings["api_key"] = global_settings.api_key
+            if global_settings.api_base_url:
+                test_settings["api_base_url"] = global_settings.api_base_url
         if global_settings.text_model:
             test_settings["text_model"] = global_settings.text_model
         if global_settings.image_model:
             test_settings["image_model"] = global_settings.image_model
         if global_settings.image_caption_model:
             test_settings["image_caption_model"] = global_settings.image_caption_model
-        if current_app.config.get("IMAGE_CAPTION_MODEL_SOURCE"):
-            test_settings["image_caption_model_source"] = current_app.config.get("IMAGE_CAPTION_MODEL_SOURCE")
-        # Per-model provider sources and credentials
-        for model_type in ('text', 'image', 'image_caption'):
-            for suffix in ('model_source', 'api_key', 'api_base_url'):
-                attr = f'{model_type}_{suffix}'
-                val = getattr(global_settings, attr, None)
-                if val:
-                    test_settings[attr] = val
         if global_settings.mineru_api_base:
             test_settings["mineru_api_base"] = global_settings.mineru_api_base
         if global_settings.mineru_token:
@@ -1315,13 +1139,13 @@ def run_settings_test(test_name: str):
         test_settings["text_thinking_budget"] = global_settings.text_thinking_budget
         test_settings["enable_image_reasoning"] = global_settings.enable_image_reasoning
         test_settings["image_thinking_budget"] = global_settings.image_thinking_budget
-        test_settings["openai_image_api_protocol"] = global_settings.openai_image_api_protocol or current_app.config.get('OPENAI_IMAGE_API_PROTOCOL') or 'auto'
 
         # Backend logic
         override_settings = request.get_json() or {}
         if override_settings:
             logger.info(f"Applying test setting overrides: {list(override_settings.keys())}")
             test_settings.update(override_settings)
+        test_settings["ai_provider_format"] = "gemini"
 
         # Backend logic
         task = Task(

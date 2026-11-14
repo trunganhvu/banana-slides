@@ -185,7 +185,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         {userTemplates.length > 0 && (
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">{t('template.myTemplates')}</h4>
-            <div className="grid grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 mb-4">
               {userTemplates.map((template) => (
                 <div
                   key={template.template_id}
@@ -227,7 +227,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         <div>
           <h4 className="text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">{t('template.presetTemplates')}</h4>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
             {presetTemplates.map((template) => (
               <div
                 key={template.id}

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Key,
   Sparkles,
   ExternalLink,
   Eye,
@@ -8,24 +7,25 @@ import {
   CheckCircle2,
   AlertCircle,
   RotateCcw,
-  Link2,
   Zap,
-  HelpCircle,
-  Copy,
-  Check,
+  FileText,
+  Image as ImageIcon,
+  Save,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
-import { Button, Input } from '@/components/shared';
+import { Button } from '@/components/shared';
 import { SettingsInlineServiceTest, type InlineServiceTestState } from './SettingsInlineServiceTest';
 import type { Settings as SettingsType } from '@/types';
 import type { useT } from '@/hooks/useT';
 
 export interface SettingsActiveProviderFormProps {
-  provider: string;
   formData: {
-    ai_provider_format: string;
     api_base_url: string;
     api_key: string;
-    lazyllm_api_keys: Record<string, string>;
+    text_model: string;
+    image_model: string;
+    image_caption_model: string;
     [key: string]: any;
   };
   setFormData: React.Dispatch<React.SetStateAction<any>>;
@@ -33,618 +33,468 @@ export interface SettingsActiveProviderFormProps {
   handleFieldChange: (key: string, value: any) => void;
   t: ReturnType<typeof useT>;
   isVi: boolean;
-  oauthConnecting: boolean;
-  handleOAuthLogin: () => void;
-  handleOAuthDisconnect: () => void;
-  manualCallbackOpen: boolean;
-  setManualCallbackOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  manualCallbackUrl: string;
-  setManualCallbackUrl: React.Dispatch<React.SetStateAction<string>>;
-  manualCallbackSubmitting: boolean;
-  handleManualCallback: () => void;
-  applyVolcengineRecommendedModels: () => void;
-  volcengineAgentPlansUrl: string;
-  volcengineLogoUrl: string;
-  copyToClipboard: (text: string) => void;
   serviceTestStates?: Record<string, InlineServiceTestState>;
   triggerTest?: (testKey: string) => void;
   dismissTest?: (testKey: string) => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
-const PROVIDER_METADATA: Record<
-  string,
-  {
-    name: string;
-    portalName: string;
-    portalUrl: string;
-    defaultBaseUrl?: string;
-    isApiKeyProvider: boolean;
-    isOAuth?: boolean;
-    description: { vi: string; en: string };
-    highlight?: { vi: string; en: string };
-  }
-> = {
-  gemini: {
-    name: 'Google Gemini',
-    portalName: 'Google AI Studio',
-    portalUrl: 'https://aistudio.google.com/app/apikey',
-    defaultBaseUrl: 'https://generativelanguage.googleapis.com',
-    isApiKeyProvider: true,
-    description: {
-      vi: 'Khuyên dùng để bắt đầu. Hỗ trợ đầy đủ văn bản và hình ảnh, miễn phí từ Google AI Studio.',
-      en: 'Recommended to get started. Supports both text and image generation, free from Google AI Studio.',
-    },
-    highlight: {
-      vi: 'Google Gemini là giải pháp toàn diện: Tự động tạo dàn ý, soạn nội dung trang và vẽ tranh minh họa trực tiếp mà không cần cấu hình thêm bất kỳ dịch vụ hay API phụ nào.',
-      en: 'Google Gemini provides complete coverage: Automatically creates outlines, drafts content, and generates illustrations directly without any extra services.',
-    },
+interface ModelPresetOption {
+  id: string;
+  label: string;
+  badgeVi?: string;
+  badgeEn?: string;
+}
+
+const GOOGLE_GEMINI_METADATA: {
+  name: string;
+  portalName: string;
+  portalUrl: string;
+  defaultBaseUrl: string;
+  description: { vi: string; en: string };
+  textModels: ModelPresetOption[];
+  imageModels: ModelPresetOption[];
+  captionModels: ModelPresetOption[];
+} = {
+  name: 'Google Gemini',
+  portalName: 'Google AI Studio',
+  portalUrl: 'https://aistudio.google.com/app/apikey',
+  defaultBaseUrl: 'https://generativelanguage.googleapis.com',
+  description: {
+    vi: 'Hỗ trợ cả tạo văn bản, dàn ý, nhận diện hình ảnh và vẽ ảnh minh họa trực tiếp từ Google AI Studio.',
+    en: 'Supports text outlines, image captioning, and slide image generation directly from Google AI Studio.',
   },
-  openai: {
-    name: 'OpenAI',
-    portalName: 'OpenAI Platform',
-    portalUrl: 'https://platform.openai.com/api-keys',
-    defaultBaseUrl: 'https://api.openai.com/v1',
-    isApiKeyProvider: true,
-    description: {
-      vi: 'Sử dụng GPT-4o, GPT-4o-mini và tạo hình ảnh DALL-E 3 / GPT Image qua OpenAI API.',
-      en: 'Uses GPT-4o, GPT-4o-mini, and DALL-E 3 / GPT Image generation via OpenAI API.',
-    },
-  },
-  volcengine: {
-    name: 'Volcengine Agent Plan',
-    portalName: 'Volcengine Console',
-    portalUrl: 'https://ai.volcengine.com/console/apikey',
-    defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/plan/v3',
-    isApiKeyProvider: true,
-    description: {
-      vi: 'Gói Volcengine Agent Plan kết nối trực tiếp, tối ưu chi phí và hỗ trợ mô hình Doubao.',
-      en: 'Volcengine Agent Plan offers direct connection, cost optimization, and Doubao models.',
-    },
-  },
-  doubao: {
-    name: 'Doubao / ModelArk',
-    portalName: 'ModelArk Console',
-    portalUrl: 'https://console.volcengine.com/ark/',
-    defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
-    isApiKeyProvider: true,
-    description: {
-      vi: 'Mô hình Doubao qua nền tảng ByteDance ModelArk.',
-      en: 'Doubao models via ByteDance ModelArk platform.',
-    },
-  },
-  codex: {
-    name: 'OpenAI Codex (OAuth)',
-    portalName: 'OpenAI',
-    portalUrl: 'https://chatgpt.com',
-    isApiKeyProvider: false,
-    isOAuth: true,
-    description: {
-      vi: 'Đăng nhập tài khoản ChatGPT/OpenAI qua OAuth. Không cần nhập API Key thủ công.',
-      en: 'Sign in to your ChatGPT/OpenAI account via OAuth. No manual API key required.',
-    },
-  },
-  deepseek: {
-    name: 'DeepSeek',
-    portalName: 'DeepSeek Open Platform',
-    portalUrl: 'https://platform.deepseek.com/api_keys',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Mô hình DeepSeek V3 và R1 tối ưu hóa chi phí và năng lực suy luận sâu.',
-      en: 'DeepSeek V3 and R1 models optimized for cost and deep reasoning.',
-    },
-  },
-  qwen: {
-    name: 'Qwen (Tongyi Qianwen)',
-    portalName: 'Alibaba Cloud DashScope',
-    portalUrl: 'https://dashscope.console.aliyun.com/',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Mô hình Tongyi Qianwen qua nền tảng DashScope của Alibaba Cloud.',
-      en: 'Tongyi Qianwen models via Alibaba Cloud DashScope platform.',
-    },
-  },
-  glm: {
-    name: 'GLM (Zhipu AI)',
-    portalName: 'Zhipu AI BigModel',
-    portalUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Mô hình GLM qua nền tảng Zhipu AI BigModel.',
-      en: 'GLM models via Zhipu AI BigModel platform.',
-    },
-  },
-  siliconflow: {
-    name: 'SiliconFlow',
-    portalName: 'SiliconFlow Cloud',
-    portalUrl: 'https://cloud.siliconflow.cn/account/ak',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Nền tảng SiliconFlow tổng hợp các mô hình mã nguồn mở hiệu năng cao.',
-      en: 'SiliconFlow platform aggregating high-performance open-source models.',
-    },
-  },
-  kimi: {
-    name: 'Kimi (Moonshot)',
-    portalName: 'Moonshot AI Console',
-    portalUrl: 'https://platform.moonshot.cn/console/api-keys',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Mô hình Moonshot Kimi với khả năng xử lý ngữ cảnh dài.',
-      en: 'Moonshot Kimi models with long-context capabilities.',
-    },
-  },
-  minimax: {
-    name: 'MiniMax',
-    portalName: 'MiniMax Open Platform',
-    portalUrl: 'https://platform.minimaxi.com/user-center/basic-information/interface-key',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Mô hình ngôn ngữ lớn và đa phương tiện từ MiniMax.',
-      en: 'Large language and multimodal models from MiniMax.',
-    },
-  },
-  sensenova: {
-    name: 'SenseNova (SenseTime)',
-    portalName: 'SenseNova Open Platform',
-    portalUrl: 'https://platform.sensenova.cn/',
-    isApiKeyProvider: false,
-    description: {
-      vi: 'Mô hình Nhật Nhật Tân SenseNova từ SenseTime.',
-      en: 'SenseNova models from SenseTime.',
-    },
-  },
+  textModels: [
+    { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
+    { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash', badgeVi: 'Thông minh', badgeEn: 'Smart' },
+    { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash', badgeVi: 'Ổn định & Nhẹ', badgeEn: 'Fast & Stable' },
+    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
+  ],
+  imageModels: [
+    { id: 'gemini-2.0-flash-preview-image-generation', label: 'gemini-2.0-flash-image', badgeVi: 'Nhanh', badgeEn: 'Fast' },
+    { id: 'gemini-3-pro-image-preview', label: 'gemini-3-pro-image-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
+    { id: 'imagen-3.0-generate-002', label: 'imagen-3.0-generate-002', badgeVi: 'Imagen 3', badgeEn: 'Imagen 3' },
+  ],
+  captionModels: [
+    { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
+    { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash', badgeVi: 'Thông minh', badgeEn: 'Smart' },
+    { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash', badgeVi: 'Ổn định & Nhẹ', badgeEn: 'Fast & Stable' },
+    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
+  ],
 };
 
 export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProps> = ({
-  provider,
   formData,
   setFormData,
   settings,
   handleFieldChange,
   t,
   isVi,
-  oauthConnecting,
-  handleOAuthLogin,
-  handleOAuthDisconnect,
-  manualCallbackOpen,
-  setManualCallbackOpen,
-  manualCallbackUrl,
-  setManualCallbackUrl,
-  manualCallbackSubmitting,
-  handleManualCallback,
-  applyVolcengineRecommendedModels,
-  volcengineAgentPlansUrl,
-  volcengineLogoUrl,
-  copyToClipboard,
   serviceTestStates = {},
   triggerTest,
   dismissTest,
+  onSave,
+  isSaving = false,
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [showBaseUrl, setShowBaseUrl] = useState(Boolean(formData.api_base_url));
 
-  const meta = PROVIDER_METADATA[provider] || {
-    name: provider.toUpperCase(),
-    portalName: `${provider} Console`,
-    portalUrl: '',
-    isApiKeyProvider: false,
-    description: { vi: `Nhà cung cấp ${provider}`, en: `${provider} provider` },
+  const meta = GOOGLE_GEMINI_METADATA;
+  const keyLength = (settings?.api_key_length as number) || 0;
+  const currentKeyValue = formData.api_key || '';
+  const isKeyConfigured = keyLength > 0 || currentKeyValue.length > 0;
+
+  const handleSelectTextModel = (modelId: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      text_model: modelId,
+      image_caption_model:
+        !prev.image_caption_model || prev.image_caption_model === prev.text_model
+          ? modelId
+          : prev.image_caption_model,
+    }));
   };
 
-  const isGemini = provider === 'gemini';
-  const isOpenAi = provider === 'openai';
-  const isVolcengine = provider === 'volcengine';
-  const isDoubao = provider === 'doubao';
-  const isCodex = provider === 'codex';
-  const isDirectKeyProvider = meta.isApiKeyProvider;
+  const handleSelectImageModel = (modelId: string) => {
+    handleFieldChange('image_model', modelId);
+  };
 
-  // Determine key status
-  let isKeyConfigured = false;
-  let keyLength = 0;
-  let currentKeyValue = '';
-
-  if (isDirectKeyProvider) {
-    keyLength = (settings?.api_key_length as number) || 0;
-    currentKeyValue = formData.api_key;
-    isKeyConfigured = keyLength > 0 || currentKeyValue.length > 0;
-  } else if (isCodex) {
-    isKeyConfigured = Boolean(settings?.openai_oauth_connected);
-  } else {
-    keyLength = (settings?.lazyllm_api_keys_info?.[provider] as number) || 0;
-    currentKeyValue = formData.lazyllm_api_keys[provider] || '';
-    isKeyConfigured = keyLength > 0 || currentKeyValue.length > 0;
-  }
-
-  const handleCopyLink = (url: string) => {
-    copyToClipboard(url);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+  const handleSelectCaptionModel = (modelId: string) => {
+    handleFieldChange('image_caption_model', modelId);
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-border-primary dark:bg-background-secondary space-y-5">
-      {/* Provider Header Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100 dark:border-border-primary">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-base ${
-              isGemini
-                ? 'bg-gradient-to-tr from-blue-500 via-indigo-500 to-banana-400 text-white shadow-sm'
-                : isOpenAi
-                ? 'bg-emerald-600 text-white'
-                : isCodex
-                ? 'bg-purple-600 text-white'
-                : isVolcengine || isDoubao
-                ? 'bg-red-500 text-white'
-                : 'bg-banana-500 text-gray-900'
-            }`}
-          >
-            {isGemini ? (
-              <Sparkles size={20} />
-            ) : isCodex ? (
-              <Link2 size={20} />
-            ) : isVolcengine || isDoubao ? (
-              <Zap size={20} />
-            ) : (
-              <Key size={20} />
-            )}
+    <div className="rounded-xl border border-gray-200 bg-white p-3.5 sm:p-5 shadow-sm dark:border-border-primary dark:bg-background-secondary space-y-4 sm:space-y-6">
+      {/* 1. Google Gemini Header Card */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-gray-100 dark:border-border-primary">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold text-base bg-gradient-to-tr from-blue-500 via-indigo-500 to-banana-400 text-white shadow-sm shrink-0">
+            <Sparkles size={18} className="sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-foreground-primary">
-                {meta.name}
-              </h3>
-              {isGemini && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-banana-100 text-banana-900 border border-banana-300 dark:bg-banana-950/60 dark:text-banana-300 dark:border-banana-700">
-                  {isVi ? 'Khuyên dùng' : 'Recommended'}
-                </span>
-              )}
-              {isCodex && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300">
-                  OAuth
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 dark:text-foreground-tertiary mt-0.5">
+          <div className="min-w-0">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-foreground-primary">
+              {meta.name}
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-foreground-tertiary mt-0.5 line-clamp-2 sm:line-clamp-none">
               {isVi ? meta.description.vi : meta.description.en}
             </p>
           </div>
         </div>
 
         {/* Configuration Status Badge */}
-        <div className="flex items-center self-start sm:self-center">
-          {isCodex ? (
-            settings?.openai_oauth_connected ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-                <CheckCircle2 size={13} className="text-emerald-500" />
-                {isVi ? 'Đã kết nối OAuth' : 'OAuth Connected'}
-                {settings.openai_oauth_account_id && ` (${settings.openai_oauth_account_id})`}
+        <div className="flex items-center self-start sm:self-center shrink-0">
+          {isKeyConfigured ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+              <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+              <span>
+                {currentKeyValue
+                  ? isVi
+                    ? `Đã nhập (${currentKeyValue.length} ký tự)`
+                    : `Entered (${currentKeyValue.length} chars)`
+                  : isVi
+                  ? `Đã lưu (${keyLength} ký tự)`
+                  : `Saved (${keyLength} chars)`}
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
-                <AlertCircle size={13} className="text-gray-400" />
-                {isVi ? 'Chưa kết nối tài khoản' : 'Not Connected'}
-              </span>
-            )
-          ) : isKeyConfigured ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-              <CheckCircle2 size={13} className="text-emerald-500" />
-              {currentKeyValue
-                ? isVi ? `Đã cấu hình (${currentKeyValue.length} ký tự)` : `Configured (${currentKeyValue.length} chars)`
-                : isVi ? `Đã thiết lập (${keyLength} ký tự)` : `Configured (${keyLength} chars)`}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
-              <AlertCircle size={13} className="text-amber-500" />
-              {isVi ? 'Chưa có API Key' : 'API Key Not Set'}
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+              <AlertCircle size={13} className="text-amber-500 shrink-0" />
+              <span>{isVi ? 'Chưa có API Key' : 'API Key Not Set'}</span>
             </span>
           )}
         </div>
       </div>
 
-      {/* Gemini Highlight Box */}
-      {isGemini && meta.highlight && (
-        <div className="rounded-lg bg-gradient-to-r from-blue-50 to-banana-50 dark:from-blue-950/30 dark:to-banana-950/30 border border-blue-200/70 dark:border-blue-900/40 p-3.5 flex items-start gap-2.5">
-          <Sparkles size={18} className="text-banana-600 dark:text-banana-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-gray-700 dark:text-foreground-secondary leading-relaxed">
-            {isVi ? meta.highlight.vi : meta.highlight.en}
-          </p>
-        </div>
-      )}
-
-      {/* FORM FIELDS */}
-      {isCodex ? (
-        /* Codex OAuth Login Panel */
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50/50 dark:bg-background-tertiary">
-            <div>
-              <p className="text-sm font-medium text-gray-800 dark:text-foreground-primary">
-                {isVi ? 'Xác thực tài khoản OpenAI qua trình duyệt' : 'Authenticate OpenAI account via browser'}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-foreground-tertiary mt-1">
-                {isVi
-                  ? 'Banana Slides sẽ mở cửa sổ đăng nhập OpenAI. Sau khi xác thực, hệ thống sẽ tự động liên kết tài khoản của bạn.'
-                  : 'Banana Slides will open an OpenAI sign-in window. Once authorized, your account will be linked automatically.'}
-              </p>
-            </div>
-            <div>
-              {settings?.openai_oauth_connected ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleOAuthDisconnect}
-                  className="text-red-600 hover:text-red-700 dark:text-red-400"
-                >
-                  {isVi ? 'Ngắt kết nối' : 'Disconnect'}
-                </Button>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={oauthConnecting}
-                  onClick={handleOAuthLogin}
-                >
-                  {oauthConnecting
-                    ? isVi ? 'Đang kết nối...' : 'Connecting...'
-                    : isVi ? 'Đăng nhập với OpenAI' : 'Sign in with OpenAI'}
-                </Button>
-              )}
-            </div>
+      {/* 2. Google API Key & Base URL */}
+      <div className="space-y-3 sm:space-y-4">
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-900 dark:text-foreground-primary">
+              {isVi ? 'Nhập API Key' : 'API Key'}
+              <span className="ml-1 text-xs font-normal text-gray-500">
+                ({meta.name})
+              </span>
+            </label>
+            <a
+              href={meta.portalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline self-start sm:self-auto"
+            >
+              <span>
+                {isVi ? `Lấy API Key tại ${meta.portalName}` : `Get API Key at ${meta.portalName}`}
+              </span>
+              <ExternalLink size={11} />
+            </a>
           </div>
 
-          {!settings?.openai_oauth_connected && (
-            <div>
-              <button
-                type="button"
-                onClick={() => setManualCallbackOpen(v => !v)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-              >
-                {isVi ? 'Kết nối thất bại hoặc không mở được cửa sổ?' : 'Connection failed or popup blocked?'}
-              </button>
-              {manualCallbackOpen && (
-                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">
-                    {isVi
-                      ? 'Dán toàn bộ URL trên thanh địa chỉ của cửa sổ đăng nhập vào đây nếu quá trình callback tự động bị chặn:'
-                      : 'Paste the full redirect URL from the popup window address bar here:'}
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={manualCallbackUrl}
-                      onChange={(e) => setManualCallbackUrl(e.target.value)}
-                      placeholder="http://localhost:1455/callback?code=..."
-                      className="flex-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-border-primary rounded-md bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary placeholder-gray-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleManualCallback}
-                      disabled={manualCallbackSubmitting || !manualCallbackUrl.trim()}
-                      className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
-                    >
-                      {manualCallbackSubmitting
-                        ? isVi ? 'Đang gửi...' : 'Submitting...'
-                        : isVi ? 'Gửi URL' : 'Submit'}
-                    </button>
-                  </div>
+          <div className="relative">
+            <input
+              type={showApiKey ? 'text' : 'password'}
+              placeholder={
+                keyLength > 0
+                  ? isVi
+                    ? `Đã lưu key (${keyLength} ký tự) - Nhập key mới để đổi`
+                    : `Saved (${keyLength} chars) - Enter new key to change`
+                  : 'AIzaSy...'
+              }
+              value={formData.api_key}
+              onChange={(e) => handleFieldChange('api_key', e.target.value)}
+              className="w-full h-10 pl-3.5 pr-11 rounded-lg border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent text-gray-900 dark:text-foreground-primary text-xs sm:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all font-mono"
+            />
+            <button
+              type="button"
+              onClick={() => setShowApiKey(!showApiKey)}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded"
+              title={showApiKey ? (isVi ? 'Ẩn key' : 'Hide key') : (isVi ? 'Hiện key' : 'Show key')}
+            >
+              {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          {/* Collapsible API Base URL */}
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setShowBaseUrl(!showBaseUrl)}
+              className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-left"
+            >
+              {showBaseUrl ? <ChevronUp size={13} className="shrink-0" /> : <ChevronDown size={13} className="shrink-0" />}
+              <span className="break-all">
+                {isVi ? 'Máy chủ API Base URL' : 'API Base URL'}:{' '}
+                <code className="font-mono text-gray-700 dark:text-gray-300">
+                  {formData.api_base_url || meta.defaultBaseUrl}
+                </code>
+              </span>
+            </button>
+
+            {(showBaseUrl || Boolean(formData.api_base_url)) && (
+              <div className="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-background-tertiary border border-gray-200/70 dark:border-border-primary space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-foreground-secondary">
+                    API Base URL <span className="text-gray-400 font-normal">({isVi ? 'Tùy chọn' : 'Optional'})</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange('api_base_url', '')}
+                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <RotateCcw size={11} />
+                    <span>{isVi ? 'Mặc định' : 'Reset'}</span>
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
+                <input
+                  type="text"
+                  placeholder={meta.defaultBaseUrl}
+                  value={formData.api_base_url}
+                  onChange={(e) => handleFieldChange('api_base_url', e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 text-gray-900 dark:text-foreground-primary text-xs font-mono"
+                />
+              </div>
+            )}
+          </div>
         </div>
-      ) : (
-        /* API Key and Base URL inputs */
-        <div className="space-y-4">
-          {/* API Key Input */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-                {isDirectKeyProvider
-                  ? isGemini
-                    ? 'Google Gemini API Key'
-                    : isOpenAi
-                    ? 'OpenAI API Key'
-                    : isVolcengine
-                    ? 'Volcengine Agent Plan API Key'
-                    : 'Doubao ModelArk API Key'
-                  : `${meta.name} API Key`}
-              </label>
-              {meta.portalUrl && (
-                <a
-                  href={meta.portalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
-                >
-                  <span>{isVi ? `Lấy API Key tại ${meta.portalName}` : `Get API Key at ${meta.portalName}`}</span>
-                  <ExternalLink size={12} />
-                </a>
-              )}
+      </div>
+
+      {/* 4. Google Gemini Model Configuration (Text, Image, Caption) */}
+      <div className="pt-4 border-t border-gray-100 dark:border-border-primary space-y-4">
+        <div>
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-foreground-primary">
+            {isVi ? 'Cấu hình Mô hình Google Gemini (Model)' : 'Google Gemini Model Configuration'}
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-foreground-tertiary">
+            {isVi
+              ? 'Bấm chọn nhanh mô hình gợi ý bên dưới hoặc tự nhập tên model Google Gemini bất kỳ.'
+              : 'Click a recommended model chip below or type any custom Google Gemini model ID.'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 4A: Text Model */}
+          <div className="p-3.5 rounded-xl border border-gray-200 dark:border-border-primary bg-gray-50/50 dark:bg-background-tertiary/50 space-y-2.5">
+            <label className="block text-xs font-semibold text-gray-800 dark:text-foreground-primary flex items-center gap-1.5">
+              <FileText size={14} className="text-blue-500" />
+              {t('settings.fields.textModel')}
+            </label>
+
+            <div className="flex flex-wrap gap-1.5">
+              {meta.textModels.map((m) => {
+                const isActive = formData.text_model === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => handleSelectTextModel(m.id)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer border ${
+                      isActive
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-gray-200 border-gray-200 dark:border-border-primary hover:border-blue-400'
+                    }`}
+                  >
+                    <span className="font-mono text-[11px]">{m.label}</span>
+                    {(m.badgeVi || m.badgeEn) && (
+                      <span
+                        className={`text-[10px] px-1 py-0.2 rounded ${
+                          isActive
+                            ? 'bg-blue-700 text-blue-100'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                        }`}
+                      >
+                        {isVi ? m.badgeVi : m.badgeEn}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="relative">
-              <input
-                type={showApiKey ? 'text' : 'password'}
-                placeholder={
-                  keyLength > 0
-                    ? isVi ? `Đã thiết lập (${keyLength} ký tự) - Nhập giá trị mới để thay thế` : `Configured (${keyLength} chars) - Enter new key to replace`
-                    : isGemini
-                    ? 'AIzaSy...'
-                    : isOpenAi
-                    ? 'sk-...'
-                    : isVi ? `Nhập API Key của ${meta.name}` : `Enter ${meta.name} API Key`
-                }
-                value={isDirectKeyProvider ? formData.api_key : formData.lazyllm_api_keys[provider] || ''}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (isDirectKeyProvider) {
-                    handleFieldChange('api_key', val);
-                  } else {
-                    setFormData(prev => ({
-                      ...prev,
-                      lazyllm_api_keys: { ...prev.lazyllm_api_keys, [provider]: val },
-                    }));
-                  }
-                }}
-                className="w-full h-10 pl-4 pr-12 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent text-gray-900 dark:text-foreground-primary text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all font-mono"
-              />
-              <button
-                type="button"
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded"
-                title={showApiKey ? (isVi ? 'Ẩn key' : 'Hide key') : (isVi ? 'Hiện key' : 'Show key')}
-              >
-                {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-foreground-tertiary">
+            <input
+              type="text"
+              aria-label={t('settings.fields.textModel')}
+              placeholder={meta.textModels[0]?.id || t('settings.fields.textModelPlaceholder')}
+              value={formData.text_model}
+              onChange={(e) => handleSelectTextModel(e.target.value)}
+              className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 text-xs font-mono text-gray-900 dark:text-foreground-primary"
+            />
+            <p className="text-xs text-gray-500 dark:text-foreground-tertiary">
               {isVi
-                ? 'Để trống nếu muốn giữ nguyên key hiện tại. Nhập key mới và nhấn "Lưu cài đặt" ở cuối trang để cập nhật.'
-                : 'Leave blank to keep existing key. Enter a new key and click "Save Settings" below to update.'}
+                ? 'Dùng để tạo dàn ý, nội dung chi tiết từng trang và tự động thiết kế bố cục.'
+                : 'Used for generating outlines, slide descriptions, and layout styles.'}
             </p>
           </div>
 
-          {/* API Base URL Input (for Gemini, OpenAI, Volcengine) */}
-          {isDirectKeyProvider && (
-            <div className="pt-2 border-t border-gray-100 dark:border-border-primary/60 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-                  API Base URL <span className="text-xs text-gray-400 font-normal">({isVi ? 'Tùy chọn' : 'Optional'})</span>
-                </label>
-                {meta.defaultBaseUrl && (
+          {/* 4B: Image Model */}
+          <div className="p-3 sm:p-3.5 rounded-xl border border-gray-200 dark:border-border-primary bg-gray-50/50 dark:bg-background-tertiary/50 space-y-2.5">
+            <label className="block text-xs font-semibold text-gray-800 dark:text-foreground-primary flex items-center gap-1.5">
+              <ImageIcon size={14} className="text-emerald-500" />
+              {t('settings.fields.imageModel')}
+            </label>
+
+            <div className="flex flex-wrap gap-1.5">
+              {meta.imageModels.map((m) => {
+                const isActive = formData.image_model === m.id;
+                return (
                   <button
+                    key={m.id}
                     type="button"
-                    onClick={() => {
-                      if (isVolcengine) {
-                        handleFieldChange('api_base_url', meta.defaultBaseUrl);
-                      } else {
-                        handleFieldChange('api_base_url', '');
-                      }
-                    }}
-                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    title={isVi ? 'Khôi phục về điểm cuối chính thức' : 'Reset to official endpoint'}
+                    onClick={() => handleSelectImageModel(m.id)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer border ${
+                      isActive
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                        : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-gray-200 border-gray-200 dark:border-border-primary hover:border-emerald-400'
+                    }`}
                   >
-                    <RotateCcw size={12} />
-                    <span>{isVi ? 'Khôi phục mặc định' : 'Reset to default'}</span>
+                    <span className="font-mono text-[11px]">{m.label}</span>
+                    {(m.badgeVi || m.badgeEn) && (
+                      <span
+                        className={`text-[10px] px-1 py-0.2 rounded ${
+                          isActive
+                            ? 'bg-emerald-700 text-emerald-100'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        }`}
+                      >
+                        {isVi ? m.badgeVi : m.badgeEn}
+                      </span>
+                    )}
                   </button>
-                )}
-              </div>
-
-              <input
-                type="text"
-                placeholder={meta.defaultBaseUrl || 'https://api.example.com'}
-                value={formData.api_base_url}
-                onChange={(e) => handleFieldChange('api_base_url', e.target.value)}
-                className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent text-gray-900 dark:text-foreground-primary text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all font-mono"
-              />
-              <p className="text-xs text-gray-500 dark:text-foreground-tertiary">
-                {isVi
-                  ? `Mặc định để trống để sử dụng điểm cuối chính thức (${meta.defaultBaseUrl || 'nhà cung cấp'}). Chỉ thay đổi nếu bạn sử dụng reverse proxy hoặc máy chủ doanh nghiệp.`
-                  : `Leave empty to use official endpoint (${meta.defaultBaseUrl || 'provider'}). Only change if using a reverse proxy or enterprise gateway.`}
-              </p>
-
-              {/* Volcengine endpoint warning & reset */}
-              {isVolcengine &&
-                formData.api_base_url &&
-                formData.api_base_url !== 'https://ark.cn-beijing.volces.com/api/plan/v3' && (
-                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-700 dark:bg-amber-950/40">
-                    <p className="flex-1 text-xs text-amber-800 dark:text-amber-200">
-                      {isVi
-                        ? 'Base URL hiện tại không phải điểm cuối chính thức của Volcengine Agent Plans (https://ark.cn-beijing.volces.com/api/plan/v3)'
-                        : 'Current Base URL is not the official Volcengine Agent Plans endpoint'}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange('api_base_url', 'https://ark.cn-beijing.volces.com/api/plan/v3')}
-                      className="shrink-0 rounded-md bg-amber-500 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-600"
-                    >
-                      {isVi ? 'Dùng điểm cuối chính thức' : 'Use Official Endpoint'}
-                    </button>
-                  </div>
-                )}
+                );
+              })}
             </div>
-          )}
 
-          {/* Volcengine Promo & Recommended Models Action */}
-          {(isVolcengine || isDoubao) && (
-            <div className="pt-3 border-t border-gray-100 dark:border-border-primary/60 flex flex-wrap items-center gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={applyVolcengineRecommendedModels}
-                icon={<Sparkles size={14} className="text-amber-500" />}
-              >
-                {isVi ? 'Áp dụng mô hình khuyến nghị của Volcengine' : 'Apply Volcengine Recommended Models'}
-              </Button>
-              {volcengineAgentPlansUrl && (
-                <a
-                  href={volcengineAgentPlansUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-amber-700 hover:text-amber-800 dark:text-amber-300 underline font-medium"
-                >
-                  <span>{isVi ? 'Xem ưu đãi Volcengine Agent Plan' : 'View Volcengine Agent Plan Promotion'}</span>
-                  <ExternalLink size={12} />
-                </a>
-              )}
-            </div>
-          )}
+            <input
+              type="text"
+              aria-label={t('settings.fields.imageModel')}
+              placeholder={meta.imageModels[0]?.id || t('settings.fields.imageModelPlaceholder')}
+              value={formData.image_model}
+              onChange={(e) => handleSelectImageModel(e.target.value)}
+              className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 text-xs font-mono text-gray-900 dark:text-foreground-primary"
+            />
+            <p className="text-xs text-gray-500 dark:text-foreground-tertiary">
+              {isVi
+                ? 'Dùng để vẽ hình ảnh slide hoàn chỉnh bằng Google Gemini / Imagen.'
+                : 'Used for rendering slide images via Google Gemini / Imagen.'}
+            </p>
+          </div>
 
-          {/* SenseNova image hint */}
-          {provider === 'sensenova' && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <p data-testid="sensenova-global-image-hint" className="text-xs text-amber-700 dark:text-amber-300">
-                {t('settings.fields.sensenovaImageHint')}
-              </p>
+          {/* 4C: Image Caption Model */}
+          <div className="p-3 sm:p-3.5 rounded-xl border border-gray-200 dark:border-border-primary bg-gray-50/50 dark:bg-background-tertiary/50 space-y-2.5">
+            <label className="block text-xs font-semibold text-gray-800 dark:text-foreground-primary flex items-center gap-1.5">
+              <Eye size={14} className="text-purple-500" />
+              {t('settings.fields.imageCaptionModel')}
+            </label>
+
+            <div className="flex flex-wrap gap-1.5">
+              {meta.captionModels.map((m) => {
+                const isActive = formData.image_caption_model === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => handleSelectCaptionModel(m.id)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer border ${
+                      isActive
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                        : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-gray-200 border-gray-200 dark:border-border-primary hover:border-purple-400'
+                    }`}
+                  >
+                    <span className="font-mono text-[11px]">{m.label}</span>
+                    {(m.badgeVi || m.badgeEn) && (
+                      <span
+                        className={`text-[10px] px-1 py-0.2 rounded ${
+                          isActive
+                            ? 'bg-purple-700 text-purple-100'
+                            : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
+                        }`}
+                      >
+                        {isVi ? m.badgeVi : m.badgeEn}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          )}
+
+            <input
+              type="text"
+              aria-label={t('settings.fields.imageCaptionModel')}
+              placeholder={meta.captionModels[0]?.id || t('settings.fields.imageCaptionModelPlaceholder')}
+              value={formData.image_caption_model}
+              onChange={(e) => handleSelectCaptionModel(e.target.value)}
+              className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 text-xs font-mono text-gray-900 dark:text-foreground-primary"
+            />
+            <p className="text-xs text-gray-500 dark:text-foreground-tertiary">
+              {isVi
+                ? 'Dùng để nhận diện hình ảnh trong tài liệu tham khảo và kiểm soát chất lượng ảnh.'
+                : 'Used for analyzing reference images and image quality control.'}
+            </p>
+          </div>
         </div>
-      )}
+      </div>
 
-      {/* Provider Connectivity & Service Testing */}
-      {triggerTest && (
-        <div className="pt-4 border-t border-gray-100 dark:border-border-primary/60 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-foreground-primary flex items-center gap-1.5">
-                <Zap size={13} className="text-amber-500" />
-                {isVi ? 'Kiểm tra kết nối dịch vụ' : 'Test Service Connection'}
-              </h4>
-              <p className="text-[11px] text-gray-500 dark:text-foreground-tertiary mt-0.5">
-                {isVi
-                  ? 'Kiểm tra ngay API Key và điểm cuối của nhà cung cấp này để xác minh kết nối hoạt động bình thường.'
-                  : 'Verify this provider credentials and endpoints to ensure connection is working properly.'}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
+      {/* 5. Quick Save & Test Connection Bar */}
+      <div className="pt-4 border-t border-gray-100 dark:border-border-primary flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          {triggerTest && (
+            <>
               <SettingsInlineServiceTest
                 testKey="text-model"
-                label={isVi ? 'Kiểm tra văn bản' : 'Test Text Model'}
+                label={isVi ? 'Test Văn bản' : 'Test Text'}
                 icon={<Zap size={13} className="text-amber-500" />}
                 testState={serviceTestStates['text-model']}
                 onTest={() => triggerTest('text-model')}
                 onDismiss={dismissTest ? () => dismissTest('text-model') : undefined}
                 isVi={isVi}
                 disabled={!isKeyConfigured}
-                disabledReason={isVi ? 'Chưa cấu hình key' : 'Key not set'}
+                disabledReason={isVi ? 'Chưa nhập API Key' : 'Key not set'}
               />
 
               <SettingsInlineServiceTest
                 testKey="image-model"
-                label={isVi ? 'Kiểm tra tạo ảnh' : 'Test Image Model'}
+                label={isVi ? 'Test Tạo ảnh' : 'Test Image'}
                 icon={<Sparkles size={13} className="text-purple-500" />}
                 testState={serviceTestStates['image-model']}
                 onTest={() => triggerTest('image-model')}
                 onDismiss={dismissTest ? () => dismissTest('image-model') : undefined}
                 isVi={isVi}
                 disabled={!isKeyConfigured}
-                disabledReason={isVi ? 'Chưa cấu hình key' : 'Key not set'}
+                disabledReason={isVi ? 'Chưa nhập API Key' : 'Key not set'}
               />
-            </div>
-          </div>
+
+              <SettingsInlineServiceTest
+                testKey="caption-model"
+                label={isVi ? 'Test Nhận diện ảnh' : 'Test Vision'}
+                icon={<Eye size={13} className="text-blue-500" />}
+                testState={serviceTestStates['caption-model']}
+                onTest={() => triggerTest('caption-model')}
+                onDismiss={dismissTest ? () => dismissTest('caption-model') : undefined}
+                isVi={isVi}
+                disabled={!isKeyConfigured}
+                disabledReason={isVi ? 'Chưa nhập API Key' : 'Key not set'}
+              />
+            </>
+          )}
         </div>
-      )}
+
+        {onSave && (
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Save size={15} />}
+            onClick={onSave}
+            loading={isSaving}
+            className="w-full sm:w-auto justify-center"
+          >
+            {isSaving
+              ? isVi
+                ? 'Đang lưu...'
+                : 'Saving...'
+              : isVi
+              ? 'Lưu cấu hình ngay'
+              : 'Save Configuration'}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

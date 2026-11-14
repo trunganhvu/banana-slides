@@ -132,17 +132,18 @@ class AIService:
             current_app = None  # type: ignore
             has_app_context = lambda: False  # type: ignore
 
+        from .ai_providers import _resolve_setting
         if has_app_context() and current_app and hasattr(current_app, "config"):
-            self.text_model = current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
-            self.image_model = current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
+            self.text_model = _resolve_setting("TEXT_MODEL") or current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
+            self.image_model = _resolve_setting("IMAGE_MODEL") or current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
             # Backend logic
             self.enable_text_reasoning = current_app.config.get("ENABLE_TEXT_REASONING", False)
             self.text_thinking_budget = current_app.config.get("TEXT_THINKING_BUDGET", 1024)
             self.enable_image_reasoning = current_app.config.get("ENABLE_IMAGE_REASONING", False)
             self.image_thinking_budget = current_app.config.get("IMAGE_THINKING_BUDGET", 1024)
         else:
-            self.text_model = config.TEXT_MODEL
-            self.image_model = config.IMAGE_MODEL
+            self.text_model = _resolve_setting("TEXT_MODEL") or config.TEXT_MODEL
+            self.image_model = _resolve_setting("IMAGE_MODEL") or config.IMAGE_MODEL
             self.enable_text_reasoning = False
             self.text_thinking_budget = 1024
             self.enable_image_reasoning = False
@@ -150,9 +151,9 @@ class AIService:
         
         # Caption model for multimodal (image→text) tasks
         if has_app_context() and current_app and hasattr(current_app, "config"):
-            self.caption_model = current_app.config.get("IMAGE_CAPTION_MODEL", config.IMAGE_CAPTION_MODEL)
+            self.caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or current_app.config.get("IMAGE_CAPTION_MODEL", config.IMAGE_CAPTION_MODEL)
         else:
-            self.caption_model = config.IMAGE_CAPTION_MODEL
+            self.caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or config.IMAGE_CAPTION_MODEL
 
         # Use provided providers or create from factory based on AI_PROVIDER_FORMAT (from Flask config or env var)
         self.text_provider = text_provider or get_text_provider(model=self.text_model)

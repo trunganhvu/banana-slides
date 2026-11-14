@@ -57,9 +57,9 @@ ENV UV_HTTP_TIMEOUT=300
 # Cài đặt phụ thuộc Python
 # Nếu có tệp uv.lock thì sử dụng --frozen, ngược lại tạo tệp khóa mới
 RUN if [ -f uv.lock ]; then \
-        uv sync --frozen; \
+        uv sync --frozen --no-install-project; \
     else \
-        uv sync; \
+        uv sync --no-install-project; \
     fi
 
 # Sao chép mã nguồn backend

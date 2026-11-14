@@ -17,13 +17,13 @@ export function SettingsSection({
   return (
     <section aria-label={label || title}>
       <h2
-        className={`text-xl font-semibold text-gray-900 dark:text-foreground-primary ${description ? "mb-1" : "mb-4"} flex items-center`}
+        className={`text-lg sm:text-xl font-semibold text-gray-900 dark:text-foreground-primary ${description ? "mb-1" : "mb-3 sm:mb-4"} flex items-center`}
       >
         {icon}
         <span className="ml-2">{title}</span>
       </h2>
       {description && (
-        <p className="text-sm text-gray-500 dark:text-foreground-tertiary mb-4">
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-foreground-tertiary mb-3 sm:mb-4">
           {description}
         </p>
       )}
@@ -97,7 +97,7 @@ export function SettingsServiceRow({
 }
 export function SettingsActions({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-border-primary">
+    <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 border-t border-gray-200 dark:border-border-primary">
       {children}
     </div>
   );

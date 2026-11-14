@@ -80,6 +80,7 @@ uploads/
 *.orig
 # Local backup directory (for test files, etc.)
 _local_backup/
+node_modules/
 !CLA.md 
 !CONTRIBUTING.md
 .venv

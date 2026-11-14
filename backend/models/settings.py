@@ -132,45 +132,20 @@ class Settings(db.Model):
         return list(self.DEFAULT_IMAGE_PROMPT_FIELDS)
 
     def to_dict(self):
-        """Convert to dictionary, merging .env defaults for None fields."""
+        """Convert to dictionary, enforcing Google Gemini provider and merging .env defaults for None fields."""
         d = Settings._get_config_defaults()
-        effective_provider = self._val('ai_provider_format', d)
+        raw_provider = (self.ai_provider_format or 'gemini').lower()
+        is_legacy_non_gemini = raw_provider != 'gemini'
+        effective_provider = 'gemini'
         provider_defaults = Settings._get_api_defaults_for_provider(effective_provider)
-        api_base_url = self.api_base_url if self.api_base_url is not None else provider_defaults['api_base_url']
-        api_key = self.api_key if self.api_key is not None else provider_defaults['api_key']
+        raw_api_base = None if is_legacy_non_gemini else self.api_base_url
+        raw_api_key = None if is_legacy_non_gemini else self.api_key
+        api_base_url = raw_api_base if raw_api_base is not None else provider_defaults['api_base_url']
+        api_key = raw_api_key if raw_api_key is not None else provider_defaults['api_key']
         mineru_token = self._val('mineru_token', d)
         baidu_api_key = self._val('baidu_api_key', d)
         elevenlabs_api_key = self._val('elevenlabs_api_key', d)
-        text_model_source = self._val('text_model_source', d)
-        image_model_source = self._val('image_model_source', d)
-        image_caption_model_source = self._val('image_caption_model_source', d)
-        text_api_defaults = Settings._get_api_defaults_for_provider(text_model_source, 'TEXT')
-        image_api_defaults = Settings._get_api_defaults_for_provider(image_model_source, 'IMAGE')
-        image_caption_api_defaults = Settings._get_api_defaults_for_provider(
-            image_caption_model_source, 'IMAGE_CAPTION'
-        )
-        text_api_key = self.text_api_key if self.text_api_key is not None else text_api_defaults['api_key']
-        image_api_key = self.image_api_key if self.image_api_key is not None else image_api_defaults['api_key']
-        image_caption_api_key = (
-            self.image_caption_api_key
-            if self.image_caption_api_key is not None
-            else image_caption_api_defaults['api_key']
-        )
-        text_api_base_url = (
-            self.text_api_base_url
-            if self.text_api_base_url is not None
-            else text_api_defaults['api_base_url']
-        )
-        image_api_base_url = (
-            self.image_api_base_url
-            if self.image_api_base_url is not None
-            else image_api_defaults['api_base_url']
-        )
-        image_caption_api_base_url = (
-            self.image_caption_api_base_url
-            if self.image_caption_api_base_url is not None
-            else image_caption_api_defaults['api_base_url']
-        )
+
         def _key_len(k):
             return len(k) if k and not is_placeholder_api_key(k) else 0
 
@@ -178,10 +153,10 @@ class Settings(db.Model):
             'id': self.id,
             'ai_provider_format': effective_provider,
             'api_base_url': api_base_url,
-            'raw_api_base_url': self.api_base_url,
-            'raw_text_api_base_url': self.text_api_base_url,
-            'raw_image_api_base_url': self.image_api_base_url,
-            'raw_image_caption_api_base_url': self.image_caption_api_base_url,
+            'raw_api_base_url': raw_api_base,
+            'raw_text_api_base_url': None,
+            'raw_image_api_base_url': None,
+            'raw_image_caption_api_base_url': None,
             'api_key_length': _key_len(api_key),
             'image_resolution': self._val('image_resolution', d),
             'image_aspect_ratio': self._val('image_aspect_ratio', d),
@@ -204,29 +179,29 @@ class Settings(db.Model):
             'image_thinking_budget': self.image_thinking_budget,
             'enable_image_quality_control': self.enable_image_quality_control,
             'baidu_api_key_length': _key_len(baidu_api_key),
-            'text_model_source': text_model_source,
-            'image_model_source': image_model_source,
-            'image_caption_model_source': image_caption_model_source,
-            'lazyllm_api_keys_info': self._get_lazyllm_api_keys_info(self._val('lazyllm_api_keys', d)),
-            'text_api_key_length': _key_len(text_api_key),
-            'text_api_base_url': text_api_base_url,
-            'image_api_key_length': _key_len(image_api_key),
-            'image_api_base_url': image_api_base_url,
-            'image_caption_api_key_length': _key_len(image_caption_api_key),
-            'image_caption_api_base_url': image_caption_api_base_url,
-            'openai_image_api_protocol': self._val('openai_image_api_protocol', d) or 'auto',
+            'text_model_source': None,
+            'image_model_source': None,
+            'image_caption_model_source': None,
+            'lazyllm_api_keys_info': {},
+            'text_api_key_length': 0,
+            'text_api_base_url': None,
+            'image_api_key_length': 0,
+            'image_api_base_url': None,
+            'image_caption_api_key_length': 0,
+            'image_caption_api_base_url': None,
+            'openai_image_api_protocol': 'auto',
             'elevenlabs_enabled': self.elevenlabs_enabled,
             'elevenlabs_api_key_length': _key_len(elevenlabs_api_key),
             'elevenlabs_voice_id': self.elevenlabs_voice_id or '',
-            'openai_oauth_connected': self.is_openai_oauth_connected(),
-            'openai_oauth_account_id': self.openai_oauth_account_id if self.is_openai_oauth_connected() else None,
+            'openai_oauth_connected': False,
+            'openai_oauth_account_id': None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 
     @staticmethod
     def _get_api_defaults_for_provider(provider, prefix=None):
-        """Return API defaults for an explicit provider/source selection."""
+        """Return Google Gemini API defaults."""
         from config import Config
 
         provider = (provider or '').lower()
@@ -237,29 +212,9 @@ class Settings(db.Model):
             }
         specific_key = getattr(Config, f'{prefix}_API_KEY', None) if prefix else None
         specific_base = getattr(Config, f'{prefix}_API_BASE', None) if prefix else None
-        if provider == 'gemini':
-            return {
-                'api_base_url': specific_base or Config.GOOGLE_API_BASE or None,
-                'api_key': specific_key or Config.GOOGLE_API_KEY or None,
-            }
-        if provider == 'openai':
-            return {
-                'api_base_url': specific_base or Config.OPENAI_API_BASE or None,
-                'api_key': specific_key or Config.OPENAI_API_KEY or None,
-            }
-        if provider == 'volcengine':
-            return {
-                'api_base_url': specific_base or Config.VOLCENGINE_API_BASE or None,
-                'api_key': specific_key or Config.VOLCENGINE_API_KEY or None,
-            }
-        if provider == 'lazyllm':
-            return {
-                'api_base_url': None,
-                'api_key': None,
-            }
         return {
-            'api_base_url': None,
-            'api_key': None,
+            'api_base_url': specific_base or Config.GOOGLE_API_BASE or None,
+            'api_key': specific_key or Config.GOOGLE_API_KEY or None,
         }
 
     def _get_lazyllm_api_keys_info(self, raw=None):
@@ -349,28 +304,13 @@ class Settings(db.Model):
 
     @staticmethod
     def _get_config_defaults():
-        """Return a dict of default values from Config/env for settings fields."""
+        """Return a dict of default values from Config/env for settings fields (Google Gemini only)."""
         from config import Config
-        from services.ai_providers.lazyllm_env import collect_env_lazyllm_api_keys
-
-        provider = (Config.AI_PROVIDER_FORMAT or '').lower()
-        if provider == 'openai':
-            api_base = Config.OPENAI_API_BASE or None
-            api_key = Config.OPENAI_API_KEY or None
-        elif provider == 'volcengine':
-            api_base = Config.VOLCENGINE_API_BASE or None
-            api_key = Config.VOLCENGINE_API_KEY or None
-        elif provider == 'lazyllm':
-            api_base = None
-            api_key = None
-        else:
-            api_base = Config.GOOGLE_API_BASE or None
-            api_key = Config.GOOGLE_API_KEY or None
 
         return {
-            'ai_provider_format': Config.AI_PROVIDER_FORMAT,
-            'api_base_url': api_base,
-            'api_key': api_key,
+            'ai_provider_format': 'gemini',
+            'api_base_url': Config.GOOGLE_API_BASE or None,
+            'api_key': Config.GOOGLE_API_KEY or None,
             'image_resolution': Config.DEFAULT_RESOLUTION,
             'image_aspect_ratio': Config.DEFAULT_ASPECT_RATIO,
             'image_quality': Config.IMAGE_QUALITY,
@@ -384,10 +324,10 @@ class Settings(db.Model):
             'image_caption_model': Config.IMAGE_CAPTION_MODEL,
             'output_language': Config.OUTPUT_LANGUAGE,
             'baidu_api_key': Config.BAIDU_API_KEY or None,
-            'text_model_source': getattr(Config, 'TEXT_MODEL_SOURCE', None),
-            'image_model_source': getattr(Config, 'IMAGE_MODEL_SOURCE', None),
-            'image_caption_model_source': getattr(Config, 'IMAGE_CAPTION_MODEL_SOURCE', None),
-            'lazyllm_api_keys': collect_env_lazyllm_api_keys(),
+            'text_model_source': None,
+            'image_model_source': None,
+            'image_caption_model_source': None,
+            'lazyllm_api_keys': {},
         }
 
     @staticmethod
