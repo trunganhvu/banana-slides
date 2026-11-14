@@ -8,19 +8,22 @@ import { listMaterials, uploadMaterial, listProjects, deleteMaterial, type Mater
 const materialSelectorI18n = {
   zh: {
     material: {
-      selectTitle: "Select Material", totalMaterials: "{{count}} materials", noMaterials: "No materials",
-      selectedCount: "{{count}} selected", allMaterials: "All Materials", unassociated: "Unassociated",
-      currentProject: "Current Project", viewMoreProjects: "+ View more projects...", uploadFile: "Upload File",
-      previewMaterial: "Preview Material", deleteMaterial: "Delete Material", closePreview: "Close Preview",
-      canUploadOrGenerate: "You can upload images or create materials through the material generator",
-      canUploadImages: "You can upload images as materials",
-      generateMaterial: "Generate Material",
+      selectTitle: "Chọn tư liệu", totalMaterials: "{{count}} tư liệu", noMaterials: "Chưa có tư liệu",
+      selectedCount: "Đã chọn {{count}}", allMaterials: "Tất cả tư liệu", unassociated: "Chưa phân loại",
+      currentProject: "Dự án hiện tại", viewMoreProjects: "+ Xem thêm dự án...", uploadFile: "Tải tệp lên",
+      previewMaterial: "Xem trước tư liệu", deleteMaterial: "Xóa tư liệu", closePreview: "Đóng xem trước",
+      canUploadOrGenerate: "Bạn có thể tải ảnh lên hoặc tạo tư liệu qua hộp công cụ tạo tư liệu",
+      canUploadImages: "Bạn có thể tải ảnh lên làm tư liệu",
+      generateMaterial: "Tạo tư liệu",
       messages: {
-        loadMaterialFailed: "Failed to load materials", unsupportedFormat: "Unsupported image format",
-        uploadSuccess: "Material uploaded successfully", uploadFailed: "Failed to upload material",
-        cannotDelete: "Cannot delete: Missing material ID", deleteSuccess: "Material deleted", deleteFailed: "Failed to delete material",
-        selectAtLeastOne: "Please select at least one material", maxSelection: "Maximum {{count}} materials can be selected"
+        loadMaterialFailed: "Tải tư liệu thất bại", unsupportedFormat: "Định dạng hình ảnh không được hỗ trợ",
+        uploadSuccess: "Tải tư liệu lên thành công", uploadFailed: "Tải tư liệu lên thất bại",
+        cannotDelete: "Không thể xóa: Thiếu ID tư liệu", deleteSuccess: "Đã xóa tư liệu", deleteFailed: "Xóa tư liệu thất bại",
+        selectAtLeastOne: "Vui lòng chọn ít nhất một tư liệu", maxSelection: "Chỉ được chọn tối đa {{count}} tư liệu"
       }
+    },
+    template: {
+      saveToLibraryOnUpload: "Lưu vào kho mẫu khi tải lên"
     }
   },
   en: {
@@ -38,6 +41,9 @@ const materialSelectorI18n = {
         cannotDelete: "Cannot delete: Missing material ID", deleteSuccess: "Material deleted", deleteFailed: "Failed to delete material",
         selectAtLeastOne: "Please select at least one material", maxSelection: "Maximum {{count}} materials can be selected"
       }
+    },
+    template: {
+      saveToLibraryOnUpload: "Save to template library on upload"
     }
   }
 };

@@ -4,17 +4,13 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
-  CheckCircle2,
-  AlertCircle,
   RotateCcw,
   Zap,
   FileText,
   Image as ImageIcon,
-  Save,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { Button } from '@/components/shared';
 import { SettingsInlineServiceTest, type InlineServiceTestState } from './SettingsInlineServiceTest';
 import type { Settings as SettingsType } from '@/types';
 import type { useT } from '@/hooks/useT';
@@ -36,8 +32,6 @@ export interface SettingsActiveProviderFormProps {
   serviceTestStates?: Record<string, InlineServiceTestState>;
   triggerTest?: (testKey: string) => void;
   dismissTest?: (testKey: string) => void;
-  onSave?: () => void;
-  isSaving?: boolean;
 }
 
 interface ModelPresetOption {
@@ -94,8 +88,6 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
   serviceTestStates = {},
   triggerTest,
   dismissTest,
-  onSave,
-  isSaving = false,
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showBaseUrl, setShowBaseUrl] = useState(Boolean(formData.api_base_url));
@@ -127,7 +119,7 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-3.5 sm:p-5 shadow-sm dark:border-border-primary dark:bg-background-secondary space-y-4 sm:space-y-6">
       {/* 1. Google Gemini Header Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-gray-100 dark:border-border-primary">
+      <div className="flex items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-gray-100 dark:border-border-primary">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold text-base bg-gradient-to-tr from-blue-500 via-indigo-500 to-banana-400 text-white shadow-sm shrink-0">
             <Sparkles size={18} className="sm:w-5 sm:h-5" />
@@ -136,33 +128,7 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
             <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-foreground-primary">
               {meta.name}
             </h3>
-            <p className="text-xs text-gray-500 dark:text-foreground-tertiary mt-0.5 line-clamp-2 sm:line-clamp-none">
-              {isVi ? meta.description.vi : meta.description.en}
-            </p>
           </div>
-        </div>
-
-        {/* Configuration Status Badge */}
-        <div className="flex items-center self-start sm:self-center shrink-0">
-          {isKeyConfigured ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-              <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-              <span>
-                {currentKeyValue
-                  ? isVi
-                    ? `Đã nhập (${currentKeyValue.length} ký tự)`
-                    : `Entered (${currentKeyValue.length} chars)`
-                  : isVi
-                  ? `Đã lưu (${keyLength} ký tự)`
-                  : `Saved (${keyLength} chars)`}
-              </span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
-              <AlertCircle size={13} className="text-amber-500 shrink-0" />
-              <span>{isVi ? 'Chưa có API Key' : 'API Key Not Set'}</span>
-            </span>
-          )}
         </div>
       </div>
 
@@ -195,8 +161,8 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
               placeholder={
                 keyLength > 0
                   ? isVi
-                    ? `Đã lưu key (${keyLength} ký tự) - Nhập key mới để đổi`
-                    : `Saved (${keyLength} chars) - Enter new key to change`
+                    ? 'Đã lưu key - Nhập key mới để đổi'
+                    : 'Saved key - Enter new key to change'
                   : 'AIzaSy...'
               }
               value={formData.api_key}
@@ -475,25 +441,6 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
             </>
           )}
         </div>
-
-        {onSave && (
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Save size={15} />}
-            onClick={onSave}
-            loading={isSaving}
-            className="w-full sm:w-auto justify-center"
-          >
-            {isSaving
-              ? isVi
-                ? 'Đang lưu...'
-                : 'Saving...'
-              : isVi
-              ? 'Lưu cấu hình ngay'
-              : 'Save Configuration'}
-          </Button>
-        )}
       </div>
     </div>
   );

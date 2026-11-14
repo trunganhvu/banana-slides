@@ -94,8 +94,8 @@ export function downloadFromUrl(url: string, filename?: string) {
  */
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'zh-CN';
-  const locale = lang.startsWith('zh') ? 'zh-CN' : 'en-US';
+  const lang = localStorage.getItem('banana-slides-language') || localStorage.getItem('i18nextLng') || navigator.language || 'vi';
+  const locale = lang.startsWith('en') ? 'en-US' : 'vi-VN';
   return date.toLocaleString(locale, {
     year: 'numeric',
     month: '2-digit',
@@ -119,8 +119,8 @@ export function normalizeErrorMessage(
   errorMessage: string | null | undefined,
   language?: string,
 ): string {
-  const lang = language || localStorage.getItem('i18nextLng') || navigator.language || 'zh';
-  const isVi = lang.startsWith('zh');
+  const lang = language || localStorage.getItem('banana-slides-language') || localStorage.getItem('i18nextLng') || navigator.language || 'vi';
+  const isVi = !lang.startsWith('en');
 
   if (!errorMessage) return isVi ? 'Thao tác thất bại' : 'Operation failed';
 
@@ -245,8 +245,8 @@ export function normalizeErrorMessage(
 export function normalizeRenovationErrorMessage(errorMessage: string | null | undefined): string {
   const rawMessage = typeof errorMessage === 'string' ? errorMessage : String(errorMessage || '');
   const message = rawMessage.toLowerCase();
-  const lang = localStorage.getItem('banana-slides-language') || navigator.language || 'zh';
-  const isVi = lang.startsWith('zh');
+  const lang = localStorage.getItem('banana-slides-language') || navigator.language || 'vi';
+  const isVi = !lang.startsWith('en');
   const normalized = normalizeErrorMessage(errorMessage, lang);
   const looksLikeMineruCredentialStage = message.includes('get upload url')
     || message.includes('requesting upload url')

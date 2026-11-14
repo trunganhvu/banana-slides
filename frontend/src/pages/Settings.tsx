@@ -522,7 +522,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
 export const Settings: React.FC = () => {
   const t = useT(settingsI18n);
   const { i18n } = useTranslation();
-  const isVi = i18n.language?.startsWith('zh') ?? true;
+  const isVi = !i18n.language?.startsWith('en');
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -1039,8 +1039,6 @@ export const Settings: React.FC = () => {
             serviceTestStates={serviceTestStates}
             triggerTest={triggerTest}
             dismissTest={dismissTest}
-            onSave={handleSave}
-            isSaving={isSaving}
           />
         </div>
 

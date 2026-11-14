@@ -38,8 +38,8 @@ const detailI18n = {
       descSettings: "Cài đặt mô tả",
       generationMode: "Chế độ tạo",
       generationModeHint: "Luồng: AI xuất tuần tự từng trang từ đầu đến cuối, tốc độ chậm hơn nhưng mạch lạc hơn. Song song: AI tạo độc lập từng trang theo dàn ý, tốc độ nhanh hơn.",
-      streaming: "Luồng (Streaming)",
-      parallel: "Song song (Parallel)",
+      streaming: "Tuần tự",
+      parallel: "Song song",
       extraFields: "Trường bổ sung",
       extraFieldsHint: "Khi bật, AI sẽ tạo mô tả kèm các trường này. Có thể dùng \"Yêu cầu tạo mô tả\" để định hướng nội dung. Nhấp để bật/tắt, kéo thả để đổi thứ tự.",
       imagePromptOn: "Trường này ảnh hưởng đến hình ảnh được tạo, nhấp để tắt",
@@ -641,7 +641,7 @@ export const DetailEditor: React.FC = () => {
   const missingDescCount = currentProject.pages.filter(p => !p.description_content).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background-primary flex flex-col">
+    <div className="h-screen h-[100dvh] bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
       {/* Top bar */}
       <header className="bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-2 md:py-3 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 md:gap-4">
@@ -775,13 +775,13 @@ export const DetailEditor: React.FC = () => {
             </div>
           </div>
         ) : (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
             <Button
               variant="primary"
               icon={<Sparkles size={16} className="md:w-[18px] md:h-[18px]" />}
               onClick={handleGenerateAll}
-              className="flex-1 sm:flex-initial text-sm md:text-base"
+              className="text-xs sm:text-sm md:text-base whitespace-nowrap px-3 sm:px-4"
             >
               {t('detail.batchGenerate')}
             </Button>
@@ -796,36 +796,43 @@ export const DetailEditor: React.FC = () => {
                 title={t('detail.descSettings')}
               />
               {settingsOpen && (
-                <div className="absolute top-full left-0 mt-1 z-50 w-80 rounded-xl border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none p-4 space-y-4">
-                  {/* Generation mode */}
-                  <div>
-                    <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
-                      {t('detail.generationMode')}
-                      <span className="relative group">
-                        <HelpCircle size={12} className="text-gray-400 cursor-help" />
-                        <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-52 px-2.5 py-1.5 text-[11px] leading-relaxed text-gray-600 dark:text-foreground-secondary bg-white dark:bg-background-primary border border-gray-200 dark:border-border-primary rounded-md shadow-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">{t('detail.generationModeHint')}</span>
-                      </span>
-                    </label>
-                    <div className="flex gap-1">
-                      {(['streaming', 'parallel'] as const).map(mode => (
-                        <button
-                          key={mode}
-                          type="button"
-                          className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                            generationMode === mode
-                              ? 'bg-banana-500 text-white'
-                              : 'bg-gray-100 dark:bg-background-hover text-gray-600 dark:text-foreground-tertiary hover:bg-gray-200 dark:hover:bg-background-primary'
-                          }`}
-                          onClick={() => {
-                            setGenerationMode(mode);
-                            saveSettingsDebounced({ description_generation_mode: mode });
-                          }}
-                        >
-                          {t(`detail.${mode}`)}
-                        </button>
-                      ))}
+                <>
+                  <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={() => setSettingsOpen(false)} />
+                  <div className="fixed inset-x-3 top-24 sm:absolute sm:inset-x-auto sm:top-full sm:left-0 z-50 sm:w-80 max-w-[calc(100vw-24px)] rounded-xl border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none p-4 space-y-4 max-h-[80vh] overflow-y-auto">
+                    {/* Generation mode */}
+                    <div>
+                      <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
+                        {t('detail.generationMode')}
+                        <span className="relative group">
+                          <HelpCircle size={12} className="text-gray-400 cursor-help" />
+                          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-52 px-2.5 py-1.5 text-[11px] leading-relaxed text-gray-600 dark:text-foreground-secondary bg-white dark:bg-background-primary border border-gray-200 dark:border-border-primary rounded-md shadow-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">{t('detail.generationModeHint')}</span>
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['streaming', 'parallel'] as const).map(mode => (
+                          <button
+                            key={mode}
+                            type="button"
+                            className={`flex flex-col items-center justify-center py-2 px-2 text-xs font-medium rounded-lg border transition-colors no-min-touch-target ${
+                              generationMode === mode
+                                ? 'bg-banana-500 text-white border-banana-600 font-semibold shadow-xs'
+                                : 'bg-gray-100 dark:bg-background-hover text-gray-700 dark:text-foreground-secondary border-gray-200 dark:border-border-primary hover:bg-gray-200 dark:hover:bg-background-primary'
+                            }`}
+                            onClick={() => {
+                              setGenerationMode(mode);
+                              saveSettingsDebounced({ description_generation_mode: mode });
+                            }}
+                          >
+                            <span className="font-semibold text-xs whitespace-nowrap">
+                              {t(`detail.${mode}`)}
+                            </span>
+                            <span className={`text-[10px] mt-0.5 whitespace-nowrap ${generationMode === mode ? 'text-white/90' : 'text-gray-500 dark:text-foreground-tertiary'}`}>
+                              {mode === 'streaming' ? 'Luồng (Streaming)' : 'Song song (Parallel)'}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
                   {/* Detail level */}
 
@@ -950,17 +957,18 @@ export const DetailEditor: React.FC = () => {
                     />
                   </div>
                 </div>
-              )}
+              </>
+            )}
             </div>
 
-            <div className="w-px h-6 bg-gray-200 dark:bg-border-primary flex-shrink-0" />
+            <div className="w-px h-5 sm:h-6 bg-gray-200 dark:bg-border-primary flex-shrink-0" />
             {/* Import/Export dropdown */}
             <div className="relative" ref={fileMenuRef}>
               <Button
                 variant="secondary"
                 onClick={() => setFileMenuOpen(!fileMenuOpen)}
                 icon={<FileText size={16} className="md:w-[18px] md:h-[18px]" />}
-                className="text-sm md:text-base"
+                className="text-xs sm:text-sm md:text-base whitespace-nowrap px-2.5 sm:px-3"
               >
                 {t('detail.importExport')}
                 <ChevronDown size={14} className={`ml-1 transition-transform duration-200 ${fileMenuOpen ? 'rotate-180' : ''}`} />
@@ -997,9 +1005,15 @@ export const DetailEditor: React.FC = () => {
                 </div>
               )}
             </div>
-            <span className="text-xs md:text-sm text-gray-500 dark:text-foreground-tertiary whitespace-nowrap">
-              {currentProject.pages.filter((p) => p.description_content).length} /{' '}
-              {currentProject.pages.length} {t('detail.pagesCompleted')}
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end text-xs md:text-sm text-gray-500 dark:text-foreground-tertiary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-background-hover text-gray-600 dark:text-foreground-secondary font-medium whitespace-nowrap">
+              <span className="w-2 h-2 rounded-full bg-banana-500 flex-shrink-0" />
+              <span>
+                {currentProject.pages.filter((p) => p.description_content).length} /{' '}
+                {currentProject.pages.length} {t('detail.pagesCompleted')}
+              </span>
             </span>
           </div>
         </div>
@@ -1007,7 +1021,7 @@ export const DetailEditor: React.FC = () => {
       </div>
 
       {/* Main content area */}
-      <main className="flex-1 p-3 md:p-6 overflow-y-auto min-h-0">
+      <main className="flex-1 p-3 md:p-6 pb-44 md:pb-16 overflow-y-auto min-h-0">
         <div className="max-w-7xl mx-auto">
           <ReferenceFileList
             projectId={projectId}
@@ -1033,7 +1047,7 @@ export const DetailEditor: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pb-20 sm:pb-4">
               {isRenovationProcessing && currentProject.pages.length === 0 ? (
                 /* Placeholder skeleton cards while renovation creates pages */
                 Array.from({ length: renovationProgress?.total || 6 }).map((_, index) => (

@@ -980,17 +980,12 @@ export const Home: React.FC = () => {
       <main className="relative max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 md:py-12">
         {/* Hero header */}
         <div className="text-center mb-6 sm:mb-10 md:mb-16 space-y-3 sm:space-y-4 md:space-y-6">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/60 dark:bg-background-secondary backdrop-blur-sm rounded-full shadow-sm dark:shadow-none mb-2 sm:mb-4">
-            <span className="text-xl sm:text-2xl animate-pulse"><Sparkles size={18} className="text-orange-500 dark:text-banana" /></span>
-            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('home.tagline')}</span>
-          </div>
-
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
             <span className="bg-gradient-to-r from-yellow-600 via-orange-500 to-pink-500 dark:from-banana-dark dark:via-banana dark:to-banana-light bg-clip-text text-transparent dark:italic" style={{
               backgroundSize: '200% auto',
               animation: 'gradient 3s ease infinite',
             }}>
-              {i18n.language?.startsWith('zh') ? `${t('home.title')} · Banana Slides` : 'Banana Slides'}
+              Banana Slides
             </span>
           </h1>
 
@@ -1144,9 +1139,9 @@ export const Home: React.FC = () => {
                 {report ? (!i18n.language?.startsWith('en') ? 'Báo cáo định kỳ' : 'Report builder') : (!i18n.language?.startsWith('en') ? 'Nhập tự do' : 'Free input')}
               </button>)}
             </div>}
-            {structured && <ReportForm fields={reportFields} zh={!!i18n.language?.startsWith('zh')} disabled={isSubmitting || isGlobalLoading}
-              onChange={fields => { setReportFields(fields); if (!reportEdited) setReportPrompt(buildReportPrompt(fields, !!i18n.language?.startsWith('zh'))); }}
-              onRebuild={() => { setReportEdited(false); setReportPrompt(buildReportPrompt(reportFields, !!i18n.language?.startsWith('zh'))); }} />}
+            {structured && <ReportForm fields={reportFields} zh={!i18n.language?.startsWith('en')} disabled={isSubmitting || isGlobalLoading}
+              onChange={fields => { setReportFields(fields); if (!reportEdited) setReportPrompt(buildReportPrompt(fields, !i18n.language?.startsWith('en'))); }}
+              onRebuild={() => { setReportEdited(false); setReportPrompt(buildReportPrompt(reportFields, !i18n.language?.startsWith('en'))); }} />}
             <MarkdownTextarea
               ref={textareaRef}
               placeholder={tabConfig[activeTab].placeholder}

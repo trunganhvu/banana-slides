@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, FileText, Palette, MessageSquare, Download, ChevronLeft, ChevronRight, ExternalLink, Settings, Check, Video, Lightbulb } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Sparkles, FileText, Palette, MessageSquare, Download, ChevronLeft, ChevronRight, ExternalLink, Check, Video } from 'lucide-react';
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { useT } from '@/hooks/useT';
@@ -13,7 +12,7 @@ import logoUrl from '@/assets/logo.png';
 const i18nDict = {
   zh: {
     guide: {
-      brand: 'Banana Slides · Banana Slides',
+      brand: 'Banana Slides',
       setup: 'Bắt đầu nhanh',
       setupSub: 'Hoàn tất cấu hình cơ bản, bật AI hành trình sáng tạo',
       features: 'Giới thiệu tính năng',
@@ -25,23 +24,17 @@ const i18nDict = {
       hiSub: 'Trước khi bắt đầu, Hãy hoàn tất cấu hình cơ bản trước',
       s1: 'Cấu hình API Key',
       s1d: 'Đi tới trang Cài đặt, Cấu hình dự án cần sử dụngAPIdịch vụ, bao gồm: ',
-      s1i: ['của bạn AI của nhà cung cấp dịch vụ API Base và API Key', 'Cấu hình văn bản, Mô hình tạo ảnh(banana pro)và mô hình mô tả ảnh', 'Nếu cần tính năng phân tích tệp, Vui lòng cấu hình MinerU Token', 'Nếu cần tính năng xuất tệp có thể chỉnh sửa, Vui lòng cấu hìnhMinerU TOKEN và Baidu API KEY'],
+      s1i: ['API Base và API Key của nhà cung cấp AI', 'Cấu hình mô hình văn bản, hình ảnh và mô tả'],
       s2: 'Lưu và kiểm tra',
       s2d: 'Sau khi hoàn tất cấu hình, nhất định phải nhấnLưu cài đặtnút, sau đó kiểm tra dịch vụ ở cuối trang, Đảm bảo các dịch vụ hoạt động bình thường. ',
       s3: 'Bắt đầu sáng tạo',
       s3d: 'Sau khi cấu hình thành công, Quay lại trang chủ để bắt đầu sử dụng AI tạo bản trình chiếu đẹp mắt PPT! ',
-      s4: '*Phản hồi vấn đề',
-      s4d: 'Nếu gặp sự cố trong quá trình sử dụng, Có thể tạigithub issueđưa ra',
-      issueLink: 'Đi tớiGithub issue',
-      settingsBtn: 'Đi tới trang Cài đặt',
       featuresOverview: 'Tổng quan tính năng',
       featuresOverviewDesc: 'Tìm hiểu Banana Slides quy trình làm việc hoàn chỉnh, lộ trình sáng tạo, hỗ trợ tư liệu và khả năng xuất tệp. ',
       feishuTutorial: 'Hướng dẫn chi tiết trang Cài đặt',
       feishuTutorialDesc: 'Hoàn tất cấu hình trang Cài đặt theo từng bước. ',
       faq: 'Câu hỏi thường gặp',
       faqDesc: 'Xem API Cấu hình, Các câu hỏi thường gặp trong quá trình xuất và sử dụng. ',
-      hint: 'Gợi ý',
-      hintBody: 'Nếu bạn chưa có API Key, Có thể truy cập trang chủ của nhà cung cấp tương ứng để đăng ký và lấy mã. Sau khi hoàn tất cấu hình, Khuyến nghị kiểm tra dịch vụ trước, tránh gặp sự cố trong quá trình sử dụng sau này. ',
       prev: 'Trang trước',
       next: 'Trang sau',
       cases: { softwareDev: 'Thực hành tốt nhất trong phát triển phần mềm', deepseek: 'DeepSeek-V3.2Trình diễn kỹ thuật', prefabFood: 'Nghiên cứu phát triển và công nghiệp hóa dây chuyền thiết bị thông minh', moneyHistory: 'Sự tiến hóa của tiền tệ: Hành trình từ vỏ sò đến tiền giấy' },
@@ -68,23 +61,17 @@ const i18nDict = {
       hiSub: "Let's complete the basic configuration before you start",
       s1: 'Configure API Key',
       s1d: 'Go to settings page to configure the API services needed for the project, including:',
-      s1i: ["Your AI service provider's API Base and API Key", 'Configure text, image generation model (banana pro) and image caption model', 'If you need file parsing, configure MinerU Token', 'If you need editable export, configure MinerU TOKEN and Baidu API KEY'],
+      s1i: ["Your AI service provider's API Base and API Key", 'Configure text, image generation, and caption models'],
       s2: 'Save and Test',
       s2d: 'After configuration, be sure to click "Save Settings" button, then test services at the bottom of the page to ensure everything works properly.',
       s3: 'Start Creating',
       s3d: 'After successful configuration, return to home page to start using AI to generate beautiful PPT!',
-      s4: '*Feedback',
-      s4d: 'If you encounter issues while using, please raise them on GitHub issues',
-      issueLink: 'Go to GitHub Issues',
-      settingsBtn: 'Go to Settings',
       featuresOverview: 'Features Overview',
       featuresOverviewDesc: 'Learn the full workflow, creation paths, material support, and export options in Banana Slides.',
       feishuTutorial: 'Settings Guide',
       feishuTutorialDesc: 'Follow the step-by-step guide to configure Settings.',
       faq: 'FAQ',
       faqDesc: 'Review common questions about API setup, export, and everyday use.',
-      hint: 'Tip',
-      hintBody: "If you don't have an API Key yet, you can register on the corresponding service provider's website. After configuration, it's recommended to test services first to avoid issues later.",
       prev: 'Previous',
       next: 'Next',
       cases: { softwareDev: 'Software Development Best Practices', deepseek: 'DeepSeek-V3.2 Technical Showcase', prefabFood: 'Prefab Food Intelligent Production Line R&D', moneyHistory: 'The Evolution of Money: From Shells to Paper' },
@@ -117,27 +104,6 @@ const FEATURES: { key: string; icon: React.ReactNode }[] = [
   { key: 'video', icon: <Video className="text-red-500" size={24} /> },
 ];
 
-const CONFIG_LINKS = [
-  {
-    key: 'featuresOverview',
-    descKey: 'featuresOverviewDesc',
-    href: { zh: 'https://docs.bananaslides.online/zh/features/overview', en: 'https://docs.bananaslides.online/features/overview' },
-  },
-  {
-    key: 'feishuTutorial',
-    descKey: 'feishuTutorialDesc',
-    href: {
-      zh: 'https://ziy68cvfvu3.feishu.cn/wiki/GiNawdmpiinSRqkGspocqEWAnkh?from=from_copylink',
-      en: 'https://ziy68cvfvu3.feishu.cn/wiki/GiNawdmpiinSRqkGspocqEWAnkh?from=from_copylink',
-    },
-  },
-  {
-    key: 'faq',
-    descKey: 'faqDesc',
-    href: { zh: 'https://docs.bananaslides.online/zh/faq', en: 'https://docs.bananaslides.online/faq' },
-  },
-];
-
 // ---------------------------------------------------------------------------
 // Page renderers
 // ---------------------------------------------------------------------------
@@ -158,7 +124,6 @@ function tList(lang: 'zh' | 'en', path: string): string[] {
 type PageRenderer = (ctx: {
   t: ReturnType<typeof useT>;
   lang: 'zh' | 'en';
-  navigate: ReturnType<typeof useNavigate>;
   onClose: () => void;
   showcaseIdx: number;
   setShowcaseIdx: (i: number) => void;
@@ -166,7 +131,7 @@ type PageRenderer = (ctx: {
   setExpandedFeat: (i: number | null) => void;
 }) => React.ReactNode;
 
-const renderSetupPage: PageRenderer = ({ t, lang, navigate, onClose }) => {
+const renderSetupPage: PageRenderer = ({ t, lang }) => {
   const steps = [
     { num: '1', bg: 'bg-banana-500', content: (
       <div className="flex-1 space-y-2">
@@ -219,51 +184,6 @@ const renderSetupPage: PageRenderer = ({ t, lang, navigate, onClose }) => {
             {s.content}
           </div>
         ))}
-      </div>
-
-      <div className="flex gap-4 p-4 bg-white dark:bg-background-secondary rounded-xl border border-gray-200 dark:border-border-primary">
-        <div className="flex-shrink-0 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
-        <div className="flex-1 space-y-2">
-          <h4 className="font-semibold text-gray-800 dark:text-foreground-primary">{t('guide.s4')}</h4>
-          <p className="text-sm text-gray-600 dark:text-foreground-tertiary">{t('guide.s4d')}</p>
-        </div>
-        <a href="https://github.com/Anionex/banana-slides/issues" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-banana-600 hover:text-banana-700 font-medium">
-          <ExternalLink size={14} />
-          {t('guide.issueLink')}
-        </a>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-3">
-        {CONFIG_LINKS.map((link) => (
-          <a
-            key={link.key}
-            href={link.href[lang]}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group rounded-xl border border-gray-200 bg-white p-3 transition hover:border-banana-300 hover:bg-banana-50/60 dark:border-border-primary dark:bg-background-secondary dark:hover:border-banana-400 dark:hover:bg-background-hover"
-          >
-            <span className="flex items-center justify-between gap-2 text-sm font-semibold text-gray-800 dark:text-foreground-primary">
-              {t(`guide.${link.key}`)}
-              <ExternalLink size={14} className="flex-shrink-0 text-gray-400 transition group-hover:text-banana-600 dark:group-hover:text-banana-300" />
-            </span>
-            <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-foreground-tertiary">
-              {t(`guide.${link.descKey}`)}
-            </span>
-          </a>
-        ))}
-      </div>
-
-      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
-        <p className="text-xs text-blue-800 flex items-start gap-1.5">
-          <Lightbulb size={14} className="flex-shrink-0 mt-0.5" />
-          <span><strong>{t('guide.hint')}</strong>: {t('guide.hintBody')}</span>
-        </p>
-      </div>
-
-      <div className="flex justify-center pt-2">
-        <Button onClick={() => { onClose(); navigate('/settings', { state: { from: window.location.pathname } }); }} className="bg-banana-500 hover:bg-banana-600 text-black dark:text-white shadow-lg" icon={<Settings size={18} />}>
-          {t('guide.settingsBtn')}
-        </Button>
       </div>
     </div>
   );
@@ -383,7 +303,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   const t = useT(i18nDict);
   const { i18n } = useTranslation();
   const lang: 'zh' | 'en' = !i18n.language?.startsWith('en') ? 'zh' : 'en';
-  const navigate = useNavigate();
   const [pageIdx, setPageIdx] = useState(0);
   const [showcaseIdx, setShowcaseIdx] = useState(0);
   const [expandedFeat, setExpandedFeat] = useState<number | null>(null);
@@ -417,36 +336,19 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
         {/* body */}
         <div className="min-h-[400px]">
-          {page.render({ t, lang, navigate, onClose, showcaseIdx, setShowcaseIdx, expandedFeat, setExpandedFeat })}
+          {page.render({ t, lang, onClose, showcaseIdx, setShowcaseIdx, expandedFeat, setExpandedFeat })}
         </div>
 
         {/* footer */}
-        <div className="pt-4 border-t flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            {pageIdx > 0 && (
+        {pageIdx > 0 && (
+          <div className="pt-4 border-t flex justify-between items-center">
+            <div className="flex items-center gap-2">
               <Button variant="ghost" onClick={() => setPageIdx(pageIdx - 1)} icon={<ChevronLeft size={16} />} size="sm">
                 {t('guide.prev')}
               </Button>
-            )}
+            </div>
           </div>
-
-          <a href="https://github.com/Anionex/banana-slides" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 dark:text-foreground-tertiary hover:text-gray-700 dark:hover:text-gray-200 flex items-center gap-1">
-            <ExternalLink size={14} />
-            GitHub
-          </a>
-
-          <div className="flex items-center gap-2">
-            {pageIdx < PAGES.length - 1 ? (
-              <Button onClick={() => setPageIdx(pageIdx + 1)} icon={<ChevronRight size={16} />} size="sm" className="bg-banana-500 hover:bg-banana-600 text-black dark:text-white">
-                {t('guide.next')}
-              </Button>
-            ) : (
-              <Button variant="ghost" onClick={onClose} size="sm">
-                {t('common.close')}
-              </Button>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </Modal>
   );

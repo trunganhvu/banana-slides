@@ -173,7 +173,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
     <>
       <Card className="p-0 overflow-hidden flex flex-col">
         {/* UI element */}
-        <div className="bg-banana-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary">
+        <div className="bg-banana-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-900 dark:text-foreground-primary">{t('descriptionCard.page', { num: index + 1 })}</span>
@@ -252,13 +252,14 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
         </div>
 
         {/* UI element */}
-        <div className="border-t border-gray-100 dark:border-border-primary px-4 py-3 flex justify-end gap-2 mt-auto">
+        <div className="border-t border-gray-100 dark:border-border-primary px-4 py-3 flex justify-end gap-2 mt-auto flex-shrink-0">
           <Button
             variant="ghost"
             size="sm"
             icon={<Edit2 size={16} />}
             onClick={handleEdit}
             disabled={generating}
+            className="no-min-touch-target"
           >
             {t('common.edit')}
           </Button>
@@ -268,6 +269,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
             icon={<RefreshCw size={16} className={generating ? 'animate-spin' : ''} />}
             onClick={onRegenerate}
             disabled={generating}
+            className="no-min-touch-target"
           >
             {generating ? t('common.generating') : t('descriptionCard.regenerate')}
           </Button>
