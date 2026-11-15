@@ -5,7 +5,14 @@ import logging
 from typing import List, Optional, Any
 from pathlib import Path
 
-from .extractors import ElementExtractor, MinerUElementExtractor, BaiduOCRElementExtractor, BaiduAccurateOCRElementExtractor, ExtractorRegistry
+from .extractors import (
+    ElementExtractor,
+    MinerUElementExtractor,
+    BaiduOCRElementExtractor,
+    BaiduAccurateOCRElementExtractor,
+    ExtractorRegistry,
+    GeminiVisionElementExtractor,
+)
 from .hybrid_extractor import HybridElementExtractor, create_hybrid_extractor
 from .inpaint_providers import (
     InpaintProvider, 
@@ -13,6 +20,7 @@ from .inpaint_providers import (
     GenerativeEditInpaintProvider, 
     BaiduInpaintProvider,
     HybridInpaintProvider,
+    OpenCVInpaintProvider,
     InpaintProviderRegistry
 )
 from .text_attribute_extractors import (
@@ -568,13 +576,7 @@ class ServiceConfig:
             if upload_folder is None:
                 upload_folder = './uploads'
         
-        # Backend logic
-        if not mineru_token:
-            raise ValueError("MinerU token is required. Please configure MINERU_TOKEN.")
-        
-        from services.file_parser_service import FileParserService
-        
-        # Backend logic
+        # Resolve upload path
         upload_path = Path(upload_folder)
         if not upload_path.is_absolute():
             current_file = Path(__file__).resolve()
@@ -584,40 +586,41 @@ class ServiceConfig:
         
         logger.info(f"Upload folder resolved to: {upload_path}")
         
-        # Backend logic
-        parser_service = FileParserService(
-            mineru_token=mineru_token,
-            mineru_api_base=mineru_api_base
-        )
-        
-        # Backend logic
         extractor_registry = ExtractorRegistry()
         
-        if use_hybrid_extractor:
-            # Backend logic
-            hybrid_extractor = ExtractorFactory.create_hybrid_extractor(
-                parser_service=parser_service,
-                upload_folder=upload_path,
-                contain_threshold=kwargs.get('contain_threshold', 0.8),
-                intersection_threshold=kwargs.get('intersection_threshold', 0.3)
+        if mineru_token and extractor_method in ('mineru', 'hybrid'):
+            from services.file_parser_service import FileParserService
+            parser_service = FileParserService(
+                mineru_token=mineru_token,
+                mineru_api_base=mineru_api_base
             )
-            
-            if hybrid_extractor:
-                extractor_registry.register_default(hybrid_extractor)
-                logger.info("✅ Đã tạo bộ trích xuất kết hợp (MinerU + Baidu độ chính xác caoOCR) ")
+            if use_hybrid_extractor:
+                hybrid_extractor = ExtractorFactory.create_hybrid_extractor(
+                    parser_service=parser_service,
+                    upload_folder=upload_path,
+                    contain_threshold=kwargs.get('contain_threshold', 0.8),
+                    intersection_threshold=kwargs.get('intersection_threshold', 0.3)
+                )
+                if hybrid_extractor:
+                    extractor_registry.register_default(hybrid_extractor)
+                    logger.info("✅ Đã tạo bộ trích xuất kết hợp (MinerU + Baidu OCR)")
+                else:
+                    mineru_extractor = MinerUElementExtractor(parser_service, upload_path)
+                    extractor_registry.register_default(mineru_extractor)
             else:
-                # Backend logic
                 mineru_extractor = MinerUElementExtractor(parser_service, upload_path)
                 extractor_registry.register_default(mineru_extractor)
-                logger.warning("⚠️ Tạo bộ trích xuất kết hợp thất bại, chuyển dự phòng sangMinerUbộ trích xuất")
+                logger.info("✅ Đã khởi tạo MinerU Element Extractor")
         else:
-            # Backend logic
-            mineru_extractor = MinerUElementExtractor(parser_service, upload_path)
-            extractor_registry.register_default(mineru_extractor)
-            logger.info("✅ MinerU () ")
+            gemini_extractor = GeminiVisionElementExtractor(upload_folder=upload_path)
+            extractor_registry.register_default(gemini_extractor)
+            logger.info("✅ Đã tạo Google Gemini Vision Element Extractor (mặc định)")
         
-        # Backend logic
+        # Inpaint registry
         inpaint_registry = InpaintProviderRegistry()
+        opencv_inpaint = OpenCVInpaintProvider()
+        inpaint_registry.register_default(opencv_inpaint)
+        logger.info("✅ Đã khởi tạo OpenCV Inpaint Provider làm phương thức phục hồi nền mặc định")
         
         # Backend logic
         effective_inpaint_method = inpaint_method

@@ -48,7 +48,8 @@ from .extractors import (
     MinerUElementExtractor,
     BaiduOCRElementExtractor,
     BaiduAccurateOCRElementExtractor,
-    ExtractorRegistry
+    ExtractorRegistry,
+    GeminiVisionElementExtractor,
 )
 
 # Backend logic
@@ -65,6 +66,7 @@ from .inpaint_providers import (
     GenerativeEditInpaintProvider,
     BaiduInpaintProvider,
     HybridInpaintProvider,
+    OpenCVInpaintProvider,
     InpaintProviderRegistry
 )
 

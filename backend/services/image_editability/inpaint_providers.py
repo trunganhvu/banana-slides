@@ -113,6 +113,47 @@ class DefaultInpaintProvider(InpaintProvider):
             return None
 
 
+class OpenCVInpaintProvider(InpaintProvider):
+    """
+    Phục hồi nền ảnh cục bộ sử dụng thuật toán Telea của OpenCV.
+    Xử lý cực nhanh (<0.1s), không tốn token mạng, tạo nền sạch cho slide PowerPoint.
+    """
+
+    def inpaint_regions(
+        self,
+        image: Image.Image,
+        bboxes: List[tuple],
+        types: Optional[List[str]] = None,
+        **kwargs
+    ) -> Optional[Image.Image]:
+        try:
+            import cv2
+            import numpy as np
+
+            img_rgb = image.convert('RGB')
+            w, h = img_rgb.size
+            mask = np.zeros((h, w), dtype=np.uint8)
+
+            expand = kwargs.get('expand_pixels', 5)
+            for bbox in bboxes:
+                if isinstance(bbox, (tuple, list)) and len(bbox) == 4:
+                    x0, y0, x1, y1 = bbox
+                    bx0 = max(0, int(x0) - expand)
+                    by0 = max(0, int(y0) - expand)
+                    bx1 = min(w, int(x1) + expand)
+                    by1 = min(h, int(y1) + expand)
+                    mask[by0:by1, bx0:bx1] = 255
+
+            img_np = np.array(img_rgb)
+            img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+            inpainted_bgr = cv2.inpaint(img_bgr, mask, 3, cv2.INPAINT_TELEA)
+            inpainted_rgb = cv2.cvtColor(inpainted_bgr, cv2.COLOR_BGR2RGB)
+            return Image.fromarray(inpainted_rgb)
+        except Exception as e:
+            logger.error(f"OpenCVInpaintProvider xử lý thất bại: {e}", exc_info=True)
+            return None
+
+
 class GenerativeEditInpaintProvider(InpaintProvider):
     """
     Inpaint

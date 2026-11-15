@@ -18,7 +18,7 @@ from utils import (
     error_response, not_found, bad_request, success_response,
     parse_page_ids_from_query, parse_page_ids_from_body, get_filtered_pages
 )
-from utils.client_settings import get_client_settings_override
+from utils.client_settings import get_current_client_override, extract_client_settings_from_request
 from services import ExportService, FileService
 from services.ai_service_manager import get_ai_service
 from services.prompts import normalize_narration_generation_config
@@ -473,23 +473,22 @@ def export_editable_pptx(project_id):
         if not isinstance(max_workers, int) or max_workers < 1 or max_workers > 16:
             return bad_request("max_workers must be an integer between 1 and 16")
 
-        # Validate MINERU_TOKEN
-        client_override = get_client_settings_override()
-        mineru_token = (
-            (client_override and client_override.get('mineru_token'))
-            or current_app.config.get('MINERU_TOKEN')
+        # Check AI configuration (Google API Key is required for Gemini Vision)
+        client_override = get_current_client_override() or extract_client_settings_from_request()
+        api_key = (
+            (client_override and client_override.get('api_key'))
+            or current_app.config.get('GOOGLE_API_KEY')
         )
-        if not mineru_token:
+        if not api_key:
             from models import Settings
             settings = Settings.get_settings()
-            if settings and settings.mineru_token:
-                mineru_token = settings.mineru_token
+            if settings and settings.google_api_key:
+                api_key = settings.google_api_key
 
-        if not mineru_token:
+        if not api_key:
             return error_response(
                 'CONFIGURATION_MISSING',
-                'Tính năng PPTX có thể chỉnh sửa yêu cầu cấu hình MINERU_TOKEN để bóc tách chữ từ ảnh. '
-                'Vui lòng cấu hình MINERU_TOKEN trong tệp .env hoặc dùng tính năng Xuất PPTX tiêu chuẩn.',
+                'Vui lòng cấu hình Google API Key trong phần Cài đặt để sử dụng tính năng xuất PPTX có thể chỉnh sửa.',
                 400,
             )
 

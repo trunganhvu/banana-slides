@@ -117,7 +117,7 @@ const previewI18n = {
     preview: {
       title: "Xem trước", pageCount: "{{count}} trang", export: "Xuất", exportTasks: "Nhiệm vụ xuất",
       exportPptx: "Xuất PPTX (Tiêu chuẩn)", exportPdf: "Xuất PDF",
-      exportEditablePptx: "PPTX có thể chỉnh sửa (Yêu cầu MinerU)", exportImages: "Xuất gói hình ảnh",
+      exportEditablePptx: "PPTX có thể chỉnh sửa (Google Gemini)", exportImages: "Xuất gói hình ảnh",
       exportVideo: "Xuất video thuyết minh",
       videoSettingsLoading: "Đang tải cài đặt video...",
       videoSettingsLoadFailed: "Không thể tải cài đặt xuất video. Vui lòng thử lại trước khi xuất.",
@@ -165,8 +165,8 @@ const previewI18n = {
       videoMissingImagesWarning: "{{count}} trang trong phạm vi xuất chưa có ảnh. Bật \"Bao gồm các trang chưa tạo ảnh\" hoặc tạo ảnh trước khi xuất.",
       videoStartExport: "Bắt đầu xuất",
       videoCancel: "Hủy",
-      editablePptxDialogTitle: "Xuất PPTX có thể chỉnh sửa văn bản (Beta)",
-      editablePptxDialogSubtitle: "Bóc tách văn bản trên slide thành các hộp chữ có thể chỉnh sửa trong PowerPoint bằng dịch vụ MinerU.",
+      editablePptxDialogTitle: "Xuất PPTX có thể chỉnh sửa văn bản",
+      editablePptxDialogSubtitle: "Sử dụng Google Gemini Vision để bóc tách các khối văn bản và tạo các hộp chữ có thể chỉnh sửa trong PowerPoint.",
       editablePptxIconTransparent: "Tách nền trong suốt cho biểu tượng (Icon)",
       editablePptxIconTransparentDesc: "Chạy mô hình RMBG-2.0 cục bộ để tạo ảnh PNG nền trong suốt cho biểu tượng, tránh xung đột màu nền.",
       editablePptxModelHint: "Lần đầu sử dụng sẽ tải mô hình ~512MB vào ~/.cache/banana-slides/models/. Khuyến nghị RAM trống ≥16GB.",
@@ -2823,37 +2823,17 @@ export const SlidePreview: React.FC = () => {
           <div className="bg-white dark:bg-background-secondary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
             <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
-            {!mineruTokenConfigured && (
-              <div className="mb-4 p-3.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs">
-                <div className="font-semibold text-sm flex items-center gap-1.5 mb-1.5 text-amber-800 dark:text-amber-300">
-                  <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                  <span>{isEnglishUi ? 'MinerU Token Required' : 'Yêu cầu cấu hình MinerU Token'}</span>
-                </div>
-                <p className="leading-relaxed text-amber-700 dark:text-amber-300">
-                  {isEnglishUi
-                    ? 'Extracting editable text boxes from slide images requires a MinerU token (MINERU_TOKEN in .env). It is not currently configured.'
-                    : 'Tính năng bóc tách văn bản đệ quy sử dụng dịch vụ thông minh MinerU để tách chữ và nền, cần cấu hình MINERU_TOKEN trong tệp .env.'}
-                </p>
-                <div className="mt-3 pt-2.5 border-t border-amber-200 dark:border-amber-800">
-                  <p className="mb-2 font-medium text-amber-800 dark:text-amber-200">
-                    {isEnglishUi
-                      ? 'Tip: To export slides right away for presentation, use Standard PPTX Export:'
-                      : 'Mẹo: Để tải slide trình chiếu ngay mà không cần cấu hình thêm, vui lòng dùng Xuất PPTX tiêu chuẩn:'}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEditablePptxDialog(false);
-                      setShowPptxExportDialog(true);
-                    }}
-                    className="w-full py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    <Download size={14} />
-                    <span>{isEnglishUi ? 'Switch to Standard PPTX Export' : 'Chuyển sang Xuất PPTX tiêu chuẩn'}</span>
-                  </button>
-                </div>
+            <div className="mb-4 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 text-xs">
+              <div className="font-semibold text-sm flex items-center gap-1.5 mb-1 text-emerald-800 dark:text-emerald-300">
+                <Sparkles size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>{isEnglishUi ? 'Powered by Google Gemini Vision' : 'Tích hợp Google Gemini Vision'}</span>
               </div>
-            )}
+              <p className="leading-relaxed text-emerald-700 dark:text-emerald-300">
+                {isEnglishUi
+                  ? 'Slide text blocks will be detected using Google Gemini Vision and placed as editable text boxes in your PowerPoint presentation.'
+                  : 'Hệ thống sử dụng Google Gemini Vision để bóc tách chính xác vị trí chữ và chuyển thành các hộp văn bản có thể chỉnh sửa trong PowerPoint.'}
+              </p>
+            </div>
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-background-hover">
               <input
                 type="checkbox"

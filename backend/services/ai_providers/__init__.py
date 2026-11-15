@@ -106,6 +106,23 @@ def _resolve_setting(key: str, fallback: Optional[str] = None) -> Optional[str]:
     except RuntimeError:
         pass  # outside Flask request context
 
+    # 1.5) Try database Settings model directly
+    try:
+        from models import Settings
+        from config import is_placeholder_api_key
+        settings = Settings.get_settings()
+        if settings:
+            key_lower = key.lower()
+            val = getattr(settings, key_lower, None)
+            if val is None and 'API_KEY' in key:
+                val = getattr(settings, 'google_api_key', None)
+            if val is None and 'API_BASE' in key:
+                val = getattr(settings, 'google_api_base', None)
+            if val and not (('KEY' in key or 'TOKEN' in key) and is_placeholder_api_key(str(val))):
+                return str(val)
+    except Exception:
+        pass
+
     # 2) Try environment
     env_val = os.getenv(key)
     if env_val:

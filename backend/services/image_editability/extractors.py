@@ -457,6 +457,104 @@ class MinerUElementExtractor(ElementExtractor):
         return elements
 
 
+class GeminiVisionElementExtractor(ElementExtractor):
+    """
+    Trích xuất phần tử văn bản từ ảnh slide sử dụng Google Gemini Vision.
+    Nhận diện chính xác tọa độ bounding box, tiêu đề và đoạn văn tiếng Việt.
+    Không yêu cầu dịch vụ MinerU hay tài khoản bên ngoài.
+    """
+
+    def __init__(self, ai_service=None, upload_folder: Optional[Path] = None):
+        self._ai_service = ai_service
+        self._upload_folder = upload_folder
+
+    def _get_ai_service(self):
+        if self._ai_service is None:
+            from services.ai_service_manager import get_ai_service
+            self._ai_service = get_ai_service()
+        return self._ai_service
+
+    def supports_type(self, element_type: Optional[str]) -> bool:
+        return element_type != 'table_cell'
+
+    def extract(
+        self,
+        image_path: str,
+        element_type: Optional[str] = None,
+        **kwargs
+    ) -> ExtractionResult:
+        depth = kwargs.get('depth', 0)
+        try:
+            img = Image.open(image_path)
+            width, height = img.size
+        except Exception as e:
+            logger.error(f"Không thể mở ảnh {image_path}: {e}")
+            return ExtractionResult(elements=[], error=str(e))
+
+        ai = self._get_ai_service()
+        prompt = (
+            "Analyze this presentation slide image and detect all distinct text elements "
+            "(titles, subtitles, body paragraphs, bullet points, labels, footer notes).\n"
+            "Return a JSON object with key \"elements\". Each element must be an object with:\n"
+            "- \"ymin\": integer between 0 and 1000\n"
+            "- \"xmin\": integer between 0 and 1000\n"
+            "- \"ymax\": integer between 0 and 1000\n"
+            "- \"xmax\": integer between 0 and 1000\n"
+            "- \"text\": string with the exact text\n"
+            "- \"type\": \"title\" or \"body\"\n\n"
+            "Example JSON structure:\n"
+            "{\"elements\": [{\"ymin\": 40, \"xmin\": 50, \"ymax\": 150, \"xmax\": 950, \"text\": \"Tiêu đề\", \"type\": \"title\"}]}"
+        )
+
+        try:
+            items = ai.generate_json_with_image(prompt, image_path)
+            if isinstance(items, dict):
+                items = items.get('elements') or items.get('items') or items.get('data') or []
+            if not isinstance(items, list):
+                items = []
+        except Exception as e:
+            logger.error(f"Gemini Vision trích xuất thất bại: {e}")
+            return ExtractionResult(elements=[], error=f"Gemini Vision trích xuất thất bại: {e}")
+
+        elements = []
+        for item in items:
+            text = (item.get('text') or '').strip()
+            if not text:
+                continue
+
+            # Support both flat keys and box_2d
+            if 'ymin' in item and 'xmin' in item and 'ymax' in item and 'xmax' in item:
+                ymin, xmin, ymax, xmax = item['ymin'], item['xmin'], item['ymax'], item['xmax']
+            elif 'box_2d' in item and isinstance(item['box_2d'], (list, tuple)) and len(item['box_2d']) == 4:
+                ymin, xmin, ymax, xmax = item['box_2d']
+            else:
+                continue
+
+            x0 = round((float(xmin) / 1000.0) * width, 2)
+            y0 = round((float(ymin) / 1000.0) * height, 2)
+            x1 = round((float(xmax) / 1000.0) * width, 2)
+            y1 = round((float(ymax) / 1000.0) * height, 2)
+
+            elem_type = 'title' if item.get('type') == 'title' else 'text'
+            elements.append({
+                'bbox': [x0, y0, x1, y1],
+                'type': elem_type,
+                'content': text,
+                'image_path': None,
+                'metadata': {
+                    'source': 'gemini_vision',
+                    'raw_type': item.get('type', 'text'),
+                }
+            })
+
+        logger.info(f"{' ' * depth}Gemini Vision đã trích xuất {len(elements)} phần tử")
+        context = ExtractionContext(
+            result_dir=None,
+            metadata={'source': 'gemini_vision', 'image_size': (width, height)}
+        )
+        return ExtractionResult(elements=elements, context=context)
+
+
 class BaiduOCRElementExtractor(ElementExtractor):
     """
     OCR

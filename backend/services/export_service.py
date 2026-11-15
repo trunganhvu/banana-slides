@@ -1682,9 +1682,18 @@ class ExportService:
             
             editable_images = []
             completed_count = 0
+            from flask import has_app_context, current_app
+            app_instance = current_app._get_current_object() if has_app_context() else None
+
+            def run_make_editable(path):
+                if app_instance:
+                    with app_instance.app_context():
+                        return editability_service.make_image_editable(path)
+                return editability_service.make_image_editable(path)
+
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = {
-                    executor.submit(editability_service.make_image_editable, img_path): idx
+                    executor.submit(run_make_editable, img_path): idx
                     for idx, img_path in enumerate(image_paths)
                 }
                 
