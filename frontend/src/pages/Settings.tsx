@@ -96,7 +96,6 @@ const normalizeGoogleModel = (model: string | undefined, fallback: string): stri
   if (
     trimmed === 'gemini-2.0-flash-preview-image-generation' ||
     trimmed === 'gemini-2.0-flash-image' ||
-    trimmed === 'gemini-2.5-flash-image' ||
     trimmed === 'gemini-3-pro-image-preview' ||
     trimmed === 'imagen-3.0-generate-002'
   ) {

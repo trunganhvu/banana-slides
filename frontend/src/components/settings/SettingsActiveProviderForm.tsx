@@ -67,6 +67,7 @@ const GOOGLE_GEMINI_METADATA: {
   imageModels: [
     { id: 'gemini-3.1-flash-image', label: 'gemini-3.1-flash-image', badgeVi: 'Khuyên dùng (Nano Banana 2)', badgeEn: 'Recommended (Nano Banana 2)' },
     { id: 'gemini-3.1-flash-lite-image', label: 'gemini-3.1-flash-lite-image', badgeVi: 'Tiết kiệm nhất (Nano Banana 2 Lite)', badgeEn: 'Ultra Low Cost (Lite)' },
+    { id: 'gemini-2.5-flash-image', label: 'gemini-2.5-flash-image', badgeVi: 'Thế hệ 2 (Nano Banana 1)', badgeEn: 'Generation 2' },
   ],
   captionModels: [
     { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite', badgeVi: 'Rẻ nhất & Nhanh', badgeEn: 'Cheapest & Fast' },

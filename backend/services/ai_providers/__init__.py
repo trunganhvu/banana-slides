@@ -172,11 +172,10 @@ _MODEL_ALIASES = {
     'gemini-1.5-flash': 'gemini-3.5-flash-lite',
     'gemini-1.5-pro': 'gemini-3.5-flash-lite',
     'gemini-3-flash-preview': 'gemini-3.5-flash-lite',
-    # Image models (map old/expensive models to gemini-3.1-flash-image)
-    'gemini-2.0-flash-preview-image-generation': 'gemini-3.1-flash-image',
-    'gemini-2.0-flash-image': 'gemini-3.1-flash-image',
-    'gemini-2.0-flash-exp-image': 'gemini-3.1-flash-image',
-    'gemini-2.5-flash-image': 'gemini-3.1-flash-image',
+    # Image models (map obsolete models)
+    'gemini-2.0-flash-preview-image-generation': 'gemini-2.5-flash-image',
+    'gemini-2.0-flash-image': 'gemini-2.5-flash-image',
+    'gemini-2.0-flash-exp-image': 'gemini-2.5-flash-image',
     'gemini-3-pro-image-preview': 'gemini-3.1-flash-image',
     'imagen-3.0-generate-002': 'gemini-3.1-flash-image',
 }

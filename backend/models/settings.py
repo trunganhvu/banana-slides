@@ -347,7 +347,7 @@ class Settings(db.Model):
             db.session.commit()
         else:
             dirty = False
-            if settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image', 'gemini-2.5-flash-image', 'gemini-3-pro-image-preview', 'imagen-3.0-generate-002'):
+            if settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image', 'gemini-3-pro-image-preview', 'imagen-3.0-generate-002'):
                 settings.image_model = 'gemini-3.1-flash-image'
                 dirty = True
             if settings.text_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3-flash-preview'):

@@ -281,7 +281,7 @@ def update_settings():
 
         if "image_model" in data:
             raw_image_model = (data["image_model"] or "").strip()
-            if raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image", "gemini-2.5-flash-image", "gemini-3-pro-image-preview", "imagen-3.0-generate-002"):
+            if raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image", "gemini-3-pro-image-preview", "imagen-3.0-generate-002"):
                 raw_image_model = "gemini-3.1-flash-image"
             settings.image_model = raw_image_model or None
 
