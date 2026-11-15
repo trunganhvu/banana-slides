@@ -181,6 +181,8 @@ def create_app():
                     alembic_config = AlembicConfig(alembic_ini)
                     alembic_config.set_main_option('sqlalchemy.url', app.config['SQLALCHEMY_DATABASE_URI'])
                     alembic_command.upgrade(alembic_config, 'head')
+                    from desktop_bootstrap import repair_desktop_settings_schema
+                    repair_desktop_settings_schema(db)
                 except Exception as e:
                     logging.getLogger(__name__).warning(f'Alembic upgrade failed, falling back to create_all: {e}')
                     db.create_all()

@@ -19,7 +19,7 @@ export const LoginModal: React.FC = () => {
 
   const handleDevLogin = async () => {
     setIsSubmitting(true);
-    await devLogin('vutrunganh1@gmail.com');
+    await devLogin();
     setIsSubmitting(false);
   };
 
@@ -58,7 +58,7 @@ export const LoginModal: React.FC = () => {
             disabled={isSubmitting}
             className="w-full text-xs text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 py-1.5 px-3 rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 hover:border-amber-400 transition-colors"
           >
-            Đăng nhập nhanh Admin (vutrunganh1@gmail.com)
+            Đăng nhập nhanh Admin (Môi trường Dev)
           </button>
         </div>
       </div>

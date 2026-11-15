@@ -12,7 +12,7 @@ from models import User
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'banana-slides-jwt-secret-key-2026-secure')
+SECRET_KEY = os.getenv('SECRET_KEY', 'banana-slides-jwt-default-key')
 
 
 def generate_token(user_id: str, email: str, role: str) -> str:
@@ -38,9 +38,6 @@ def decode_token(token: str) -> Optional[dict]:
 
 def get_current_user() -> Optional[User]:
     """Retrieve the authenticated user from request headers or context."""
-    if hasattr(g, 'current_user') and g.current_user is not None:
-        return g.current_user
-
     auth_header = request.headers.get('Authorization', '')
     token = None
     if auth_header.startswith('Bearer '):
@@ -52,15 +49,21 @@ def get_current_user() -> Optional[User]:
 
     if not token:
         g.current_user = None
+        g._auth_token = None
         return None
+
+    if getattr(g, '_auth_token', None) == token and getattr(g, 'current_user', None):
+        return g.current_user
 
     payload = decode_token(token)
     if not payload or 'user_id' not in payload:
         g.current_user = None
+        g._auth_token = None
         return None
 
     user = User.query.get(payload['user_id'])
     g.current_user = user
+    g._auth_token = token
     return user
 
 

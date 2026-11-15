@@ -33,7 +33,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = 'banana-auth-token';
 const USER_KEY = 'banana-auth-user';
-const DEFAULT_CLIENT_ID = '334779236698-h5npe9dpulcm2vfo2c7kh7vuur6hsbvs.apps.googleusercontent.com';
+const DEFAULT_CLIENT_ID = '';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
@@ -115,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const devLogin = useCallback(async (email?: string): Promise<boolean> => {
     try {
-      const res = await apiClient.post('/api/auth/dev-login', { email: email || 'vutrunganh1@gmail.com' });
+      const res = await apiClient.post('/api/auth/dev-login', { email: email || '' });
       const data = res.data?.data;
       if (data?.token && data?.user) {
         setToken(data.token);

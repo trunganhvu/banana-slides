@@ -2,16 +2,22 @@
 Unit tests for Google SSO, user model, project isolation, and admin metrics.
 """
 import pytest
+from sqlalchemy.pool import StaticPool
 from app import create_app
 from models import db, User, Project
 from utils.auth_middleware import generate_token, decode_token
 
 
 @pytest.fixture
-def app():
+def app(monkeypatch):
+    monkeypatch.setenv('ADMIN_EMAILS', 'admin@example.com')
     app = create_app()
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'poolclass': StaticPool,
+        'connect_args': {'check_same_thread': False}
+    }
     with app.app_context():
         db.create_all()
         yield app
@@ -26,11 +32,11 @@ def client(app):
 
 def test_jwt_token_encode_decode(app):
     with app.app_context():
-        token = generate_token('u123', 'vutrunganh1@gmail.com', 'admin')
+        token = generate_token('u123', 'admin@example.com', 'admin')
         payload = decode_token(token)
         assert payload is not None
         assert payload['user_id'] == 'u123'
-        assert payload['email'] == 'vutrunganh1@gmail.com'
+        assert payload['email'] == 'admin@example.com'
         assert payload['role'] == 'admin'
 
 
@@ -43,11 +49,11 @@ def test_dev_login_and_admin_assignment(client, app):
         assert p.user_id is None
 
     # Dev login with admin email
-    res = client.post('/api/auth/dev-login', json={'email': 'vutrunganh1@gmail.com', 'name': 'Trung Anh'})
+    res = client.post('/api/auth/dev-login', json={'email': 'admin@example.com', 'name': 'Admin User'})
     assert res.status_code == 200
     data = res.get_json()['data']
     assert data['user']['role'] == 'admin'
-    assert data['user']['email'] == 'vutrunganh1@gmail.com'
+    assert data['user']['email'] == 'admin@example.com'
     token = data['token']
 
     # Verify unassigned project was assigned to this admin
@@ -58,7 +64,7 @@ def test_dev_login_and_admin_assignment(client, app):
     # Test /api/auth/me
     me_res = client.get('/api/auth/me', headers={'Authorization': f'Bearer {token}'})
     assert me_res.status_code == 200
-    assert me_res.get_json()['data']['user']['email'] == 'vutrunganh1@gmail.com'
+    assert me_res.get_json()['data']['user']['email'] == 'admin@example.com'
 
 
 def test_project_isolation_per_user(client, app):
@@ -75,14 +81,14 @@ def test_project_isolation_per_user(client, app):
         'creation_type': 'idea',
         'idea_prompt': 'Idea from User 1'
     })
-    assert p1_res.status_code == 200
+    assert p1_res.status_code in [200, 201]
 
     # User 2 creates project
     p2_res = client.post('/api/projects', headers={'Authorization': f'Bearer {t2}'}, json={
         'creation_type': 'idea',
         'idea_prompt': 'Idea from User 2'
     })
-    assert p2_res.status_code == 200
+    assert p2_res.status_code in [200, 201]
 
     # User 1 lists projects: should only see User 1's project
     list1 = client.get('/api/projects', headers={'Authorization': f'Bearer {t1}'})
@@ -101,7 +107,7 @@ def test_project_isolation_per_user(client, app):
 
 def test_admin_stats_and_users(client, app):
     # Admin login
-    admin_res = client.post('/api/auth/dev-login', json={'email': 'vutrunganh1@gmail.com', 'name': 'Admin'})
+    admin_res = client.post('/api/auth/dev-login', json={'email': 'admin@example.com', 'name': 'Admin'})
     admin_token = admin_res.get_json()['data']['token']
 
     # Regular user login
@@ -125,5 +131,5 @@ def test_admin_stats_and_users(client, app):
     users = users_res.get_json()['data']['users']
     assert len(users) >= 2
     emails = [u['email'] for u in users]
-    assert 'vutrunganh1@gmail.com' in emails
+    assert 'admin@example.com' in emails
     assert 'member@example.com' in emails

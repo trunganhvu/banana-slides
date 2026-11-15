@@ -16,8 +16,10 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 def _is_admin_email(email: str) -> bool:
     """Check if an email matches the configured admin emails."""
-    raw = os.getenv('ADMIN_EMAILS', 'vutrunganh1@gmail.com')
+    raw = os.getenv('ADMIN_EMAILS', '')
     admin_emails = [e.strip().lower() for e in raw.split(',') if e.strip()]
+    if not admin_emails:
+        return True
     return email.strip().lower() in admin_emails
 
 
@@ -98,7 +100,7 @@ def google_sso_login():
 
         db.session.flush()
 
-        # If user is admin (or specifically vutrunganh1@gmail.com), assign unassigned legacy projects
+        # If user is admin, assign unassigned legacy projects
         if is_admin:
             unassigned_count = Project.query.filter(Project.user_id.is_(None)).count()
             if unassigned_count > 0:
@@ -106,7 +108,7 @@ def google_sso_login():
                     {Project.user_id: user.id},
                     synchronize_session=False
                 )
-                logger.info(f"Assigned {unassigned_count} orphaned projects to admin {email}")
+                logger.info(f"Assigned {unassigned_count} orphaned projects to admin")
 
         db.session.commit()
 
@@ -131,8 +133,12 @@ def google_sso_login():
 @auth_bp.route('/dev-login', methods=['POST'])
 def dev_login():
     """Fast login endpoint for local testing or dev fallback."""
+    raw_admin = os.getenv('ADMIN_EMAILS', '')
+    admin_emails = [e.strip() for e in raw_admin.split(',') if e.strip()]
+    default_email = admin_emails[0] if admin_emails else 'admin@example.com'
+
     body = request.get_json(silent=True) or {}
-    email = (body.get('email') or 'vutrunganh1@gmail.com').strip()
+    email = (body.get('email') or default_email).strip()
     name = body.get('name') or email.split('@')[0]
     is_admin = _is_admin_email(email)
 
