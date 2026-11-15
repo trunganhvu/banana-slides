@@ -164,12 +164,24 @@ def get_default_models_for_provider(fmt: str = 'gemini', api_base: Optional[str]
     }
 
 
+_MODEL_ALIASES = {
+    'gemini-2.0-flash-preview-image-generation': 'gemini-2.5-flash-image',
+    'gemini-2.0-flash-image': 'gemini-2.5-flash-image',
+    'gemini-2.0-flash-exp-image': 'gemini-2.5-flash-image',
+    'imagen-3.0-generate-002': 'gemini-3-pro-image-preview',
+}
+
+
 def _normalize_model_for_provider(model: str, role: str, config: Dict[str, Any]) -> str:
-    """Normalize empty or stale non-Google model names to Google Gemini defaults."""
+    """Normalize empty, obsolete, or non-Google model names to Google Gemini defaults."""
     trimmed = (model or '').strip()
     default_model = 'gemini-3-pro-image-preview' if role == 'image' else 'gemini-3-flash-preview'
     if not trimmed:
         return default_model
+    if trimmed in _MODEL_ALIASES:
+        target = _MODEL_ALIASES[trimmed]
+        logger.info("Normalizing aliased %s model '%s' -> '%s'", role, trimmed, target)
+        return target
     if not trimmed.lower().startswith(_GOOGLE_MODEL_PREFIXES):
         logger.info("Normalizing non-Google %s model '%s' -> '%s'", role, trimmed, default_model)
         return default_model

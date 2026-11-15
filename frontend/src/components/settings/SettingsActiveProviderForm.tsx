@@ -66,9 +66,8 @@ const GOOGLE_GEMINI_METADATA: {
     { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
   ],
   imageModels: [
-    { id: 'gemini-2.0-flash-preview-image-generation', label: 'gemini-2.0-flash-image', badgeVi: 'Nhanh', badgeEn: 'Fast' },
+    { id: 'gemini-2.5-flash-image', label: 'gemini-2.5-flash-image', badgeVi: 'Nhanh', badgeEn: 'Fast' },
     { id: 'gemini-3-pro-image-preview', label: 'gemini-3-pro-image-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
-    { id: 'imagen-3.0-generate-002', label: 'imagen-3.0-generate-002', badgeVi: 'Imagen 3', badgeEn: 'Imagen 3' },
   ],
   captionModels: [
     { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },

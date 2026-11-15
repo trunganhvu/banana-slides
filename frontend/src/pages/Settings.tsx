@@ -92,7 +92,11 @@ const isGoogleModelName = (model: string | null | undefined): boolean => {
 
 const normalizeGoogleModel = (model: string | undefined, fallback: string): string => {
   if (!model || !model.trim()) return '';
-  return isGoogleModelName(model) ? model : fallback;
+  const trimmed = model.trim();
+  if (trimmed === 'gemini-2.0-flash-preview-image-generation' || trimmed === 'gemini-2.0-flash-image') {
+    return 'gemini-2.5-flash-image';
+  }
+  return isGoogleModelName(trimmed) ? trimmed : fallback;
 };
 
 // Initial form data

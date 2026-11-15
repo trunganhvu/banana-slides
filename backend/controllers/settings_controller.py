@@ -277,7 +277,10 @@ def update_settings():
             settings.text_model = (data["text_model"] or "").strip() or None
 
         if "image_model" in data:
-            settings.image_model = (data["image_model"] or "").strip() or None
+            raw_image_model = (data["image_model"] or "").strip()
+            if raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image"):
+                raw_image_model = "gemini-2.5-flash-image"
+            settings.image_model = raw_image_model or None
 
         if "mineru_api_base" in data:
             settings.mineru_api_base = (data["mineru_api_base"] or "").strip() or None

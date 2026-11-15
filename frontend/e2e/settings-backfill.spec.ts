@@ -29,7 +29,7 @@ test.describe('Settings backfill - Mock tests', () => {
               max_description_workers: 5,
               max_image_workers: 8,
               text_model: 'gemini-2.5-flash',
-              image_model: 'gemini-2.0-flash-preview-image-generation',
+              image_model: 'gemini-2.5-flash-image',
               mineru_api_base: null,
               mineru_token_length: 0,
               image_caption_model: null,
@@ -59,7 +59,7 @@ test.describe('Settings backfill - Mock tests', () => {
     await expect(textModel).toBeVisible()
 
     // image_model should be populated from env
-    const imageModel = page.locator('input[value="gemini-2.0-flash-preview-image-generation"]')
+    const imageModel = page.locator('input[value="gemini-2.5-flash-image"]')
     await expect(imageModel).toBeVisible()
 
     // Test verification logic

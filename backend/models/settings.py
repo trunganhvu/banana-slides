@@ -345,6 +345,12 @@ class Settings(db.Model):
             settings = Settings(id=1)
             db.session.add(settings)
             db.session.commit()
+        elif settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image'):
+            settings.image_model = 'gemini-2.5-flash-image'
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
         return settings
 
