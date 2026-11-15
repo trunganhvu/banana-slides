@@ -165,6 +165,12 @@ def get_default_models_for_provider(fmt: str = 'gemini', api_base: Optional[str]
 
 
 _MODEL_ALIASES = {
+    # Text models (Google AI Studio deprecated older flash models for new API keys)
+    'gemini-2.0-flash': 'gemini-3-flash-preview',
+    'gemini-2.5-flash': 'gemini-3-flash-preview',
+    'gemini-1.5-flash': 'gemini-3-flash-preview',
+    'gemini-1.5-pro': 'gemini-3-flash-preview',
+    # Image models
     'gemini-2.0-flash-preview-image-generation': 'gemini-2.5-flash-image',
     'gemini-2.0-flash-image': 'gemini-2.5-flash-image',
     'gemini-2.0-flash-exp-image': 'gemini-2.5-flash-image',

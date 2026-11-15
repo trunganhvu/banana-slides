@@ -96,6 +96,9 @@ const normalizeGoogleModel = (model: string | undefined, fallback: string): stri
   if (trimmed === 'gemini-2.0-flash-preview-image-generation' || trimmed === 'gemini-2.0-flash-image') {
     return 'gemini-2.5-flash-image';
   }
+  if (trimmed === 'gemini-2.0-flash' || trimmed === 'gemini-2.5-flash' || trimmed === 'gemini-1.5-flash') {
+    return 'gemini-3-flash-preview';
+  }
   return isGoogleModelName(trimmed) ? trimmed : fallback;
 };
 

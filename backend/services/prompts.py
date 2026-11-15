@@ -190,12 +190,22 @@ LANGUAGE_CONFIG = {
     'vi': {
         'name': 'Tiếng Việt',
         'instruction': 'Vui lòng xuất toàn bộ nội dung bằng tiếng Việt.',
-        'ppt_text': 'Văn bản trên slide PPT vui lòng sử dụng hoàn toàn bằng tiếng Việt.'
+        'ppt_text': (
+            'Quy tắc kết xuất chữ Tiếng Việt trên slide PPT:\n'
+            '- Toàn bộ văn bản hiển thị trên slide bắt buộc phải là Tiếng Việt chuẩn ngữ pháp và chính tả.\n'
+            '- CHÍNH TẢ & DẤU THANH: Tuyệt đối không sinh ra các từ vô nghĩa, chữ bị biến dạng, thiếu nét hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
+            '- BỐ CỤC & TYPOGRAPHY: Tiêu đề chính và tiêu đề phụ phải rõ ràng, phân cấp chính phụ rành mạch, phông chữ sắc nét, hiện đại. Bố cục phải bám sát chính xác nội dung và định hướng của dàn ý, dành không gian thông thoáng cho nội dung, không vẽ chữ lem nhem hoặc nhồi nhét quá nhiều chữ phụ li ti.'
+        )
     },
     'zh': {
         'name': 'Tiếng Việt',
         'instruction': 'Vui lòng xuất toàn bộ nội dung bằng tiếng Việt.',
-        'ppt_text': 'Văn bản trên slide PPT vui lòng sử dụng hoàn toàn bằng tiếng Việt.'
+        'ppt_text': (
+            'Quy tắc kết xuất chữ Tiếng Việt trên slide PPT:\n'
+            '- Toàn bộ văn bản hiển thị trên slide bắt buộc phải là Tiếng Việt chuẩn ngữ pháp và chính tả.\n'
+            '- CHÍNH TẢ & DẤU THANH: Tuyệt đối không sinh ra các từ vô nghĩa, chữ bị biến dạng, thiếu nét hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
+            '- BỐ CỤC & TYPOGRAPHY: Tiêu đề chính và tiêu đề phụ phải rõ ràng, phân cấp chính phụ rành mạch, phông chữ sắc nét, hiện đại. Bố cục phải bám sát chính xác nội dung và định hướng của dàn ý, dành không gian thông thoáng cho nội dung, không vẽ chữ lem nhem hoặc nhồi nhét quá nhiều chữ phụ li ti.'
+        )
     },
     'ja': {
         'name': 'English',
@@ -758,6 +768,7 @@ Mô tả nội dung của trang slide hiện tại như sau:
 <design_guidelines>
 - Yêu cầu chữ sắc nét, rõ ràng, hình ảnh đạt độ phân giải cao 4K, tỷ lệ {aspect_ratio}.
 {template_style_guideline}
+- Bám sát 100% chủ đề, dàn ý và mô tả của trang slide này: các chi tiết hình ảnh, màu sắc và biểu tượng phải thể hiện chính xác thông điệp và luận điểm cốt lõi của trang.
 - Dựa theo nội dung và yêu cầu để thiết kế bố cục hoàn hảo nhất, kết xuất đầy đủ, chính xác, không thừa không thiếu toàn bộ văn bản trong phần "Văn bản trang".
 - Trừ khi thật sự cần thiết, tuyệt đối không hiển thị các ký hiệu định dạng markdown (như # và *).
 {forbidden_template_text_guidline}

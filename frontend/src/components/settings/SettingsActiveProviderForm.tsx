@@ -60,20 +60,17 @@ const GOOGLE_GEMINI_METADATA: {
     en: 'Supports text outlines, image captioning, and slide image generation directly from Google AI Studio.',
   },
   textModels: [
-    { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
-    { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash', badgeVi: 'Thông minh', badgeEn: 'Smart' },
-    { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash', badgeVi: 'Ổn định & Nhẹ', badgeEn: 'Fast & Stable' },
-    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
+    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
+    { id: 'gemini-flash-latest', label: 'gemini-flash-latest', badgeVi: 'Mới nhất', badgeEn: 'Latest' },
+    { id: 'gemini-2.5-pro', label: 'gemini-2.5-pro', badgeVi: 'Chất lượng cao', badgeEn: 'High Quality' },
   ],
   imageModels: [
     { id: 'gemini-2.5-flash-image', label: 'gemini-2.5-flash-image', badgeVi: 'Nhanh', badgeEn: 'Fast' },
     { id: 'gemini-3-pro-image-preview', label: 'gemini-3-pro-image-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
   ],
   captionModels: [
-    { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
-    { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash', badgeVi: 'Thông minh', badgeEn: 'Smart' },
-    { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash', badgeVi: 'Ổn định & Nhẹ', badgeEn: 'Fast & Stable' },
-    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
+    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
+    { id: 'gemini-flash-latest', label: 'gemini-flash-latest', badgeVi: 'Mới nhất', badgeEn: 'Latest' },
   ],
 };
 

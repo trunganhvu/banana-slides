@@ -345,12 +345,22 @@ class Settings(db.Model):
             settings = Settings(id=1)
             db.session.add(settings)
             db.session.commit()
-        elif settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image'):
-            settings.image_model = 'gemini-2.5-flash-image'
-            try:
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
+        else:
+            dirty = False
+            if settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image'):
+                settings.image_model = 'gemini-2.5-flash-image'
+                dirty = True
+            if settings.text_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'):
+                settings.text_model = 'gemini-3-flash-preview'
+                dirty = True
+            if settings.image_caption_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'):
+                settings.image_caption_model = 'gemini-3-flash-preview'
+                dirty = True
+            if dirty:
+                try:
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
 
         return settings
 

@@ -274,7 +274,10 @@ def update_settings():
 
         # Update model & MinerU configuration (optional, empty values fall back to Config)
         if "text_model" in data:
-            settings.text_model = (data["text_model"] or "").strip() or None
+            raw_text_model = (data["text_model"] or "").strip()
+            if raw_text_model in ("gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"):
+                raw_text_model = "gemini-3-flash-preview"
+            settings.text_model = raw_text_model or None
 
         if "image_model" in data:
             raw_image_model = (data["image_model"] or "").strip()
