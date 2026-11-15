@@ -8,18 +8,20 @@ import { isDesktop } from '@/utils';
 const templateI18n = {
   zh: {
     template: {
-      myTemplates: "My Templates", presetTemplates: "Preset Templates", uploadTemplate: "Upload Template",
-      deleteTemplate: "Delete Template", templateSelected: "Selected",
-      saveToLibraryOnUpload: "Save to my template library when uploading",
-      selectFromMaterials: "Select from Materials", selectAsTemplate: "Select from materials as template",
-      cannotDeleteInUse: "Cannot delete template in use, please deselect or switch first",
+      myTemplates: "Mẫu của tôi", presetTemplates: "Mẫu có sẵn", uploadTemplate: "Tải lên mẫu",
+      deleteTemplate: "Xóa mẫu", templateSelected: "Đã chọn",
+      saveToLibraryOnUpload: "Lưu vào thư viện mẫu của tôi khi tải lên",
+      selectFromMaterials: "Chọn từ kho tư liệu", selectAsTemplate: "Chọn từ kho tư liệu làm mẫu",
+      cannotDeleteInUse: "Không thể xóa mẫu đang được sử dụng, vui lòng bỏ chọn hoặc đổi mẫu khác trước",
       presets: {
-        retroScroll: "Retro Scroll", vectorIllustration: "Vector Illustration", glassEffect: "Glass Effect",
-        techBlue: "Tech Blue", simpleBusiness: "Simple Business", academicReport: "Academic Report"
+        minimalistClean: "Tối giản Hiện đại",
+        vibrantInfographic: "Infographic Đa sắc",
+        liquidGlass: "Apple Liquid Glass",
+        corporateConsulting: "Doanh nghiệp & Học thuật",
       },
-      messages: { uploadSuccess: "Template uploaded successfully", uploadFailed: "Failed to upload template", deleteSuccess: "Template deleted", deleteFailed: "Failed to delete template" }
+      messages: { uploadSuccess: "Tải lên mẫu thành công", uploadFailed: "Tải lên mẫu thất bại", deleteSuccess: "Đã xóa mẫu", deleteFailed: "Xóa mẫu thất bại" }
     },
-    material: { messages: { savedToLibrary: "Material saved to template library", selectedAsTemplate: "Selected from library as template", loadMaterialFailed: "Failed to load materials" } }
+    material: { messages: { savedToLibrary: "Đã lưu tư liệu vào thư viện mẫu", selectedAsTemplate: "Đã chọn từ thư viện làm mẫu", loadMaterialFailed: "Tải tư liệu thất bại" } }
   },
   en: {
     template: {
@@ -29,8 +31,10 @@ const templateI18n = {
       selectFromMaterials: "Select from Materials", selectAsTemplate: "Select from materials as template",
       cannotDeleteInUse: "Cannot delete template in use, please deselect or switch first",
       presets: {
-        retroScroll: "Retro Scroll", vectorIllustration: "Vector Illustration", glassEffect: "Glass Effect",
-        techBlue: "Tech Blue", simpleBusiness: "Simple Business", academicReport: "Academic Report"
+        minimalistClean: "Minimalist Clean",
+        vibrantInfographic: "Vibrant Infographic",
+        liquidGlass: "Apple Liquid Glass",
+        corporateConsulting: "Corporate Consulting",
       },
       messages: { uploadSuccess: "Template uploaded successfully", uploadFailed: "Failed to upload template", deleteSuccess: "Template deleted", deleteFailed: "Failed to delete template" }
     },
@@ -71,9 +75,10 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const { show, ToastContainer } = useToast();
 
   const presetTemplates = [
-    { id: '1', nameKey: 'template.presets.retroScroll', preview: publicAssetPath('/templates/template_y.png'), thumb: publicAssetPath('/templates/template_y-thumb.webp') },
-    { id: '2', nameKey: 'template.presets.vectorIllustration', preview: publicAssetPath('/templates/template_vector_illustration.png'), thumb: publicAssetPath('/templates/template_vector_illustration-thumb.webp') },
-    { id: '3', nameKey: 'template.presets.glassEffect', preview: publicAssetPath('/templates/template_glass.png'), thumb: publicAssetPath('/templates/template_glass-thumb.webp') },
+    { id: '1', nameKey: 'template.presets.minimalistClean', preview: publicAssetPath('/templates/template_minimalist_clean.png'), thumb: publicAssetPath('/templates/template_minimalist_clean-thumb.webp') },
+    { id: '2', nameKey: 'template.presets.vibrantInfographic', preview: publicAssetPath('/templates/template_vibrant_infographic.png'), thumb: publicAssetPath('/templates/template_vibrant_infographic-thumb.webp') },
+    { id: '3', nameKey: 'template.presets.liquidGlass', preview: publicAssetPath('/templates/template_liquid_glass.png'), thumb: publicAssetPath('/templates/template_liquid_glass-thumb.webp') },
+    { id: '4', nameKey: 'template.presets.corporateConsulting', preview: publicAssetPath('/templates/template_corporate_consulting.png'), thumb: publicAssetPath('/templates/template_corporate_consulting-thumb.webp') },
   ];
 
   useEffect(() => {
@@ -340,9 +345,10 @@ export const getTemplateFile = async (
   };
 
   const presetTemplates = [
-    { id: '1', preview: publicAssetPath('/templates/template_y.png') },
-    { id: '2', preview: publicAssetPath('/templates/template_vector_illustration.png') },
-    { id: '3', preview: publicAssetPath('/templates/template_glass.png') },
+    { id: '1', preview: publicAssetPath('/templates/template_minimalist_clean.png') },
+    { id: '2', preview: publicAssetPath('/templates/template_vibrant_infographic.png') },
+    { id: '3', preview: publicAssetPath('/templates/template_liquid_glass.png') },
+    { id: '4', preview: publicAssetPath('/templates/template_corporate_consulting.png') },
   ];
 
   const presetTemplate = presetTemplates.find(t => t.id === templateId);
