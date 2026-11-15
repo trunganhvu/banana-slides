@@ -112,63 +112,99 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
 
   return (
     <Card
-      className={`p-4 relative ${
+      className={`p-3.5 sm:p-4 relative transition-shadow ${
         isSelected ? 'border-2 border-banana-500 shadow-yellow' : ''
       }`}
       onClick={!isEditing ? onClick : undefined}
     >
       <ShimmerOverlay show={isAiRefining} />
 
-      <div className="flex items-start gap-3 relative z-10">
-        {/* UI element */}
+      <div className="flex items-start gap-2.5 sm:gap-3 relative z-10">
+        {/* Drag handle */}
         <div
           {...dragHandleProps}
-          className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600 pt-1"
+          className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600 dark:hover:text-foreground-secondary pt-1 touch-none"
         >
-          <GripVertical size={20} />
+          <GripVertical size={18} className="sm:w-5 sm:h-5" />
         </div>
 
-        {/* UI element */}
+        {/* Content column */}
         <div className="flex-1 min-w-0">
-          {/* UI element */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-semibold text-gray-900 dark:text-foreground-primary">
-              {t('outlineCard.page', { num: index + 1 })}
-            </span>
-            {index === 0 && !isEditing && (
-              <span
-                className="text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 rounded"
-                title={t('outlineCard.coverPageTooltip')}
-              >
-                {t('outlineCard.coverPage')}
+          {/* Header row: Page info & badges on left, Action buttons on right */}
+          <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-gray-100 dark:border-border-secondary">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-wrap">
+              <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-foreground-primary whitespace-nowrap">
+                {t('outlineCard.page', { num: index + 1 })}
               </span>
-            )}
-            {isEditing ? (
-              <input
-                type="text"
-                value={editPart}
-                onChange={(e) => setEditPart(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs px-2 py-0.5 w-24 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder={t('outlineCard.chapter')}
-              />
-            ) : (
-              page.part && (
-                <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
-                  {page.part}
+              {index === 0 && !isEditing && (
+                <span
+                  className="text-[11px] sm:text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 font-medium rounded whitespace-nowrap"
+                  title={t('outlineCard.coverPageTooltip')}
+                >
+                  {t('outlineCard.coverPage')}
                 </span>
-              )
+              )}
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editPart}
+                  onChange={(e) => setEditPart(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs px-2 py-0.5 w-24 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder={t('outlineCard.chapter')}
+                />
+              ) : (
+                page.part && (
+                  <span className="text-[11px] sm:text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded max-w-[120px] truncate" title={page.part}>
+                    {page.part}
+                  </span>
+                )
+              )}
+            </div>
+
+            {/* Action buttons inside header to maximize content width */}
+            {!isEditing && (
+              <div className="flex-shrink-0 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditing(true);
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-banana-600 dark:hover:text-banana-400 hover:bg-banana-50 dark:hover:bg-background-hover rounded-md transition-colors"
+                  title={t('common.edit')}
+                  aria-label={t('common.edit')}
+                >
+                  <Edit2 size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirm(
+                      t('outlineCard.confirmDeletePage'),
+                      onDelete,
+                      { title: t('outlineCard.confirmDeleteTitle'), variant: 'danger' }
+                    );
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors"
+                  title={t('common.delete')}
+                  aria-label={t('common.delete')}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             )}
           </div>
 
           {isEditing ? (
-            /* Component logic */
+            /* Editing form */
             <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
               <input
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500"
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500"
                 placeholder={t('outlineCard.titleLabel')}
               />
               <div>
@@ -183,64 +219,40 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                   placeholder={t('outlineCard.keyPointsPlaceholder')}
                 />
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-1">
                 <button
+                  type="button"
                   onClick={handleCancel}
-                  className="px-3 py-1.5 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
+                  className="px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors flex items-center gap-1"
                 >
-                  <X size={16} className="inline mr-1" />
+                  <X size={15} />
                   {t('common.cancel')}
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isUploading}
-                  className="px-3 py-1.5 text-sm bg-banana-500 text-black dark:text-white rounded-lg hover:bg-banana-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3.5 py-1.5 text-xs sm:text-sm font-medium bg-banana-500 text-black dark:text-white rounded-lg hover:bg-banana-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 shadow-sm"
                 >
-                  <Check size={16} className="inline mr-1" />
+                  <Check size={15} />
                   {t('common.save')}
                 </button>
               </div>
             </div>
           ) : (
-            /* Component logic */
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-foreground-primary mb-2">
-                {outline.title}
+            /* Display */
+            <div className="space-y-1.5">
+              <h4 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-foreground-primary leading-snug">
+                {outline.title || <span className="text-gray-400 italic">Chưa có tiêu đề</span>}
               </h4>
-              <div className="text-gray-600 dark:text-foreground-tertiary">
-                <Markdown>{outline.points.join('\n')}</Markdown>
-              </div>
+              {outline.points && outline.points.length > 0 && (
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-foreground-tertiary leading-relaxed">
+                  <Markdown>{outline.points.join('\n')}</Markdown>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* UI element */}
-        {!isEditing && (
-          <div className="flex-shrink-0 flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(true);
-              }}
-              className="p-1.5 text-gray-500 dark:text-foreground-tertiary hover:text-banana-600 hover:bg-banana-50 dark:hover:bg-background-hover rounded transition-colors"
-            >
-              <Edit2 size={16} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                confirm(
-                  t('outlineCard.confirmDeletePage'),
-                  onDelete,
-                  { title: t('outlineCard.confirmDeleteTitle'), variant: 'danger' }
-                );
-              }}
-              className="p-1.5 text-gray-500 dark:text-foreground-tertiary hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        )}
       </div>
       {ConfirmDialog}
       <MaterialSelector

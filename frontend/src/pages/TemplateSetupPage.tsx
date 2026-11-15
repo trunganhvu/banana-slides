@@ -383,7 +383,7 @@ export const TemplateSetupPage: React.FC = () => {
   const pickerPage = pages.find((p) => (p.id || p.page_id) === pickerPageId) || null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background-primary flex flex-col">
+    <div className="h-screen h-[100dvh] bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
       {/* Top bar */}
       <header className="bg-white dark:bg-background-secondary shadow-sm border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-2 md:py-3 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 md:gap-4">
@@ -444,20 +444,20 @@ export const TemplateSetupPage: React.FC = () => {
         <div
           role="status"
           data-testid="auto-match-readiness"
-          className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200 md:px-6"
+          className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200 md:px-6 flex-shrink-0"
         >
           {autoMatchBlockReason}
         </div>
       )}
 
       {matchTask && (
-        <div className="mx-auto w-full max-w-7xl px-3 md:px-6 pt-3">
+        <div className="mx-auto w-full max-w-7xl px-3 md:px-6 pt-3 flex-shrink-0">
           <TemplateMatchProgress task={matchTask} />
         </div>
       )}
 
-      <main className="flex-1 p-3 md:p-6 overflow-y-auto min-h-0">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-5 lg:grid-cols-12">
+      <main className="flex-1 p-3 md:p-6 pb-28 md:pb-8 overflow-y-auto min-h-0">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-5 lg:grid-cols-12 pb-16 sm:pb-4">
           {/* Left column: Template library */}
           <section className="space-y-3 lg:col-span-5">
             <div className="flex min-h-[32px] flex-wrap items-center justify-between gap-2">

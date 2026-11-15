@@ -2080,7 +2080,7 @@ export const SlidePreview: React.FC = () => {
   ].filter(Boolean).join(' / ');
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
+    <div className="h-screen h-[100dvh] bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
       {/* Slide preview */}
       <header className="h-14 md:h-16 bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-200 dark:border-border-primary flex items-center justify-between px-3 md:px-6 flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">

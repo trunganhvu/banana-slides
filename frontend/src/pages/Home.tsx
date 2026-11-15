@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, History, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X } from 'lucide-react';
+import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, History, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X, Menu } from 'lucide-react';
 import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, SettingsModal, HistoryModal, Footer, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
@@ -29,7 +29,11 @@ const homeI18n = {
   zh: {
     nav: {
       materialGenerate: 'Tạo tư liệu', materialCenter: 'Kho tư liệu',
-      history: 'Lịch sử', settings: 'Cài đặt', help: 'Trợ giúp'
+      history: 'Lịch sử', settings: 'Cài đặt', help: 'Trợ giúp',
+      toolsMenu: 'Công cụ',
+      generateMaterialDesc: 'Tạo ảnh & minh họa AI',
+      materialCenterDesc: 'Kho ảnh & tài nguyên',
+      helpDesc: 'Hướng dẫn sử dụng'
     },
     settings: {
       language: { label: 'Ngôn ngữ giao diện' },
@@ -112,7 +116,11 @@ const homeI18n = {
   en: {
     nav: {
       materialGenerate: 'Generate Material', materialCenter: 'Material Center',
-      history: 'History', settings: 'Settings', help: 'Help'
+      history: 'History', settings: 'Settings', help: 'Help',
+      toolsMenu: 'Tools',
+      generateMaterialDesc: 'Generate AI images & art',
+      materialCenterDesc: 'Saved assets & images',
+      helpDesc: 'Usage guide & shortcuts'
     },
     settings: {
       language: { label: 'Interface Language' },
@@ -225,6 +233,7 @@ export const Home: React.FC = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>([]);
@@ -241,6 +250,32 @@ export const Home: React.FC = () => {
   const renovationFileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click or touch
+  useEffect(() => {
+    if (!isThemeMenuOpen && !isMobileMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target;
+      if (!(target instanceof Node)) return;
+      const element = target instanceof Element ? target : target.parentElement;
+      if (element?.closest('[role="dialog"]')) return;
+
+      if (isThemeMenuOpen && themeMenuRef.current && !themeMenuRef.current.contains(target)) {
+        setIsThemeMenuOpen(false);
+      }
+      if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isThemeMenuOpen, isMobileMenuOpen]);
 
   // Persist draft to sessionStorage to preserve content when navigating to settings
   useEffect(() => {
@@ -807,162 +842,125 @@ export const Home: React.FC = () => {
 
       {/* Navigation bar — web only */}
       {!isDesktop && (
-      <nav className="relative z-50 h-16 md:h-18 bg-white/40 dark:bg-background-primary backdrop-blur-2xl dark:backdrop-blur-none dark:border-b dark:border-border-primary">
-
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center">
+      <nav className="sticky top-0 z-50 h-16 bg-white/80 dark:bg-background-primary/85 backdrop-blur-xl border-b border-gray-200/70 dark:border-border-primary/80 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3 sm:gap-4">
+          {/* Brand logo & title */}
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+            <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-banana-400/25 via-amber-400/15 to-orange-400/20 p-1.5 ring-1 ring-black/5 dark:ring-white/10 shadow-xs flex-shrink-0">
               <img
                 src={logoUrl}
                 alt="Banana Slides Logo"
-                className="h-8 sm:h-10 md:h-12 w-auto rounded-lg object-contain"
+                className="w-full h-full object-contain flex-shrink-0"
               />
             </div>
-            <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-banana-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
-              Banana Slides
-            </span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <span className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
+                Banana<span className="bg-gradient-to-r from-banana-500 via-amber-500 to-orange-500 bg-clip-text text-transparent">Slides</span>
+              </span>
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase bg-banana-500/10 text-banana-700 dark:text-banana-400 border border-banana-500/20 whitespace-nowrap">
+                AI
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-            {/* Desktop: Material generator button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} className="md:w-[18px] md:h-[18px]" />}
+
+          {/* Desktop & Tablet: Tools in Floating Glass Pill */}
+          <div className="hidden md:flex items-center gap-1 bg-gray-100/70 dark:bg-background-secondary/70 p-1 rounded-xl border border-gray-200/50 dark:border-border-primary/60 backdrop-blur-sm">
+            <button
               onClick={handleOpenMaterialModal}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs lg:text-sm font-medium text-gray-700 dark:text-foreground-secondary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-white dark:hover:bg-background-hover rounded-lg transition-all duration-150 shadow-none hover:shadow-xs"
             >
-              <span className="hidden md:inline">{t('nav.materialGenerate')}</span>
-            </Button>
-            {/* Mobile: Material generator icon */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} />}
-              onClick={handleOpenMaterialModal}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
-              title={t('nav.materialGenerate')}
-            />
-            {/* Desktop: Material center button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<FolderOpen size={16} className="md:w-[18px] md:h-[18px]" />}
+              <ImagePlus size={15} className="text-banana-600 dark:text-banana-400" />
+              <span>{t('nav.materialGenerate')}</span>
+            </button>
+            <button
               onClick={() => setIsMaterialCenterOpen(true)}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs lg:text-sm font-medium text-gray-700 dark:text-foreground-secondary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-white dark:hover:bg-background-hover rounded-lg transition-all duration-150 shadow-none hover:shadow-xs"
             >
-              <span className="hidden md:inline">{t('nav.materialCenter')}</span>
-            </Button>
-            {/* Mobile: Material center icon */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<FolderOpen size={16} />}
-              onClick={() => setIsMaterialCenterOpen(true)}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
-              title={t('nav.materialCenter')}
-            />
-            {/* Desktop: History button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<History size={16} className="md:w-[18px] md:h-[18px]" />}
+              <FolderOpen size={15} className="text-blue-500 dark:text-blue-400" />
+              <span>{t('nav.materialCenter')}</span>
+            </button>
+            <button
               onClick={() => setIsHistoryModalOpen(true)}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs lg:text-sm font-medium text-gray-700 dark:text-foreground-secondary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-white dark:hover:bg-background-hover rounded-lg transition-all duration-150 shadow-none hover:shadow-xs"
             >
-              <span className="hidden md:inline">{t('nav.history')}</span>
-            </Button>
-            {/* Mobile: History icon */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<History size={16} />}
-              onClick={() => setIsHistoryModalOpen(true)}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
-              title={t('nav.history')}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={
-                <span className="relative inline-flex items-center justify-center">
-                  <Settings size={16} className="md:w-[18px] md:h-[18px]" />
-                  {isConfigured === false && (
-                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white dark:border-background-secondary" />
-                    </span>
-                  )}
-                </span>
-              }
+              <History size={15} className="text-purple-500 dark:text-purple-400" />
+              <span>{t('nav.history')}</span>
+            </button>
+            <button
+              onClick={() => setIsHelpModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs lg:text-sm font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-white dark:hover:bg-background-hover rounded-lg transition-all duration-150 shadow-none hover:shadow-xs"
+            >
+              <HelpCircle size={15} />
+              <span>{t('nav.help')}</span>
+            </button>
+          </div>
+
+          {/* Desktop & Tablet: Utilities */}
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            <button
               onClick={() => setIsSettingsModalOpen(true)}
-              className={`text-xs md:text-sm transition-all duration-200 font-medium ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs lg:text-sm font-medium rounded-xl transition-all duration-150 ${
                 isConfigured === false
-                  ? 'bg-amber-100/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 ring-1 ring-amber-400/50 hover:bg-amber-200/70 shadow-sm'
-                  : 'hover:bg-banana-100/60 hover:shadow-sm hover:scale-105'
+                  ? 'bg-amber-100/80 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 ring-1 ring-amber-400/60 shadow-xs hover:bg-amber-200/80'
+                  : 'text-gray-700 dark:text-foreground-secondary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-gray-100/80 dark:hover:bg-background-hover'
               }`}
+              title={t('nav.settings')}
             >
-              <span className="hidden md:inline">{t('nav.settings')}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsHelpModalOpen(true)}
-              className="hidden md:inline-flex hover:bg-banana-50/50"
-            >
-              {t('nav.help')}
-            </Button>
-            {/* Mobile help button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<HelpCircle size={16} />}
-              onClick={() => setIsHelpModalOpen(true)}
-              className="md:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
-              title={t('nav.help')}
-            />
-            {/* Divider */}
-            <div className="h-5 w-px bg-gray-300 dark:bg-border-primary mx-1" />
-            {/* Language switcher */}
+              <span className="relative inline-flex items-center justify-center">
+                <Settings size={15} />
+                {isConfigured === false && (
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                  </span>
+                )}
+              </span>
+              <span>{t('nav.settings')}</span>
+            </button>
+
+            <div className="h-4 w-px bg-gray-200 dark:bg-border-primary" />
+
+            {/* Language Switcher */}
             <button
               onClick={() => i18n.changeLanguage(i18n.language?.startsWith('en') ? 'vi' : 'en')}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-gray-100/80 dark:hover:bg-background-hover transition-all"
               title={t('settings.language.label')}
             >
-              <Globe size={14} />
+              <Globe size={14} className="text-banana-500" />
               <span>{i18n.language?.startsWith('en') ? 'VI' : 'EN'}</span>
             </button>
-            {/* Theme toggle */}
+
+            {/* Theme Toggle */}
             <div className="relative" ref={themeMenuRef}>
               <button
                 onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className="flex items-center gap-1 p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+                className="flex items-center gap-1 p-2 rounded-lg text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-gray-100/80 dark:hover:bg-background-hover transition-all"
                 title={t('settings.theme.label')}
               >
-                {theme === 'system' ? <Monitor size={16} /> : isDark ? <Moon size={16} /> : <Sun size={16} />}
-                <ChevronDown size={12} className={`transition-transform ${isThemeMenuOpen ? 'rotate-180' : ''}`} />
+                {theme === 'system' ? <Monitor size={15} /> : isDark ? <Moon size={15} /> : <Sun size={15} />}
+                <ChevronDown size={12} className={`transition-transform duration-200 ${isThemeMenuOpen ? 'rotate-180' : ''}`} />
               </button>
-              {/* Theme dropdown */}
               {isThemeMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsThemeMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary rounded-lg shadow-lg dark:shadow-none py-1 min-w-[120px]">
+                  <div className="absolute right-0 top-full mt-1.5 z-50 bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary rounded-xl shadow-lg dark:shadow-none py-1 min-w-[130px] animate-scale-in">
                     <button
                       onClick={() => { setTheme('light'); setIsThemeMenuOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'light' ? 'text-banana' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-background-hover transition-colors ${theme === 'light' ? 'text-banana-600 font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
                     >
                       <Sun size={14} />
                       <span>{t('settings.theme.light')}</span>
                     </button>
                     <button
                       onClick={() => { setTheme('dark'); setIsThemeMenuOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'dark' ? 'text-banana' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-background-hover transition-colors ${theme === 'dark' ? 'text-banana-400 font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
                     >
                       <Moon size={14} />
                       <span>{t('settings.theme.dark')}</span>
                     </button>
                     <button
                       onClick={() => { setTheme('system'); setIsThemeMenuOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'system' ? 'text-banana' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-background-hover transition-colors ${theme === 'system' ? 'text-banana-500 font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
                     >
                       <Monitor size={14} />
                       <span>{t('settings.theme.system')}</span>
@@ -972,8 +970,164 @@ export const Home: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Mobile Right Bar: Clean, uncluttered, never breaks layout */}
+          <div className="flex md:hidden items-center gap-1.5 flex-shrink-0">
+            {/* History icon */}
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="p-2 text-gray-600 dark:text-foreground-secondary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-gray-100 dark:hover:bg-background-hover rounded-xl transition-colors"
+              title={t('nav.history')}
+              aria-label={t('nav.history')}
+            >
+              <History size={18} />
+            </button>
+
+            {/* Settings icon */}
+            <button
+              onClick={() => setIsSettingsModalOpen(true)}
+              className={`p-2 rounded-xl transition-colors ${
+                isConfigured === false
+                  ? 'bg-amber-100/80 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 ring-1 ring-amber-400/60'
+                  : 'text-gray-600 dark:text-foreground-secondary hover:text-gray-900 dark:hover:text-foreground-primary hover:bg-gray-100 dark:hover:bg-background-hover'
+              }`}
+              title={t('nav.settings')}
+              aria-label={t('nav.settings')}
+            >
+              <span className="relative inline-flex items-center justify-center">
+                <Settings size={18} />
+                {isConfigured === false && (
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                  </span>
+                )}
+              </span>
+            </button>
+
+            {/* Mobile Menu Toggle button */}
+            <div className="relative" ref={mobileMenuRef}>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`p-2 rounded-xl transition-all flex items-center justify-center ${
+                  isMobileMenuOpen
+                    ? 'bg-banana-500 text-black shadow-sm'
+                    : 'text-gray-700 dark:text-foreground-primary bg-gray-100/80 dark:bg-background-secondary hover:bg-gray-200/80 dark:hover:bg-background-hover'
+                }`}
+                title={t('nav.toolsMenu')}
+                aria-label={t('nav.toolsMenu')}
+              >
+                {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+
+              {/* Mobile Popover Drawer Menu */}
+              {isMobileMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 z-50 w-72 bg-white dark:bg-background-secondary rounded-2xl shadow-xl border border-gray-100 dark:border-border-primary p-3 space-y-2.5 animate-scale-in">
+                  <div className="px-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                    {t('nav.toolsMenu')}
+                  </div>
+
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => { handleOpenMaterialModal(); setIsMobileMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-background-hover text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-banana-500/10 text-banana-600 dark:text-banana-400 flex items-center justify-center flex-shrink-0">
+                        <ImagePlus size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-gray-900 dark:text-foreground-primary">{t('nav.materialGenerate')}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-foreground-tertiary truncate">{t('nav.generateMaterialDesc')}</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => { setIsMaterialCenterOpen(true); setIsMobileMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-background-hover text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                        <FolderOpen size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-gray-900 dark:text-foreground-primary">{t('nav.materialCenter')}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-foreground-tertiary truncate">{t('nav.materialCenterDesc')}</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => { setIsHelpModalOpen(true); setIsMobileMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-background-hover text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-background-tertiary text-gray-600 dark:text-foreground-secondary flex items-center justify-center flex-shrink-0">
+                        <HelpCircle size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-gray-900 dark:text-foreground-primary">{t('nav.help')}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-foreground-tertiary truncate">{t('nav.helpDesc')}</div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="border-t border-gray-100 dark:border-border-secondary pt-2.5 space-y-2">
+                    {/* Language */}
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-medium text-gray-600 dark:text-foreground-secondary">
+                        {t('settings.language.label')}
+                      </span>
+                      <button
+                        onClick={() => i18n.changeLanguage(i18n.language?.startsWith('en') ? 'vi' : 'en')}
+                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-background-hover text-gray-800 dark:text-foreground-primary border border-gray-200/50 dark:border-border-primary/50 transition-colors"
+                      >
+                        <Globe size={13} className="text-banana-500" />
+                        <span>{i18n.language?.startsWith('en') ? 'English (EN)' : 'Tiếng Việt (VI)'}</span>
+                      </button>
+                    </div>
+
+                    {/* Theme */}
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-medium text-gray-600 dark:text-foreground-secondary">
+                        {t('settings.theme.label')}
+                      </span>
+                      <div className="flex items-center p-0.5 bg-gray-100 dark:bg-background-hover rounded-lg border border-gray-200/50 dark:border-border-primary/50">
+                        <button
+                          onClick={() => setTheme('light')}
+                          className={`p-1.5 rounded-md transition-all ${theme === 'light' ? 'bg-white dark:bg-background-secondary text-banana-600 shadow-xs' : 'text-gray-500'}`}
+                          title={t('settings.theme.light')}
+                        >
+                          <Sun size={14} />
+                        </button>
+                        <button
+                          onClick={() => setTheme('dark')}
+                          className={`p-1.5 rounded-md transition-all ${theme === 'dark' ? 'bg-white dark:bg-background-secondary text-banana-400 shadow-xs' : 'text-gray-500'}`}
+                          title={t('settings.theme.dark')}
+                        >
+                          <Moon size={14} />
+                        </button>
+                        <button
+                          onClick={() => setTheme('system')}
+                          className={`p-1.5 rounded-md transition-all ${theme === 'system' ? 'bg-white dark:bg-background-secondary text-banana-500 shadow-xs' : 'text-gray-500'}`}
+                          title={t('settings.theme.system')}
+                        >
+                          <Monitor size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </nav>
+      )}
+
+      {/* Mobile backdrop overlay outside nav to cover entire viewport without being trapped by nav backdrop-filter */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/25 backdrop-blur-xs md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
       )}
 
       {/* Main content */}

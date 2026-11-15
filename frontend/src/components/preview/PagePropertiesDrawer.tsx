@@ -632,7 +632,7 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
         className={cn(
           'flex min-h-0 flex-shrink-0 flex-col overflow-hidden border-gray-200 bg-white dark:border-border-primary dark:bg-background-secondary',
           // Component logic
-          'fixed inset-y-0 right-0 z-40 max-w-[88vw] shadow-2xl md:relative md:z-auto md:max-w-none md:shadow-none',
+          'fixed inset-y-0 right-0 z-40 max-w-[88vw] h-full h-[100dvh] shadow-2xl md:relative md:z-auto md:max-w-none md:h-auto md:shadow-none',
           !isDragging && 'transition-[width] duration-300 ease-out',
           // Component logic
           isOpen ? 'md:border-l' : 'pointer-events-none'
@@ -729,7 +729,7 @@ export const PagePropertiesDrawer: React.FC<PagePropertiesDrawerProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4">
+              <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-4 pb-32 md:pb-6">
                 <div className="flex items-center gap-2">
                   <StatusBadge status={page.status} />
                 </div>

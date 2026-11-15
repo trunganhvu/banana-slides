@@ -19,6 +19,7 @@ const outlineI18n = {
       noPages: "Chưa có trang nào", noPagesHint: "Nhấp \"Thêm trang\" để tạo thủ công, hoặc \"Tự động tạo dàn ý\" để AI hỗ trợ bạn",
       parseOutline: "Phân tích dàn ý", autoGenerate: "Tự động tạo dàn ý",
       reParseOutline: "Phân tích lại dàn ý", reGenerate: "Tạo lại dàn ý", export: "Xuất dàn ý", import: "Nhập", importExport: "Nhập/Xuất",
+      characters: "ký tự",
       aiPlaceholder: "Ví dụ: Thêm một trang về..., xóa trang 3, gộp 2 trang đầu... · Ctrl+Enter để gửi",
       aiPlaceholderShort: "Ví dụ: Thêm/xóa trang... · Ctrl+Enter",
       contextLabels: { idea: "Ý tưởng PPT", outline: "Dàn ý", description: "Mô tả" },
@@ -62,6 +63,7 @@ const outlineI18n = {
       noPages: "No pages yet", noPagesHint: "Click \"Add Page\" to create manually, or \"Auto Generate\" to let AI help you",
       parseOutline: "Parse Outline", autoGenerate: "Auto Generate Outline",
       reParseOutline: "Re-parse Outline", reGenerate: "Regenerate Outline", export: "Export Outline", import: "Import", importExport: "Import/Export",
+      characters: "chars",
       aiPlaceholder: "e.g., Add a page about XXX, delete page 3, merge first two pages... · Ctrl+Enter to submit",
       aiPlaceholderShort: "e.g., Add/delete pages... · Ctrl+Enter",
       contextLabels: { idea: "PPT Idea", outline: "Outline", description: "Description" },
@@ -218,6 +220,12 @@ export const OutlineEditor: React.FC = () => {
 
   const [inputText, setInputText] = useState('');
   const [isInputDirty, setIsInputDirty] = useState(false);
+  const [isMobileInputOpen, setIsMobileInputOpen] = useState(false);
+  useEffect(() => {
+    if (currentProject && currentProject.pages.length === 0) {
+      setIsMobileInputOpen(true);
+    }
+  }, [currentProject?.pages.length]);
   const [outlineRequirements, setOutlineRequirements] = useState('');
   const [isRequirementsDirty, setIsRequirementsDirty] = useState(false);
   const reqTextareaRef = useRef<MarkdownTextareaRef>(null);
@@ -513,7 +521,7 @@ export const OutlineEditor: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background-primary flex flex-col">
+    <div className="h-screen h-[100dvh] bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
       {/* Top bar */}
       <header className="bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-2 md:py-3 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 md:gap-4">
@@ -575,9 +583,9 @@ export const OutlineEditor: React.FC = () => {
                 }
                 navigate(`/project/${projectId}/detail`);
               }}
-              className="text-xs md:text-sm"
+              className="text-xs md:text-sm px-2.5 sm:px-3"
             >
-              <span className="hidden sm:inline">{t('common.next')}</span>
+              <span>{t('common.next')}</span>
             </Button>
           </div>
         </div>
@@ -596,14 +604,14 @@ export const OutlineEditor: React.FC = () => {
       </header>
 
       {/* Action bar */}
-      <div className="bg-white dark:bg-background-secondary border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-3 md:py-4 flex-shrink-0">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+      <div className="bg-white dark:bg-background-secondary border-b border-gray-200 dark:border-border-primary px-3 md:px-6 py-2.5 sm:py-3 md:py-4 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
             <Button
               variant="primary"
               icon={<Plus size={16} className="md:w-[18px] md:h-[18px]" />}
               onClick={addNewPage}
-              className="flex-1 sm:flex-initial text-sm md:text-base"
+              className="text-xs sm:text-sm md:text-base whitespace-nowrap px-3 sm:px-4"
             >
               {t('outline.addPage')}
             </Button>
@@ -612,7 +620,7 @@ export const OutlineEditor: React.FC = () => {
                 variant="secondary"
                 onClick={handleGenerateOutline}
                 disabled={isOutlineStreaming}
-                className="flex-1 sm:flex-initial text-sm md:text-base"
+                className="text-xs sm:text-sm md:text-base whitespace-nowrap px-3 sm:px-4"
               >
                 {currentProject.creation_type === 'outline' ? t('outline.parseOutline') : t('outline.autoGenerate')}
               </Button>
@@ -621,7 +629,7 @@ export const OutlineEditor: React.FC = () => {
                 variant="secondary"
                 onClick={handleGenerateOutline}
                 disabled={isOutlineStreaming}
-                className="flex-1 sm:flex-initial text-sm md:text-base"
+                className="text-xs sm:text-sm md:text-base whitespace-nowrap px-3 sm:px-4"
               >
                 {isOutlineStreaming
                   ? t('outline.generating')
@@ -638,47 +646,51 @@ export const OutlineEditor: React.FC = () => {
                 title={t('outline.outlineRequirements')}
               />
               {settingsOpen && (
-                <div className="absolute top-full left-0 mt-1 z-50 w-80 rounded-xl border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none p-4 space-y-3">
-                  <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary">
-                    {t('outline.outlineRequirements')}
-                  </label>
-                  <div data-testid="outline-requirements-textarea">
-                    <MarkdownTextarea
-                      ref={reqTextareaRef}
-                      value={outlineRequirements}
-                      onChange={(val) => { setOutlineRequirements(val); setIsRequirementsDirty(true); }}
-                      onPaste={handleReqImagePaste}
-                      onFiles={handleReqImageFiles}
-                      onSelectFromLibrary={() => { setActiveMaterialTarget('requirements'); setIsMaterialSelectorOpen(true); }}
-                      placeholder={t('outline.outlineRequirementsPlaceholder')}
-                      className="ring-inset"
-                      rows={2}
-                      showImagePreview={false}
+                <>
+                  <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={() => setSettingsOpen(false)} />
+                  <div className="fixed inset-x-3 top-24 sm:absolute sm:inset-x-auto sm:top-full sm:left-0 z-50 sm:w-80 max-w-[calc(100vw-24px)] rounded-xl border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none p-4 space-y-3">
+                    <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary">
+                      {t('outline.outlineRequirements')}
+                    </label>
+                    <div data-testid="outline-requirements-textarea">
+                      <MarkdownTextarea
+                        ref={reqTextareaRef}
+                        value={outlineRequirements}
+                        onChange={(val) => { setOutlineRequirements(val); setIsRequirementsDirty(true); }}
+                        onPaste={handleReqImagePaste}
+                        onFiles={handleReqImageFiles}
+                        onSelectFromLibrary={() => { setActiveMaterialTarget('requirements'); setIsMaterialSelectorOpen(true); }}
+                        placeholder={t('outline.outlineRequirementsPlaceholder')}
+                        className="ring-inset"
+                        rows={2}
+                        showImagePreview={false}
+                      />
+                    </div>
+                    <PresetCapsules
+                      type="outline"
+                      onAppend={(text) => {
+                        setOutlineRequirements((prev) => prev ? `${prev}\n${text}` : text);
+                        setIsRequirementsDirty(true);
+                      }}
                     />
                   </div>
-                  <PresetCapsules
-                    type="outline"
-                    onAppend={(text) => {
-                      setOutlineRequirements((prev) => prev ? `${prev}\n${text}` : text);
-                      setIsRequirementsDirty(true);
-                    }}
-                  />
-                </div>
+                </>
               )}
             </div>
+            <div className="w-px h-5 sm:h-6 bg-gray-200 dark:bg-border-primary flex-shrink-0" />
             {/* Import/Export dropdown */}
             <div className="relative" ref={fileMenuRef}>
               <Button
                 variant="secondary"
                 onClick={() => setFileMenuOpen(!fileMenuOpen)}
                 icon={<FileText size={16} className="md:w-[18px] md:h-[18px]" />}
-                className="flex-1 sm:flex-initial text-sm md:text-base"
+                className="text-xs sm:text-sm md:text-base whitespace-nowrap px-2.5 sm:px-3"
               >
                 {t('outline.importExport')}
                 <ChevronDown size={14} className={`ml-1 transition-transform duration-200 ${fileMenuOpen ? 'rotate-180' : ''}`} />
               </Button>
               {fileMenuOpen && (
-                <div className="absolute top-full left-0 mt-1 z-50 w-full rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 z-50 w-36 sm:w-full rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none overflow-hidden">
                   <button
                     type="button"
                     onClick={() => { handleExportOutline(); setFileMenuOpen(false); }}
@@ -705,19 +717,25 @@ export const OutlineEditor: React.FC = () => {
               variant="secondary"
               icon={<Save size={16} className="md:w-[18px] md:h-[18px]" />}
               onClick={async () => await saveAllPages()}
-              className="md:hidden flex-1 sm:flex-initial text-sm md:text-base"
+              className="md:hidden text-xs sm:text-sm md:text-base whitespace-nowrap px-2.5 sm:px-3"
             >
               {t('common.save')}
             </Button>
-            <span className="text-xs md:text-sm text-gray-500 dark:text-foreground-tertiary whitespace-nowrap">
-              {t('outline.pageCount', { count: String(currentProject.pages.length) })}
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end text-xs md:text-sm text-gray-500 dark:text-foreground-tertiary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-background-hover text-gray-600 dark:text-foreground-secondary font-medium whitespace-nowrap">
+              <span className="w-2 h-2 rounded-full bg-banana-500 flex-shrink-0" />
+              <span>
+                {t('outline.pageCount', { count: String(currentProject.pages.length) })}
+              </span>
             </span>
           </div>
         </div>
       </div>
 
       {/* Main content area */}
-      <main className="flex-1 flex flex-col md:flex-row gap-3 md:gap-6 p-3 md:p-6 overflow-y-auto min-h-0 relative">
+      <main className="flex-1 flex flex-col md:flex-row gap-3 md:gap-6 p-3 md:p-6 pb-28 md:pb-6 overflow-y-auto min-h-0 relative">
         {/* Left: Editable text area (collapsible) */}
         <div
           className={`flex-shrink-0 transition-[width] duration-300 ease-in-out ${isBlankProject ? 'hidden' : 'hidden md:block'}`}
@@ -781,33 +799,52 @@ export const OutlineEditor: React.FC = () => {
         )}
 
         {/* Mobile: Card display */}
-        <div className={`${isBlankProject ? 'hidden' : 'md:hidden'} w-full flex-shrink-0`}>
-          <div className="bg-white dark:bg-background-secondary rounded-card shadow-md border border-gray-100 dark:border-border-primary overflow-hidden">
-            <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-100 dark:border-border-secondary">
-              {currentProject.creation_type === 'idea'
-                ? <Sparkle size={14} className="text-banana-500 flex-shrink-0" />
-                : <FileText size={14} className="text-banana-500 flex-shrink-0" />}
-              <span className="text-xs font-medium text-gray-500 dark:text-foreground-tertiary">{inputLabel}</span>
-            </div>
-            <MarkdownTextarea
-              ref={mobileTextareaRef}
-              value={inputText}
-              onChange={handleInputChange}
-              onBlur={handleSaveInputText}
-              onPaste={handleImagePaste}
-              onFiles={handleImageFiles}
-              onSelectFromLibrary={() => { setActiveMaterialTarget('input'); setIsMaterialSelectorOpen(true); }}
-              placeholder={inputPlaceholder}
-              rows={6}
-              className="border-0 rounded-none shadow-none"
-            />
+        <div className={`${isBlankProject ? 'hidden' : 'md:hidden'} w-full flex-shrink-0 mb-2`}>
+          <div className="bg-white dark:bg-background-secondary rounded-card shadow-sm border border-gray-100 dark:border-border-primary overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setIsMobileInputOpen(!isMobileInputOpen)}
+              className="w-full px-3.5 py-2.5 flex items-center justify-between text-xs font-medium text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                {currentProject.creation_type === 'idea'
+                  ? <Sparkle size={14} className="text-banana-500 flex-shrink-0" />
+                  : <FileText size={14} className="text-banana-500 flex-shrink-0" />}
+                <span className="font-semibold">{inputLabel}</span>
+                {inputText ? (
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-background-tertiary text-gray-500 dark:text-foreground-tertiary">
+                    {inputText.length} {t('outline.characters')}
+                  </span>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-1 text-gray-400">
+                <span className="text-[11px]">{isMobileInputOpen ? t('common.close') : t('common.edit')}</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isMobileInputOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </button>
+            {isMobileInputOpen && (
+              <div className="border-t border-gray-100 dark:border-border-secondary p-1">
+                <MarkdownTextarea
+                  ref={mobileTextareaRef}
+                  value={inputText}
+                  onChange={handleInputChange}
+                  onBlur={handleSaveInputText}
+                  onPaste={handleImagePaste}
+                  onFiles={handleImageFiles}
+                  onSelectFromLibrary={() => { setActiveMaterialTarget('input'); setIsMaterialSelectorOpen(true); }}
+                  placeholder={inputPlaceholder}
+                  rows={5}
+                  className="border-0 rounded-none shadow-none"
+                />
+                <ReferenceFileList
+                  projectId={projectId}
+                  onFileClick={setPreviewFileId}
+                  className="p-2"
+                  showToast={show}
+                />
+              </div>
+            )}
           </div>
-          <ReferenceFileList
-            projectId={projectId}
-            onFileClick={setPreviewFileId}
-            className="mt-3"
-            showToast={show}
-          />
         </div>
 
         {/* Right: Outline list */}
@@ -834,7 +871,7 @@ export const OutlineEditor: React.FC = () => {
                 items={currentProject.pages.map((p, idx) => p.id || `page-${idx}`)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="space-y-3 md:space-y-4">
+                <div className="space-y-3 md:space-y-4 pb-28 sm:pb-8">
                   {currentProject.pages.map((page, index) => (
                     <div
                       key={page.id || `page-${index}`}
@@ -880,6 +917,8 @@ export const OutlineEditor: React.FC = () => {
                       </div>
                     </div>
                   )}
+                  {/* Explicit bottom spacer to ensure the final card is never hidden by mobile browser chrome */}
+                  <div className="h-16 sm:h-4 pointer-events-none" aria-hidden="true" />
                 </div>
               </SortableContext>
             </DndContext>
