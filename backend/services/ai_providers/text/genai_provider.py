@@ -43,7 +43,7 @@ class GenAITextProvider(TextProvider):
 
     def __init__(
         self,
-        model: str = "gemini-3-flash-preview",
+        model: str = "gemini-3.5-flash-lite",
         api_key: str = None,
         api_base: str = None,
         vertexai: bool = False,

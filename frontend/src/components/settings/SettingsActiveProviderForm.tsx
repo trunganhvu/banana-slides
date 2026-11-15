@@ -60,17 +60,17 @@ const GOOGLE_GEMINI_METADATA: {
     en: 'Supports text outlines, image captioning, and slide image generation directly from Google AI Studio.',
   },
   textModels: [
-    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
-    { id: 'gemini-flash-latest', label: 'gemini-flash-latest', badgeVi: 'Mới nhất', badgeEn: 'Latest' },
-    { id: 'gemini-2.5-pro', label: 'gemini-2.5-pro', badgeVi: 'Chất lượng cao', badgeEn: 'High Quality' },
+    { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite', badgeVi: 'Rẻ nhất & Siêu nhanh', badgeEn: 'Cheapest & Fastest' },
+    { id: 'gemini-3.5-flash', label: 'gemini-3.5-flash', badgeVi: 'Cân bằng tốt', badgeEn: 'Balanced' },
+    { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash', badgeVi: 'Chất lượng cao', badgeEn: 'High Quality' },
   ],
   imageModels: [
-    { id: 'gemini-2.5-flash-image', label: 'gemini-2.5-flash-image', badgeVi: 'Nhanh', badgeEn: 'Fast' },
-    { id: 'gemini-3-pro-image-preview', label: 'gemini-3-pro-image-preview', badgeVi: 'Mặc định', badgeEn: 'Default' },
+    { id: 'gemini-3.1-flash-image', label: 'gemini-3.1-flash-image', badgeVi: 'Khuyên dùng (Nano Banana 2)', badgeEn: 'Recommended (Nano Banana 2)' },
+    { id: 'gemini-3.1-flash-lite-image', label: 'gemini-3.1-flash-lite-image', badgeVi: 'Tiết kiệm nhất (Nano Banana 2 Lite)', badgeEn: 'Ultra Low Cost (Lite)' },
   ],
   captionModels: [
-    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
-    { id: 'gemini-flash-latest', label: 'gemini-flash-latest', badgeVi: 'Mới nhất', badgeEn: 'Latest' },
+    { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite', badgeVi: 'Rẻ nhất & Nhanh', badgeEn: 'Cheapest & Fast' },
+    { id: 'gemini-3.5-flash', label: 'gemini-3.5-flash', badgeVi: 'Khuyên dùng', badgeEn: 'Recommended' },
   ],
 };
 

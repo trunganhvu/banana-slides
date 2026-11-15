@@ -275,14 +275,14 @@ def update_settings():
         # Update model & MinerU configuration (optional, empty values fall back to Config)
         if "text_model" in data:
             raw_text_model = (data["text_model"] or "").strip()
-            if raw_text_model in ("gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"):
-                raw_text_model = "gemini-3-flash-preview"
+            if raw_text_model in ("gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-3-flash-preview"):
+                raw_text_model = "gemini-3.5-flash-lite"
             settings.text_model = raw_text_model or None
 
         if "image_model" in data:
             raw_image_model = (data["image_model"] or "").strip()
-            if raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image"):
-                raw_image_model = "gemini-2.5-flash-image"
+            if raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image", "gemini-2.5-flash-image", "gemini-3-pro-image-preview", "imagen-3.0-generate-002"):
+                raw_image_model = "gemini-3.1-flash-image"
             settings.image_model = raw_image_model or None
 
         if "mineru_api_base" in data:
@@ -292,7 +292,10 @@ def update_settings():
             settings.mineru_token = data["mineru_token"]
 
         if "image_caption_model" in data:
-            settings.image_caption_model = (data["image_caption_model"] or "").strip() or None
+            raw_caption = (data["image_caption_model"] or "").strip()
+            if raw_caption in ("gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-3-flash-preview"):
+                raw_caption = "gemini-3.5-flash-lite"
+            settings.image_caption_model = raw_caption or None
 
         if "output_language" in data:
             language = data["output_language"]
@@ -581,7 +584,7 @@ def verify_api_key():
                 settings.text_model
                 or current_app.config.get("TEXT_MODEL")
                 or Config.TEXT_MODEL
-                or "gemini-3-flash-preview"
+                or "gemini-3.5-flash-lite"
             )
 
             # Backend logic

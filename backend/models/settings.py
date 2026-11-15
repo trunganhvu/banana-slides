@@ -347,14 +347,14 @@ class Settings(db.Model):
             db.session.commit()
         else:
             dirty = False
-            if settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image'):
-                settings.image_model = 'gemini-2.5-flash-image'
+            if settings.image_model in ('gemini-2.0-flash-preview-image-generation', 'gemini-2.0-flash-image', 'gemini-2.5-flash-image', 'gemini-3-pro-image-preview', 'imagen-3.0-generate-002'):
+                settings.image_model = 'gemini-3.1-flash-image'
                 dirty = True
-            if settings.text_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'):
-                settings.text_model = 'gemini-3-flash-preview'
+            if settings.text_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3-flash-preview'):
+                settings.text_model = 'gemini-3.5-flash-lite'
                 dirty = True
-            if settings.image_caption_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'):
-                settings.image_caption_model = 'gemini-3-flash-preview'
+            if settings.image_caption_model in ('gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3-flash-preview'):
+                settings.image_caption_model = 'gemini-3.5-flash-lite'
                 dirty = True
             if dirty:
                 try:

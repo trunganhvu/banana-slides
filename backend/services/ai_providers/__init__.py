@@ -158,30 +158,34 @@ def _get_model_type_provider_config(model_type: str) -> Dict[str, Any]:
 def get_default_models_for_provider(fmt: str = 'gemini', api_base: Optional[str] = None, source: Optional[str] = None) -> Dict[str, str]:
     """Return default (text, image, caption) Google Gemini models."""
     return {
-        'text': 'gemini-3-flash-preview',
-        'caption': 'gemini-3-flash-preview',
-        'image': 'gemini-3-pro-image-preview',
+        'text': 'gemini-3.5-flash-lite',
+        'caption': 'gemini-3.5-flash-lite',
+        'image': 'gemini-3.1-flash-image',
     }
 
 
 _MODEL_ALIASES = {
-    # Text models (Google AI Studio deprecated older flash models for new API keys)
-    'gemini-2.0-flash': 'gemini-3-flash-preview',
-    'gemini-2.5-flash': 'gemini-3-flash-preview',
-    'gemini-1.5-flash': 'gemini-3-flash-preview',
-    'gemini-1.5-pro': 'gemini-3-flash-preview',
-    # Image models
-    'gemini-2.0-flash-preview-image-generation': 'gemini-2.5-flash-image',
-    'gemini-2.0-flash-image': 'gemini-2.5-flash-image',
-    'gemini-2.0-flash-exp-image': 'gemini-2.5-flash-image',
-    'imagen-3.0-generate-002': 'gemini-3-pro-image-preview',
+    # Text models (map old/expensive/deprecated models to gemini-3.5-flash-lite)
+    'gemini-2.0-flash': 'gemini-3.5-flash-lite',
+    'gemini-2.5-flash': 'gemini-3.5-flash-lite',
+    'gemini-2.5-flash-lite': 'gemini-3.5-flash-lite',
+    'gemini-1.5-flash': 'gemini-3.5-flash-lite',
+    'gemini-1.5-pro': 'gemini-3.5-flash-lite',
+    'gemini-3-flash-preview': 'gemini-3.5-flash-lite',
+    # Image models (map old/expensive models to gemini-3.1-flash-image)
+    'gemini-2.0-flash-preview-image-generation': 'gemini-3.1-flash-image',
+    'gemini-2.0-flash-image': 'gemini-3.1-flash-image',
+    'gemini-2.0-flash-exp-image': 'gemini-3.1-flash-image',
+    'gemini-2.5-flash-image': 'gemini-3.1-flash-image',
+    'gemini-3-pro-image-preview': 'gemini-3.1-flash-image',
+    'imagen-3.0-generate-002': 'gemini-3.1-flash-image',
 }
 
 
 def _normalize_model_for_provider(model: str, role: str, config: Dict[str, Any]) -> str:
     """Normalize empty, obsolete, or non-Google model names to Google Gemini defaults."""
     trimmed = (model or '').strip()
-    default_model = 'gemini-3-pro-image-preview' if role == 'image' else 'gemini-3-flash-preview'
+    default_model = 'gemini-3.1-flash-image' if role == 'image' else 'gemini-3.5-flash-lite'
     if not trimmed:
         return default_model
     if trimmed in _MODEL_ALIASES:
@@ -199,7 +203,7 @@ def get_image_caption_provider_config() -> Dict[str, Any]:
     return _get_model_type_provider_config('image_caption')
 
 
-def get_caption_provider(model: str = "gemini-3-flash-preview") -> TextProvider:
+def get_caption_provider(model: str = "gemini-3.5-flash-lite") -> TextProvider:
     """Factory: return a Google Gemini TextProvider for image caption tasks."""
     config = _get_model_type_provider_config('image_caption')
     model = _normalize_model_for_provider(model, 'caption', config)
@@ -207,7 +211,7 @@ def get_caption_provider(model: str = "gemini-3-flash-preview") -> TextProvider:
     return GenAITextProvider(api_key=config['api_key'], api_base=config['api_base'], model=model)
 
 
-def get_text_provider(model: str = "gemini-3-flash-preview") -> TextProvider:
+def get_text_provider(model: str = "gemini-3.5-flash-lite") -> TextProvider:
     """Factory: return a Google Gemini TextProvider."""
     config = _get_model_type_provider_config('text')
     model = _normalize_model_for_provider(model, 'text', config)
@@ -215,7 +219,7 @@ def get_text_provider(model: str = "gemini-3-flash-preview") -> TextProvider:
     return GenAITextProvider(api_key=config['api_key'], api_base=config['api_base'], model=model)
 
 
-def get_image_provider(model: str = "gemini-3-pro-image-preview") -> ImageProvider:
+def get_image_provider(model: str = "gemini-3.1-flash-image") -> ImageProvider:
     """Factory: return a Google Gemini ImageProvider."""
     config = _get_model_type_provider_config('image')
     model = _normalize_model_for_provider(model, 'image', config)

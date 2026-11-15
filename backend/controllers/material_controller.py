@@ -59,7 +59,7 @@ def _generate_image_caption(filepath: str) -> str:
 
         provider_format = (current_app.config.get('AI_PROVIDER_FORMAT') or 'gemini').lower()
         caption_source = (current_app.config.get('IMAGE_CAPTION_MODEL_SOURCE') or '').lower()
-        caption_model = current_app.config.get('IMAGE_CAPTION_MODEL', 'gemini-3-flash-preview')
+        caption_model = current_app.config.get('IMAGE_CAPTION_MODEL', 'gemini-3.5-flash-lite')
 
         # Determine effective format: per-model source overrides global
         effective_format = caption_source or provider_format

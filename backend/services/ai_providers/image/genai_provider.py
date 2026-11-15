@@ -24,7 +24,7 @@ class GenAIImageProvider(ImageProvider):
 
     def __init__(
         self,
-        model: str = "gemini-3-pro-image-preview",
+        model: str = "gemini-3.1-flash-lite-image",
         api_key: str = None,
         api_base: str = None,
         vertexai: bool = False,
@@ -83,12 +83,17 @@ class GenAIImageProvider(ImageProvider):
             logger.debug(f"Calling GenAI API for image generation with {len(ref_images) if ref_images else 0} reference images...")
             logger.debug(f"Config - aspect_ratio: {aspect_ratio}, resolution: {resolution}, enable_thinking: {enable_thinking}")
             
+            # Clamp resolution for models that only support 1K (e.g. lite models)
+            actual_resolution = resolution
+            if 'lite' in (self.model or '').lower() and resolution in ('2K', '4K'):
+                actual_resolution = '1K'
+
             # Build config
             config_params = {
                 'response_modalities': ['TEXT', 'IMAGE'],
                 'image_config': types.ImageConfig(
                     aspect_ratio=aspect_ratio,
-                    image_size=resolution
+                    image_size=actual_resolution
                 )
             }
             

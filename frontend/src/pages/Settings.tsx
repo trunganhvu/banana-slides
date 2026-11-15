@@ -93,11 +93,24 @@ const isGoogleModelName = (model: string | null | undefined): boolean => {
 const normalizeGoogleModel = (model: string | undefined, fallback: string): string => {
   if (!model || !model.trim()) return '';
   const trimmed = model.trim();
-  if (trimmed === 'gemini-2.0-flash-preview-image-generation' || trimmed === 'gemini-2.0-flash-image') {
-    return 'gemini-2.5-flash-image';
+  if (
+    trimmed === 'gemini-2.0-flash-preview-image-generation' ||
+    trimmed === 'gemini-2.0-flash-image' ||
+    trimmed === 'gemini-2.5-flash-image' ||
+    trimmed === 'gemini-3-pro-image-preview' ||
+    trimmed === 'imagen-3.0-generate-002'
+  ) {
+    return 'gemini-3.1-flash-image';
   }
-  if (trimmed === 'gemini-2.0-flash' || trimmed === 'gemini-2.5-flash' || trimmed === 'gemini-1.5-flash') {
-    return 'gemini-3-flash-preview';
+  if (
+    trimmed === 'gemini-2.0-flash' ||
+    trimmed === 'gemini-2.5-flash' ||
+    trimmed === 'gemini-2.5-flash-lite' ||
+    trimmed === 'gemini-1.5-flash' ||
+    trimmed === 'gemini-1.5-pro' ||
+    trimmed === 'gemini-3-flash-preview'
+  ) {
+    return 'gemini-3.5-flash-lite';
   }
   return isGoogleModelName(trimmed) ? trimmed : fallback;
 };
@@ -505,11 +518,11 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     enable_image_quality_control: data.enable_image_quality_control ?? false,
     max_description_workers: data.max_description_workers || 5,
     max_image_workers: data.max_image_workers || 8,
-    text_model: normalizeGoogleModel(data.text_model, 'gemini-2.5-flash'),
-    image_model: normalizeGoogleModel(data.image_model, 'gemini-3-pro-image-preview'),
+    text_model: normalizeGoogleModel(data.text_model, 'gemini-3.5-flash-lite'),
+    image_model: normalizeGoogleModel(data.image_model, 'gemini-3.1-flash-image'),
     mineru_api_base: data.mineru_api_base || '',
     mineru_token: '',
-    image_caption_model: normalizeGoogleModel(data.image_caption_model, 'gemini-2.5-flash'),
+    image_caption_model: normalizeGoogleModel(data.image_caption_model, 'gemini-3.5-flash-lite'),
     output_language: (data.output_language as OutputLanguage) || 'vi',
     enable_text_reasoning: data.enable_text_reasoning || false,
     text_max_output_tokens: data.text_max_output_tokens ?? 32768,

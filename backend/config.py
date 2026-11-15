@@ -117,15 +117,15 @@ class Config:
     IMAGE_CAPTION_API_BASE = os.getenv('IMAGE_CAPTION_API_BASE', '')
     
     # Backend logic
-    TEXT_MODEL = os.getenv('TEXT_MODEL', 'gemini-3-flash-preview')
-    IMAGE_MODEL = os.getenv('IMAGE_MODEL', 'gemini-3-pro-image-preview')
+    TEXT_MODEL = os.getenv('TEXT_MODEL', 'gemini-3.5-flash-lite')
+    IMAGE_MODEL = os.getenv('IMAGE_MODEL', 'gemini-3.1-flash-image')
 
     # Backend logic
     MINERU_TOKEN = _clean_env_key('MINERU_TOKEN')
     MINERU_API_BASE = os.getenv('MINERU_API_BASE', 'https://mineru.net')
     
     # Backend logic
-    IMAGE_CAPTION_MODEL = os.getenv('IMAGE_CAPTION_MODEL', 'gemini-3-flash-preview')
+    IMAGE_CAPTION_MODEL = os.getenv('IMAGE_CAPTION_MODEL', 'gemini-3.5-flash-lite')
     
     # Backend logic
     MAX_DESCRIPTION_WORKERS = int(os.getenv('MAX_DESCRIPTION_WORKERS', '20'))
