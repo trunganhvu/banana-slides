@@ -619,57 +619,49 @@ class ServiceConfig:
         # Inpaint registry
         inpaint_registry = InpaintProviderRegistry()
         opencv_inpaint = OpenCVInpaintProvider()
-        inpaint_registry.register_default(opencv_inpaint)
-        logger.info("✅ Đã khởi tạo OpenCV Inpaint Provider làm phương thức phục hồi nền mặc định")
         
-        # Backend logic
         effective_inpaint_method = inpaint_method
-        if effective_inpaint_method is None:
-            # Backend logic
-            effective_inpaint_method = 'hybrid' if use_hybrid_inpaint else 'generative'
+        if effective_inpaint_method is None or effective_inpaint_method in ('opencv', 'local'):
+            effective_inpaint_method = 'opencv'
         
         logger.info(f"inpaint_method={effective_inpaint_method}")
         
-        if effective_inpaint_method == 'hybrid':
-            # Backend logic
-            hybrid_inpaint = InpaintProviderFactory.create_hybrid_inpaint_provider(
-                ai_service=ai_service,
-                enhance_quality=kwargs.get('enhance_quality', True)
-            )
-            
-            if hybrid_inpaint:
-                inpaint_registry.register_default(hybrid_inpaint)
-                logger.info("✅ kết hợpInpaintĐã tạo nhà cung cấp (Baidu phục hồi + Nâng cấp chất lượng ảnh tạo sinh) ")
-            else:
-                # Backend logic
-                generative_provider = InpaintProviderFactory.create_generative_edit_provider(
-                    ai_service=ai_service
+        if effective_inpaint_method == 'opencv':
+            inpaint_registry.register_default(opencv_inpaint)
+            logger.info("✅ Đã tạo OpenCV Inpaint Provider làm phương thức phục hồi nền mặc định")
+        elif effective_inpaint_method == 'hybrid':
+            baidu_provider = InpaintProviderFactory.create_baidu_inpaint_provider()
+            if baidu_provider:
+                hybrid_inpaint = InpaintProviderFactory.create_hybrid_inpaint_provider(
+                    baidu_provider=baidu_provider,
+                    ai_service=ai_service,
+                    enhance_quality=kwargs.get('enhance_quality', True)
                 )
-                inpaint_registry.register_default(generative_provider)
-                logger.warning("⚠️ kết hợpInpaintTạo thất bại, chuyển dự phòng sangGenerativeEdit")
-        
+                if hybrid_inpaint:
+                    inpaint_registry.register_default(hybrid_inpaint)
+                    logger.info("✅ Đã tạo nhà cung cấp phục hồi nền kết hợp")
+                else:
+                    inpaint_registry.register_default(opencv_inpaint)
+            else:
+                logger.info("ℹ️ Baidu Inpaint không khả dụng, sử dụng OpenCV Inpaint Provider")
+                inpaint_registry.register_default(opencv_inpaint)
         elif effective_inpaint_method == 'baidu':
-            # Backend logic
-            baidu_inpaint = InpaintProviderFactory.create_baidu_inpaint_provider()
-            
-            if baidu_inpaint:
-                inpaint_registry.register_default(baidu_inpaint)
-                logger.info("✅ BaiduInpaintĐã tạo nhà cung cấp (phục hồi thuần Baidu) ")
+            baidu_provider = InpaintProviderFactory.create_baidu_inpaint_provider()
+            if baidu_provider:
+                inpaint_registry.register_default(baidu_provider)
+                logger.info("✅ BaiduInpaint đã tạo nhà cung cấp (phục hồi thuần Baidu)")
             else:
-                # Backend logic
-                generative_provider = InpaintProviderFactory.create_generative_edit_provider(
-                    ai_service=ai_service
-                )
-                inpaint_registry.register_default(generative_provider)
-                logger.warning("⚠️ kết hợpInpaintTạo thất bại, chuyển dự phòng sangGenerativeEdit")
-        
-        else:  # Backend logic
-            # Backend logic
+                logger.info("ℹ️ Baidu Inpaint không khả dụng, sử dụng OpenCV Inpaint Provider")
+                inpaint_registry.register_default(opencv_inpaint)
+        else:
             generative_provider = InpaintProviderFactory.create_generative_edit_provider(
                 ai_service=ai_service
             )
             inpaint_registry.register_default(generative_provider)
-            logger.info("✅ Đã tạo bảng đăng ký vẽ lại (GenerativeEditChung) ")
+            logger.info("✅ Đã tạo bảng đăng ký vẽ lại (GenerativeEdit)")
+        
+        # Đăng ký OpenCV cho các loại văn bản để xử lý siêu tốc và sạch sẽ
+        inpaint_registry.register_types(list(InpaintProviderRegistry.TEXT_TYPES), opencv_inpaint)
         
         # Backend logic
         enable_icon_subject_extraction = kwargs.get('enable_icon_subject_extraction', False)

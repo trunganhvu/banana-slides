@@ -115,8 +115,8 @@ class DefaultInpaintProvider(InpaintProvider):
 
 class OpenCVInpaintProvider(InpaintProvider):
     """
-    Phục hồi nền ảnh cục bộ sử dụng thuật toán Telea của OpenCV.
-    Xử lý cực nhanh (<0.1s), không tốn token mạng, tạo nền sạch cho slide PowerPoint.
+    Phuc hoi nen anh cuc bo su dung thuat toan Telea cua OpenCV.
+    Xu ly cuc nhanh (<0.1s), khong ton token mang, tao nen sach cho slide PowerPoint.
     """
 
     def inpaint_regions(
@@ -134,7 +134,7 @@ class OpenCVInpaintProvider(InpaintProvider):
             w, h = img_rgb.size
             mask = np.zeros((h, w), dtype=np.uint8)
 
-            expand = kwargs.get('expand_pixels', 5)
+            expand = kwargs.get('expand_pixels', 8)
             for bbox in bboxes:
                 if isinstance(bbox, (tuple, list)) and len(bbox) == 4:
                     x0, y0, x1, y1 = bbox
@@ -144,13 +144,23 @@ class OpenCVInpaintProvider(InpaintProvider):
                     by1 = min(h, int(y1) + expand)
                     mask[by0:by1, bx0:bx1] = 255
 
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+            mask = cv2.dilate(mask, kernel, iterations=1)
+
+            save_mask_path = kwargs.get('save_mask_path')
+            if save_mask_path:
+                try:
+                    Image.fromarray(mask).save(save_mask_path)
+                except Exception as me:
+                    logger.debug(f"Khong the luu mask: {me}")
+
             img_np = np.array(img_rgb)
             img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-            inpainted_bgr = cv2.inpaint(img_bgr, mask, 3, cv2.INPAINT_TELEA)
+            inpainted_bgr = cv2.inpaint(img_bgr, mask, 5, cv2.INPAINT_TELEA)
             inpainted_rgb = cv2.cvtColor(inpainted_bgr, cv2.COLOR_BGR2RGB)
             return Image.fromarray(inpainted_rgb)
         except Exception as e:
-            logger.error(f"OpenCVInpaintProvider xử lý thất bại: {e}", exc_info=True)
+            logger.error(f"OpenCVInpaintProvider xu ly that bai: {e}", exc_info=True)
             return None
 
 
@@ -278,8 +288,8 @@ class GenerativeEditInpaintProvider(InpaintProvider):
             )
             
             if not clean_bg_image:
-                logger.error("GenerativeEditInpaintProvider: Chỉnh sửa tạo sinh trả về kết quả rỗng")
-                return None
+                logger.warning("GenerativeEditInpaintProvider: Chinh sua tao sinh tra ve ket qua rong, du phong sang OpenCVInpaintProvider")
+                return OpenCVInpaintProvider().inpaint_regions(image=image, bboxes=bboxes, types=types, **kwargs)
             
             # Backend logic
             if not isinstance(clean_bg_image, Image.Image):
@@ -287,15 +297,15 @@ class GenerativeEditInpaintProvider(InpaintProvider):
                 if hasattr(clean_bg_image, '_pil_image'):
                     clean_bg_image = clean_bg_image._pil_image
                 else:
-                    logger.error(f"GenerativeEditInpaintProvider: Loại hình ảnh không xác định: {type(clean_bg_image)}")
-                    return None
+                    logger.warning(f"GenerativeEditInpaintProvider: Loai hinh anh khong xac dinh: {type(clean_bg_image)}, du phong sang OpenCV")
+                    return OpenCVInpaintProvider().inpaint_regions(image=image, bboxes=bboxes, types=types, **kwargs)
             
-            logger.info("GenerativeEditInpaintProvider: Hoàn tất vẽ lại")
+            logger.info("GenerativeEditInpaintProvider: Hoan tat ve lai")
             return clean_bg_image
         
         except Exception as e:
-            logger.error(f"GenerativeEditInpaintProviderXử lý thất bại: {e}", exc_info=True)
-            return None
+            logger.warning(f"GenerativeEditInpaintProvider xu ly that bai: {e}, du phong sang OpenCVInpaintProvider", exc_info=True)
+            return OpenCVInpaintProvider().inpaint_regions(image=image, bboxes=bboxes, types=types, **kwargs)
 
 
 class BaiduInpaintProvider(InpaintProvider):
@@ -346,18 +356,18 @@ class BaiduInpaintProvider(InpaintProvider):
             )
             
             if result_image:
-                logger.info("BaiduInpaintProvider: Hoàn tất phục hồi")
+                logger.info("BaiduInpaintProvider: Hoan tat phuc hoi")
             else:
-                logger.warning("BaiduInpaintProvider: Phục hồi trả về kết quả rỗng")
-                return None
+                logger.warning("BaiduInpaintProvider: Phuc hoi tra ve ket qua rong, du phong sang OpenCVInpaintProvider")
+                return OpenCVInpaintProvider().inpaint_regions(image=image, bboxes=bboxes, types=types, **kwargs)
             
             # Backend logic
             mask = create_mask_from_bboxes(image.size, bboxes, expand_pixels=0)
             return Image.composite(result_image, image, mask.convert('L'))
         
         except Exception as e:
-            logger.error(f"BaiduInpaintProviderXử lý thất bại: {e}", exc_info=True)
-            return None
+            logger.warning(f"BaiduInpaintProvider xu ly that bai: {e}, du phong sang OpenCVInpaintProvider", exc_info=True)
+            return OpenCVInpaintProvider().inpaint_regions(image=image, bboxes=bboxes, types=types, **kwargs)
 
 
 class HybridInpaintProvider(InpaintProvider):
@@ -426,10 +436,20 @@ class HybridInpaintProvider(InpaintProvider):
             )
             
             if repaired_image is None:
-                logger.error("HybridInpaintProvider: Phục hồi Baidu thất bại")
+                logger.warning("HybridInpaintProvider: Phuc hoi Baidu that bai, du phong sang OpenCVInpaintProvider")
+                repaired_image = OpenCVInpaintProvider().inpaint_regions(
+                    image=image,
+                    bboxes=bboxes,
+                    types=types,
+                    expand_pixels=expand_pixels,
+                    **kwargs
+                )
+            
+            if repaired_image is None:
+                logger.error("HybridInpaintProvider: Tat ca phuong an phuc hoi deu that bai")
                 return None
             
-            logger.info("HybridInpaintProvider: Hoàn tất phục hồi Baidu")
+            logger.info("HybridInpaintProvider: Hoan tat phuc hoi buoc 1")
             
             # Backend logic
             if enhance_quality and self._generative_provider:

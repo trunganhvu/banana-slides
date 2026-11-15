@@ -817,10 +817,10 @@ export const SlidePreview: React.FC = () => {
   const [isMaterialSelectorOpen, setIsMaterialSelectorOpen] = useState(false);
   // Slide preview logic
   const [exportExtractorMethod, setExportExtractorMethod] = useState<ExportExtractorMethod>(
-    (currentProject?.export_extractor_method as ExportExtractorMethod) || 'hybrid'
+    (currentProject?.export_extractor_method as ExportExtractorMethod) || 'gemini'
   );
   const [exportInpaintMethod, setExportInpaintMethod] = useState<ExportInpaintMethod>(
-    (currentProject?.export_inpaint_method as ExportInpaintMethod) || 'hybrid'
+    (currentProject?.export_inpaint_method as ExportInpaintMethod) || 'opencv'
   );
   const [exportAllowPartial, setExportAllowPartial] = useState<boolean>(
     currentProject?.export_allow_partial || false
@@ -1003,8 +1003,8 @@ export const SlidePreview: React.FC = () => {
         setExtraRequirements(currentProject.extra_requirements || '');
         setTemplateStyle(currentProject.template_style || '');
         // Slide preview logic
-        setExportExtractorMethod((currentProject.export_extractor_method as ExportExtractorMethod) || 'hybrid');
-        setExportInpaintMethod((currentProject.export_inpaint_method as ExportInpaintMethod) || 'hybrid');
+        setExportExtractorMethod((currentProject.export_extractor_method as ExportExtractorMethod) || 'gemini');
+        setExportInpaintMethod((currentProject.export_inpaint_method as ExportInpaintMethod) || 'opencv');
         setExportAllowPartial(currentProject.export_allow_partial || false);
         setEnableIconSubjectExtraction(currentProject.enable_icon_subject_extraction ?? true);
         setAspectRatio(currentProject.image_aspect_ratio || '16:9');
@@ -1021,8 +1021,8 @@ export const SlidePreview: React.FC = () => {
         }
         // Slide preview logic
         setAspectRatio(currentProject.image_aspect_ratio || '16:9');
-        setExportExtractorMethod((currentProject.export_extractor_method as ExportExtractorMethod) || 'hybrid');
-        setExportInpaintMethod((currentProject.export_inpaint_method as ExportInpaintMethod) || 'hybrid');
+        setExportExtractorMethod((currentProject.export_extractor_method as ExportExtractorMethod) || 'gemini');
+        setExportInpaintMethod((currentProject.export_inpaint_method as ExportInpaintMethod) || 'opencv');
         setExportAllowPartial(currentProject.export_allow_partial || false);
         setEnableIconSubjectExtraction(currentProject.enable_icon_subject_extraction ?? true);
       }

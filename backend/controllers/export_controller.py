@@ -517,8 +517,8 @@ def export_editable_pptx(project_id):
             app = current_app._get_current_object()
 
             # Backend logic
-            export_extractor_method = project.export_extractor_method or 'hybrid'
-            export_inpaint_method = project.export_inpaint_method or 'hybrid'
+            export_extractor_method = project.export_extractor_method or 'gemini'
+            export_inpaint_method = project.export_inpaint_method or 'opencv'
             enable_icon_subject_extraction = (
                 True if project.enable_icon_subject_extraction is None
                 else bool(project.enable_icon_subject_extraction)

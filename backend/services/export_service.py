@@ -1590,8 +1590,8 @@ class ExportService:
         text_attribute_extractor = None,  # Backend logic
         progress_callback = None,  # Backend logic
         heartbeat_callback = None,  # Backend logic
-        export_extractor_method: str = 'hybrid',  # Backend logic
-        export_inpaint_method: str = 'hybrid',  # Backend logic
+        export_extractor_method: str = 'gemini',  # Backend logic
+        export_inpaint_method: str = 'opencv',  # Backend logic
         enable_icon_subject_extraction: bool = False,  # Backend logic
         fail_fast: bool = True  # Backend logic
     ) -> Tuple[Optional[bytes], ExportWarnings]:
@@ -1790,7 +1790,7 @@ class ExportService:
             
             # Backend logic
             if editable_img.clean_background and os.path.exists(editable_img.clean_background):
-                logger.info(f" Thêmclean background: {editable_img.clean_background}")
+                logger.info(f" Them clean background: {editable_img.clean_background}")
                 try:
                     slide.shapes.add_picture(
                         editable_img.clean_background,
@@ -1802,18 +1802,44 @@ class ExportService:
                 except Exception as e:
                     logger.error(f"Failed to add background: {e}")
             else:
-                # Backend logic
-                logger.info(f" Sử dụng ảnh gốc làm nền: {editable_img.image_path}")
+                logger.warning(f" Khong co clean background, tao nen sach cuc bo de tranh duplicate text: {editable_img.image_path}")
+                added_clean = False
                 try:
-                    slide.shapes.add_picture(
-                        editable_img.image_path,
-                        left=0,
-                        top=0,
-                        width=builder.prs.slide_width,
-                        height=builder.prs.slide_height
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to add background: {e}")
+                    from services.image_editability.inpaint_providers import OpenCVInpaintProvider
+                    bboxes = [elem.bbox.to_tuple() for elem in editable_img.elements if hasattr(elem, 'bbox')]
+                    if bboxes and os.path.exists(editable_img.image_path):
+                        with Image.open(editable_img.image_path) as bg_img:
+                            clean_bg = OpenCVInpaintProvider().inpaint_regions(bg_img, bboxes, expand_pixels=10)
+                        if clean_bg:
+                            out_dir = Path(editable_img.image_path).parent / 'clean_backgrounds'
+                            out_dir.mkdir(parents=True, exist_ok=True)
+                            emergency_path = str(out_dir / f"clean_{Path(editable_img.image_path).name}")
+                            clean_bg.save(emergency_path)
+                            editable_img.clean_background = emergency_path
+                            slide.shapes.add_picture(
+                                emergency_path,
+                                left=0,
+                                top=0,
+                                width=builder.prs.slide_width,
+                                height=builder.prs.slide_height
+                            )
+                            added_clean = True
+                            logger.info(f" Da tao va su dung nen sach thay the: {emergency_path}")
+                except Exception as clean_err:
+                    logger.error(f"Tao nen sach thay the that bai: {clean_err}")
+                
+                if not added_clean:
+                    logger.info(f" Su dung anh goc lam nen: {editable_img.image_path}")
+                    try:
+                        slide.shapes.add_picture(
+                            editable_img.image_path,
+                            left=0,
+                            top=0,
+                            width=builder.prs.slide_width,
+                            height=builder.prs.slide_height
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to add background: {e}")
             
             # Backend logic
             # Backend logic

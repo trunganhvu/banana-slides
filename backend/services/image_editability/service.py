@@ -442,7 +442,7 @@ class ImageEditabilityService:
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Backend logic
-            logger.info(f"{' ' * depth}Sử dụng {inpaint_provider.__class__.__name__} để vẽ lại")
+            logger.info(f"{' ' * depth}Su dung {inpaint_provider.__class__.__name__} de ve lai")
             result_img = inpaint_provider.inpaint_regions(
                 image=img,
                 bboxes=filtered_bboxes,
@@ -454,6 +454,19 @@ class ImageEditabilityService:
             )
             
             if result_img is None:
+                logger.warning(f"{' ' * depth}Bo phuc hoi nen tra ve None, du phong sang OpenCVInpaintProvider")
+                from .inpaint_providers import OpenCVInpaintProvider
+                fallback_provider = OpenCVInpaintProvider()
+                result_img = fallback_provider.inpaint_regions(
+                    image=img,
+                    bboxes=filtered_bboxes,
+                    types=filtered_types,
+                    expand_pixels=10,
+                    save_mask_path=str(output_dir / 'mask.png')
+                )
+            
+            if result_img is None:
+                logger.error(f"{' ' * depth}Khong the tao clean background sau tat ca cac phuong an")
                 return None
             
             # Backend logic
@@ -462,7 +475,23 @@ class ImageEditabilityService:
             return str(output_path)
         
         except Exception as e:
-            logger.error(f"Tạoclean backgroundthất bại: {e}", exc_info=True)
+            logger.error(f"Tao clean background that bai: {e}, du phong sang OpenCVInpaintProvider", exc_info=True)
+            try:
+                from .inpaint_providers import OpenCVInpaintProvider
+                fallback_provider = OpenCVInpaintProvider()
+                result_img = fallback_provider.inpaint_regions(
+                    image=img,
+                    bboxes=filtered_bboxes,
+                    types=filtered_types,
+                    expand_pixels=10,
+                    save_mask_path=str(output_dir / 'mask.png')
+                )
+                if result_img is not None:
+                    output_path = output_dir / 'clean_background.png'
+                    result_img.save(str(output_path))
+                    return str(output_path)
+            except Exception as fe:
+                logger.error(f"Du phong OpenCV that bai: {fe}")
             return None
     
     def _process_children(

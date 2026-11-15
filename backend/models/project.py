@@ -27,8 +27,8 @@ class Project(db.Model):
         db.String(10), nullable=False, server_default='single', default='single'
     )  # Backend logic
     # Backend logic
-    export_extractor_method = db.Column(db.String(50), nullable=True, default='hybrid')  # Backend logic
-    export_inpaint_method = db.Column(db.String(50), nullable=True, default='hybrid')  # Backend logic
+    export_extractor_method = db.Column(db.String(50), nullable=True, default='gemini')  # Backend logic
+    export_inpaint_method = db.Column(db.String(50), nullable=True, default='opencv')  # Backend logic
     export_allow_partial = db.Column(db.Boolean, nullable=True, default=False)  # Backend logic
     enable_icon_subject_extraction = db.Column(db.Boolean, nullable=True, default=True)  # Backend logic
     image_aspect_ratio = db.Column(db.String(10), nullable=False, server_default='16:9', default='16:9')
@@ -76,8 +76,8 @@ class Project(db.Model):
             'template_image_url': f'/files/{self.id}/template/{self.template_image_path.split("/")[-1]}' if self.template_image_path else None,
             'template_style': self.template_style,
             'template_mode': self.template_mode or 'single',
-            'export_extractor_method': self.export_extractor_method or 'hybrid',
-            'export_inpaint_method': self.export_inpaint_method or 'hybrid',
+            'export_extractor_method': self.export_extractor_method or 'gemini',
+            'export_inpaint_method': self.export_inpaint_method or 'opencv',
             'export_allow_partial': self.export_allow_partial or False,
             'enable_icon_subject_extraction': True if self.enable_icon_subject_extraction is None else bool(self.enable_icon_subject_extraction),
             'image_aspect_ratio': self.image_aspect_ratio,

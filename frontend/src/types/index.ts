@@ -115,10 +115,10 @@ export interface NarrationConfig {
 }
 
 
-export type ExportExtractorMethod = 'mineru' | 'hybrid';
+export type ExportExtractorMethod = 'mineru' | 'hybrid' | 'gemini';
 
 
-export type ExportInpaintMethod = 'generative' | 'baidu' | 'hybrid';
+export type ExportInpaintMethod = 'generative' | 'baidu' | 'hybrid' | 'opencv';
 
 
 export interface Project {
