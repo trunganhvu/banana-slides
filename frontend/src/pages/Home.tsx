@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, History, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X, Menu } from 'lucide-react';
-import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, SettingsModal, HistoryModal, Footer, TextStyleSelector } from '@/components/shared';
+import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, SettingsModal, HistoryModal, Footer, TextStyleSelector, UserNavMenu } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, associateMaterialsToProject, createPptRenovationProject } from '@/api/endpoints';
@@ -969,10 +969,14 @@ export const Home: React.FC = () => {
                 </>
               )}
             </div>
+
+            <div className="h-4 w-px bg-gray-200 dark:bg-border-primary" />
+            <UserNavMenu />
           </div>
 
           {/* Mobile Right Bar: Clean, uncluttered, never breaks layout */}
           <div className="flex md:hidden items-center gap-1.5 flex-shrink-0">
+            <UserNavMenu />
             {/* History icon */}
             <button
               onClick={() => setIsHistoryModalOpen(true)}

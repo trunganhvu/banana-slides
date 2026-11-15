@@ -89,6 +89,14 @@ class GenAITextProvider(TextProvider):
             contents=prompt,
             config=types.GenerateContentConfig(**config_params) if config_params else None,
         )
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            try:
+                from services.usage_tracker import record_usage
+                t_in = getattr(response.usage_metadata, 'prompt_token_count', 0) or 0
+                t_out = getattr(response.usage_metadata, 'candidates_token_count', 0) or 0
+                record_usage(tokens_in=t_in, tokens_out=t_out)
+            except Exception as ue:
+                logger.debug(f"Usage record failed: {ue}")
         return _validate_response(response)
     
     @retry(
@@ -127,6 +135,14 @@ class GenAITextProvider(TextProvider):
             contents=contents,
             config=types.GenerateContentConfig(**config_params) if config_params else None,
         )
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            try:
+                from services.usage_tracker import record_usage
+                t_in = getattr(response.usage_metadata, 'prompt_token_count', 0) or 0
+                t_out = getattr(response.usage_metadata, 'candidates_token_count', 0) or 0
+                record_usage(tokens_in=t_in, tokens_out=t_out)
+            except Exception as ue:
+                logger.debug(f"Usage record failed: {ue}")
         return _validate_response(response)
 
     def generate_text_stream(self, prompt: str, thinking_budget: int = 0) -> Generator[str, None, None]:
@@ -141,6 +157,14 @@ class GenAITextProvider(TextProvider):
             config=types.GenerateContentConfig(**config_params) if config_params else None,
         )
         for chunk in response:
+            if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
+                try:
+                    from services.usage_tracker import record_usage
+                    t_in = getattr(chunk.usage_metadata, 'prompt_token_count', 0) or 0
+                    t_out = getattr(chunk.usage_metadata, 'candidates_token_count', 0) or 0
+                    record_usage(tokens_in=t_in, tokens_out=t_out)
+                except Exception as ue:
+                    logger.debug(f"Usage record failed: {ue}")
             # Skip thinking chunks, only yield text content
             if chunk.text:
                 yield chunk.text

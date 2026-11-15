@@ -111,6 +111,12 @@ apiClient.interceptors.request.use(
       config.headers['X-Access-Code'] = accessCode;
     }
 
+    // Attach JWT auth token for authenticated requests
+    const authToken = localStorage.getItem('banana-auth-token');
+    if (authToken && config.headers) {
+      config.headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
     // Attach client-scoped encrypted API keys if active
     const clientHeaders = getCachedClientHeaders();
     if (clientHeaders && config.headers) {

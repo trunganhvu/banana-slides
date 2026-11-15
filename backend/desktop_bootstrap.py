@@ -53,6 +53,7 @@ def repair_desktop_settings_schema(db):
             'updated_at': 'DATETIME',
         },
         'projects': {
+            'user_id': 'VARCHAR(36)',
             'project_title': 'VARCHAR(255)',
             'outline_requirements': 'TEXT',
             'description_requirements': 'TEXT',
@@ -96,6 +97,13 @@ def repair_desktop_settings_schema(db):
     with db.engine.begin() as conn:
         inspector = sqlalchemy_inspect(conn)
         existing_tables = set(inspector.get_table_names())
+        if 'users' not in existing_tables:
+            try:
+                from models.user import User
+                User.__table__.create(conn, checkfirst=True)
+                repaired.setdefault('users', []).append('created_table')
+            except Exception as ue:
+                logging.warning(f"Could not create users table: {ue}")
         for table_name, required_columns in repair_specs.items():
             if table_name not in existing_tables:
                 continue

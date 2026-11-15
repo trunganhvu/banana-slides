@@ -11,9 +11,12 @@ from .export_controller import export_bp
 from .file_controller import file_bp
 from .material_controller import material_bp
 from .settings_controller import settings_bp
+from .auth_controller import auth_bp
+from .admin_controller import admin_bp
 
 __all__ = ['project_bp', 'style_bp', 'page_bp', 'template_bp',
            'user_template_bp', 'user_style_template_bp',
            'template_assets_bp', 'page_template_bp', 'template_mode_bp',
-           'export_bp', 'file_bp', 'material_bp', 'settings_bp']
+           'export_bp', 'file_bp', 'material_bp', 'settings_bp',
+           'auth_bp', 'admin_bp']
 

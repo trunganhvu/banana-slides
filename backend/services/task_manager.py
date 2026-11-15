@@ -905,6 +905,11 @@ def generate_images_task(task_id: str, project_id: str, ai_service, file_service
                         image_path, next_version = save_image_with_version(
                             image, project_id, page_id, file_service, page_obj=page_obj
                         )
+                        try:
+                            from services.usage_tracker import record_usage
+                            record_usage(project_id=project_id, generation=True, tokens_in=500, tokens_out=1000)
+                        except Exception:
+                            pass
                         
                         return (page_id, image_path, None, not is_match)
                         

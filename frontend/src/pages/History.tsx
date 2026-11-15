@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Home, Trash2, Sun, Moon, AlertTriangle, Inbox } from 'lucide-react';
 import logoUrl from '@/assets/logo.png';
-import { Button, Loading, Card, Pagination, useToast, useConfirm } from '@/components/shared';
+import { Button, Loading, Card, Pagination, useToast, useConfirm, UserNavMenu } from '@/components/shared';
 import { ProjectCard } from '@/components/history/ProjectCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useTheme } from '@/hooks/useTheme';
@@ -408,6 +408,8 @@ export const History: React.FC = () => {
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
+            <div className="h-5 w-px bg-gray-300 dark:bg-border-primary" />
+            <UserNavMenu />
           </div>
         </div>
       </nav>

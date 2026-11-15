@@ -32,12 +32,13 @@ class Project(db.Model):
     export_allow_partial = db.Column(db.Boolean, nullable=True, default=False)  # Backend logic
     enable_icon_subject_extraction = db.Column(db.Boolean, nullable=True, default=True)  # Backend logic
     image_aspect_ratio = db.Column(db.String(10), nullable=False, server_default='16:9', default='16:9')
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
     status = db.Column(db.String(50), nullable=False, default='DRAFT')
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    # Backend logic
+    user = db.relationship('User', back_populates='projects', lazy='select')
     pages = db.relationship('Page', back_populates='project', lazy='select', 
                            cascade='all, delete-orphan', order_by='Page.order_index')
     tasks = db.relationship('Task', back_populates='project', lazy='select',
@@ -81,6 +82,7 @@ class Project(db.Model):
             'export_allow_partial': self.export_allow_partial or False,
             'enable_icon_subject_extraction': True if self.enable_icon_subject_extraction is None else bool(self.enable_icon_subject_extraction),
             'image_aspect_ratio': self.image_aspect_ratio,
+            'user_id': self.user_id,
             'status': self.status,
             'created_at': created_at_str,
             'updated_at': updated_at_str,

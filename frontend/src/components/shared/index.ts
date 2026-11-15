@@ -28,6 +28,8 @@ export { ProjectResourcesList } from './ProjectResourcesList';
 export { HelpModal } from './HelpModal';
 export { ProjectSettingsModal } from './ProjectSettingsModal';
 export { ExportTasksPanel } from './ExportTasksPanel';
+export { LoginModal } from './LoginModal';
+export { UserNavMenu } from './UserNavMenu';
 export { AccessCodeGuard } from './AccessCodeGuard';
 export { TextStyleSelector } from './TextStyleSelector';
 export { Pagination } from './Pagination';

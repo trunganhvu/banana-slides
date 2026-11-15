@@ -17,6 +17,7 @@ db = SQLAlchemy(
 )
 
 from .project import Project
+from .user import User
 from .page import Page
 from .task import Task
 from .user_template import UserTemplate
@@ -27,4 +28,4 @@ from .settings import Settings
 from .user_style_template import UserStyleTemplate
 from .project_template_asset import ProjectTemplateAsset
 
-__all__ = ['db', 'Project', 'Page', 'Task', 'UserTemplate', 'PageImageVersion', 'Material', 'ReferenceFile', 'Settings', 'UserStyleTemplate', 'ProjectTemplateAsset']
+__all__ = ['db', 'User', 'Project', 'Page', 'Task', 'UserTemplate', 'PageImageVersion', 'Material', 'ReferenceFile', 'Settings', 'UserStyleTemplate', 'ProjectTemplateAsset']

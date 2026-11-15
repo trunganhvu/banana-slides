@@ -8,6 +8,9 @@ import { DetailEditor } from './pages/DetailEditor';
 import { TemplateSetupPage } from './pages/TemplateSetupPage';
 import { SlidePreview } from './pages/SlidePreview';
 import { SettingsPage } from './pages/Settings';
+import { AdminDashboard } from './pages/AdminDashboard';
+import { AuthProvider } from './context/AuthContext';
+import { LoginModal } from './components/shared/LoginModal';
 import { useProjectStore } from './store/useProjectStore';
 import { useToast, AccessCodeGuard, DesktopTitleBar, UpdateChecker, ApiKeyReminderModal } from './components/shared';
 import { getDesktopTopInset } from './components/shared/UpdateChecker';
@@ -34,7 +37,7 @@ function App() {
   }, [error, setError, show]);
 
   return (
-    <>
+    <AuthProvider>
       <UpdateChecker />
       <div style={isDesktop ? { paddingTop: `${getDesktopTopInset()}px` } : undefined}>
         <AccessCodeGuard>
@@ -47,6 +50,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/landing" element={<Landing />} />
                   <Route path="/history" element={<History />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/project/:projectId/outline" element={<OutlineEditor />} />
                   <Route path="/project/:projectId/detail" element={<DetailEditor />} />
@@ -55,13 +59,14 @@ function App() {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
                 <ApiKeyReminderModal />
+                <LoginModal />
                 <ToastContainer />
               </Router>
             );
           })()}
         </AccessCodeGuard>
       </div>
-    </>
+    </AuthProvider>
   );
 }
 

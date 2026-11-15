@@ -30,6 +30,8 @@ from utils import (
     success_response, error_response, not_found, bad_request,
     parse_page_ids_from_body, get_filtered_pages
 )
+from utils.auth_middleware import get_current_user
+from services.usage_tracker import record_usage
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +202,7 @@ def list_projects():
     - offset: offset for pagination (default: 0)
     """
     try:
+        user = get_current_user()
         # Parameter validation
         limit = request.args.get('limit', 50, type=int)
         offset = request.args.get('offset', 0, type=int)
@@ -208,10 +211,18 @@ def list_projects():
         limit = min(max(1, limit), 100)  # Between 1-100
         offset = max(0, offset)  # Non-negative
 
-        # Get total count for pagination
-        total = Project.query.count()
+        query = Project.query
+        if user:
+            view_all = request.args.get('all', 'false').lower() == 'true' and user.role == 'admin'
+            if not view_all:
+                query = query.filter(Project.user_id == user.id)
+        else:
+            query = query.filter(Project.user_id.is_(None))
 
-        projects = Project.query\
+        # Get total count for pagination
+        total = query.count()
+
+        projects = query\
             .options(joinedload(Project.pages))\
             .order_by(desc(Project.updated_at))\
             .limit(limit)\
@@ -278,7 +289,9 @@ def create_project():
                 return bad_request(str(e))
 
         # Create project
+        user = get_current_user()
         project = Project(
+            user_id=user.id if user else None,
             creation_type=creation_type,
             idea_prompt=content if creation_type == 'idea' else None,
             outline_text=content if creation_type == 'outline' else None,
@@ -290,6 +303,8 @@ def create_project():
         
         db.session.add(project)
         db.session.commit()
+        
+        record_usage(user_id=user.id if user else None, project_id=project.id, generation=True)
         
         return success_response({
             'project_id': project.id,
@@ -1499,13 +1514,16 @@ def create_ppt_renovation_project():
         language = request.form.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
 
         # Create project
+        user = get_current_user()
         project = Project(
+            user_id=user.id if user else None,
             creation_type='ppt_renovation',
             template_style=template_style,
             status='DRAFT'
         )
         db.session.add(project)
         db.session.commit()
+        record_usage(user_id=user.id if user else None, project_id=project.id, generation=True)
 
         project_id = project.id
 
