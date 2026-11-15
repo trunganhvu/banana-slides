@@ -465,7 +465,7 @@ const VersionHistoryMenu: React.FC<{
             </div>
             <span className="text-xs text-gray-400 hidden md:inline">
               {version.created_at
-                ? new Date(version.created_at).toLocaleString('zh-CN', {
+                ? new Date(version.created_at).toLocaleString('vi-VN', {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
@@ -577,7 +577,7 @@ export const SlidePreview: React.FC = () => {
   const [pptxTransitionEffects, setPptxTransitionEffects] = useState<PptxTransitionEffect[]>(['fade']);
   const [videoEnableKenBurns, setVideoEnableKenBurns] = useState(false);
   const [videoIncludeNoImage, setVideoIncludeNoImage] = useState(false);
-  const [videoVoice, setVideoVoice] = useState('zh-CN-XiaoxiaoNeural');
+  const [videoVoice, setVideoVoice] = useState('vi-VN-HoaiMyNeural');
   const [videoSpeed, setVideoSpeed] = useState<number>(() => {
     const stored = parseFloat(localStorage.getItem('videoSpeed') || '');
     return Number.isFinite(stored) && stored >= 0.7 && stored <= 1.2 ? stored : 1.0;
@@ -1692,7 +1692,7 @@ export const SlidePreview: React.FC = () => {
         show({ message: t('slidePreview.exportStarted'), type: 'success' });
 
         const activeVoice = elevenLabsEnabled ? elevenLabsVoiceId : videoVoice;
-        const voiceLang = elevenLabsEnabled ? 'zh' : (VIDEO_VOICE_OPTIONS.flatMap(g => g.voices).find(v => v.id === videoVoice)?.lang || 'zh');
+        const voiceLang = elevenLabsEnabled ? 'vi' : (VIDEO_VOICE_OPTIONS.flatMap(g => g.voices).find(v => v.id === videoVoice)?.lang || 'vi');
         const response = await apiExportVideo(projectId, {
           pageIds,
           enableKenBurns: videoEnableKenBurns,

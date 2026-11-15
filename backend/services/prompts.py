@@ -168,7 +168,15 @@ def _format_requirements(requirements: str = None, section_type: str = "outline"
 
 
 def get_default_output_language() -> str:
-    """Lấy ngôn ngữ xuất mặc định từ biến môi trường hoặc cấu hình."""
+    """Lấy ngôn ngữ xuất mặc định từ Flask config, database hoặc môi trường."""
+    try:
+        from flask import current_app, has_app_context
+        if has_app_context() and current_app and hasattr(current_app, 'config'):
+            val = current_app.config.get('OUTPUT_LANGUAGE')
+            if val:
+                return str(val)
+    except Exception:
+        pass
     return os.getenv('OUTPUT_LANGUAGE', 'vi')
 
 
@@ -189,22 +197,22 @@ def get_ppt_language_instruction(language: str = None) -> str:
 LANGUAGE_CONFIG = {
     'vi': {
         'name': 'Tiếng Việt',
-        'instruction': 'Vui lòng xuất toàn bộ nội dung bằng tiếng Việt.',
+        'instruction': 'QUY TẮC BẮT BUỘC VỀ NGÔN NGỮ: Toàn bộ nội dung kết quả (tiêu đề, các điểm dàn ý, mô tả nội dung) PHẢI ĐƯỢC XUẤT 100% HOÀN TOÀN BẰNG TIẾNG VIỆT CHUẨN. Tuyệt đối không dùng tiếng Trung hay tiếng Anh (trừ tên thương hiệu gốc như Coca-Cola).',
         'ppt_text': (
-            'Quy tắc kết xuất chữ Tiếng Việt trên slide PPT:\n'
-            '- Toàn bộ văn bản hiển thị trên slide bắt buộc phải là Tiếng Việt chuẩn ngữ pháp và chính tả.\n'
-            '- CHÍNH TẢ & DẤU THANH: Tuyệt đối không sinh ra các từ vô nghĩa, chữ bị biến dạng, thiếu nét hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
-            '- BỐ CỤC & TYPOGRAPHY: Tiêu đề chính và tiêu đề phụ phải rõ ràng, phân cấp chính phụ rành mạch, phông chữ sắc nét, hiện đại. Bố cục phải bám sát chính xác nội dung và định hướng của dàn ý, dành không gian thông thoáng cho nội dung, không vẽ chữ lem nhem hoặc nhồi nhét quá nhiều chữ phụ li ti.'
+            'QUY ĐỊNH BẮT BUỘC VỀ NGÔN NGỮ VÀ TYPOGRAPHY TRÊN SLIDE PPT:\n'
+            '1. NGÔN NGỮ: Toàn bộ văn bản hiển thị trên slide PHẢI LÀ TIẾNG VIỆT CHUẨN 100%. Tuyệt đối KHÔNG tự ý dịch sang tiếng Anh (KHÔNG dùng các từ như "global", "difference", "market", "overview"...). Giữ nguyên đúng từng từ tiếng Việt trong mô tả.\n'
+            '2. CHÍNH TẢ & DẤU THANH: Không sinh ra chữ biến dạng, từ vô nghĩa hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
+            '3. BỐ CỤC: Với tiêu đề slide, vẽ rõ nét từng chữ bằng phông sans-serif hiện đại. Với nội dung chi tiết, tập trung tạo bố cục trực quan sạch đẹp (infographic, cards, icons, visual containers), không cố vẽ chữ li ti dày đặc dễ bị nhòe nét.'
         )
     },
     'zh': {
         'name': 'Tiếng Việt',
-        'instruction': 'Vui lòng xuất toàn bộ nội dung bằng tiếng Việt.',
+        'instruction': 'QUY TẮC BẮT BUỘC VỀ NGÔN NGỮ: Toàn bộ nội dung kết quả (tiêu đề, các điểm dàn ý, mô tả nội dung) PHẢI ĐƯỢC XUẤT 100% HOÀN TOÀN BẰNG TIẾNG VIỆT CHUẨN. Tuyệt đối không dùng tiếng Trung hay tiếng Anh (trừ tên thương hiệu gốc như Coca-Cola).',
         'ppt_text': (
-            'Quy tắc kết xuất chữ Tiếng Việt trên slide PPT:\n'
-            '- Toàn bộ văn bản hiển thị trên slide bắt buộc phải là Tiếng Việt chuẩn ngữ pháp và chính tả.\n'
-            '- CHÍNH TẢ & DẤU THANH: Tuyệt đối không sinh ra các từ vô nghĩa, chữ bị biến dạng, thiếu nét hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
-            '- BỐ CỤC & TYPOGRAPHY: Tiêu đề chính và tiêu đề phụ phải rõ ràng, phân cấp chính phụ rành mạch, phông chữ sắc nét, hiện đại. Bố cục phải bám sát chính xác nội dung và định hướng của dàn ý, dành không gian thông thoáng cho nội dung, không vẽ chữ lem nhem hoặc nhồi nhét quá nhiều chữ phụ li ti.'
+            'QUY ĐỊNH BẮT BUỘC VỀ NGÔN NGỮ VÀ TYPOGRAPHY TRÊN SLIDE PPT:\n'
+            '1. NGÔN NGỮ: Toàn bộ văn bản hiển thị trên slide PHẢI LÀ TIẾNG VIỆT CHUẨN 100%. Tuyệt đối KHÔNG tự ý dịch sang tiếng Anh (KHÔNG dùng các từ như "global", "difference", "market", "overview"...). Giữ nguyên đúng từng từ tiếng Việt trong mô tả.\n'
+            '2. CHÍNH TẢ & DẤU THANH: Không sinh ra chữ biến dạng, từ vô nghĩa hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
+            '3. BỐ CỤC: Với tiêu đề slide, vẽ rõ nét từng chữ bằng phông sans-serif hiện đại. Với nội dung chi tiết, tập trung tạo bố cục trực quan sạch đẹp (infographic, cards, icons, visual containers), không cố vẽ chữ li ti dày đặc dễ bị nhòe nét.'
         )
     },
     'ja': {
@@ -219,8 +227,13 @@ LANGUAGE_CONFIG = {
     },
     'auto': {
         'name': 'Tự động',
-        'instruction': 'Vui lòng xuất toàn bộ bằng tiếng Việt. ',
-        'ppt_text': ''
+        'instruction': 'QUY TẮC BẮT BUỘC VỀ NGÔN NGỮ: Toàn bộ nội dung kết quả (tiêu đề, các điểm dàn ý, mô tả nội dung) PHẢI ĐƯỢC XUẤT 100% HOÀN TOÀN BẰNG TIẾNG VIỆT CHUẨN. Tuyệt đối không dùng tiếng Trung hay tiếng Anh (trừ tên thương hiệu gốc như Coca-Cola).',
+        'ppt_text': (
+            'QUY ĐỊNH BẮT BUỘC VỀ NGÔN NGỮ VÀ TYPOGRAPHY TRÊN SLIDE PPT:\n'
+            '1. NGÔN NGỮ: Toàn bộ văn bản hiển thị trên slide PHẢI LÀ TIẾNG VIỆT CHUẨN 100%. Tuyệt đối KHÔNG tự ý dịch sang tiếng Anh (KHÔNG dùng các từ như "global", "difference", "market", "overview"...). Giữ nguyên đúng từng từ tiếng Việt trong mô tả.\n'
+            '2. CHÍNH TẢ & DẤU THANH: Không sinh ra chữ biến dạng, từ vô nghĩa hoặc đặt sai dấu thanh (sắc, huyền, hỏi, ngã, nặng).\n'
+            '3. BỐ CỤC: Với tiêu đề slide, vẽ rõ nét từng chữ bằng phông sans-serif hiện đại. Với nội dung chi tiết, tập trung tạo bố cục trực quan sạch đẹp (infographic, cards, icons, visual containers), không cố vẽ chữ li ti dày đặc dễ bị nhòe nét.'
+        )
     }
 }
 

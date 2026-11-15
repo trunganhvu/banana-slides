@@ -484,7 +484,7 @@ def generate_outline(project_id):
         
         # Get request data and language parameter
         data = request.get_json() or {}
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
         
         # Get reference files content and create project context
         reference_files_content = _get_project_reference_files_content(project_id)
@@ -596,7 +596,7 @@ def generate_outline_stream(project_id):
         return not_found('Project')
 
     data = request.get_json() or {}
-    language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+    language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
 
     # Capture app reference for use inside the generator (which runs outside request context)
     app = current_app._get_current_object()
@@ -746,7 +746,7 @@ def generate_from_description(project_id):
         # Get description text and language
         data = request.get_json() or {}
         description_text = data.get('description_text') or project.description_text
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
         
         if not description_text:
             return bad_request("description_text is required")
@@ -868,7 +868,7 @@ def generate_descriptions(project_id):
         data = request.get_json() or {}
         # Backend logic
         max_workers = data.get('max_workers', current_app.config.get('MAX_DESCRIPTION_WORKERS', 5))
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
         detail_level = data.get('detail_level', 'default')
         
         # Create task
@@ -946,7 +946,7 @@ def generate_descriptions_stream(project_id):
         return bad_request("Project must have outline generated first")
 
     data = request.get_json() or {}
-    language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+    language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
     detail_level = data.get('detail_level', 'default')
 
     app = current_app._get_current_object()
@@ -1120,7 +1120,7 @@ def generate_images(project_id):
             getattr(p, 'template_asset_id', None) or getattr(p, 'template_style_text', None)
             for p in pages
         )
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
 
         if not ref_image_path and not project.template_style and not has_page_template:
             try:
@@ -1167,7 +1167,7 @@ def generate_images(project_id):
         # Backend logic
         combined_requirements = project.extra_requirements or ""
         if project.template_style:
-            style_requirement = f"\n\npptMô tả phong cách trang: \n\n{project.template_style}"
+            style_requirement = f"\n\nMô tả phong cách trang: \n\n{project.template_style}"
             combined_requirements = combined_requirements + style_requirement
         
         # Set all target pages to QUEUED before submitting background task
@@ -1294,7 +1294,7 @@ def refine_outline(project_id):
         
         # Get previous requirements and language from request
         previous_requirements = data.get('previous_requirements', [])
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
         
         # Refine outline
         logger.info(f"Bắt đầu chỉnh sửa dàn ý: Dự án {project_id}, Yêu cầu người dùng: {user_requirement}, Số yêu cầu lịch sử: {len(previous_requirements)}")
@@ -1406,7 +1406,7 @@ def refine_descriptions(project_id):
         
         # Get previous requirements and language from request
         previous_requirements = data.get('previous_requirements', [])
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
         
         # Refine descriptions
         logger.info(f"Bắt đầu chỉnh sửa dàn ý: Dự án {project_id}, Yêu cầu người dùng: {user_requirement}, Số yêu cầu lịch sử: {len(previous_requirements)}")
@@ -1496,7 +1496,7 @@ def create_ppt_renovation_project():
 
         keep_layout = request.form.get('keep_layout', 'false').lower() == 'true'
         template_style = request.form.get('template_style', '').strip() or None
-        language = request.form.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = request.form.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'vi'))
 
         # Create project
         project = Project(

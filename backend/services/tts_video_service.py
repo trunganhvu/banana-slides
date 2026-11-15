@@ -315,18 +315,20 @@ def pad_audio_with_silence(
 def get_default_voice(language: str, config: Optional[dict] = None) -> str:
     """ Backend docstring """
     defaults = {
-        'zh': 'zh-CN-XiaoxiaoNeural',
+        'vi': 'vi-VN-HoaiMyNeural',
+        'zh': 'vi-VN-HoaiMyNeural',
         'en': 'en-US-JennyNeural',
         'ja': 'ja-JP-NanamiNeural',
     }
     if config:
         voice_map = {
+            'vi': config.get('TTS_DEFAULT_VOICE_VI', defaults['vi']),
             'zh': config.get('TTS_DEFAULT_VOICE_ZH', defaults['zh']),
             'en': config.get('TTS_DEFAULT_VOICE_EN', defaults['en']),
             'ja': config.get('TTS_DEFAULT_VOICE_JA', defaults['ja']),
         }
-        return voice_map.get(language, voice_map['zh'])
-    return defaults.get(language, defaults['zh'])
+        return voice_map.get(language, voice_map['vi'])
+    return defaults.get(language, defaults['vi'])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

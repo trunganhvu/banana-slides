@@ -249,7 +249,9 @@ const TaskItem: React.FC<{
   
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    const lang = localStorage.getItem('banana-slides-language') || 'vi';
+    const locale = lang.startsWith('en') ? 'en-US' : 'vi-VN';
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   };
 
   const pageRangeText = getPageRangeText(task.pageIds, pages, t);
@@ -707,7 +709,7 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
                       {file.filename}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {formatFileSize(file.size)} · {new Date(file.modified_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {formatFileSize(file.size)} · {new Date(file.modified_at).toLocaleString((localStorage.getItem('banana-slides-language') || 'vi').startsWith('en') ? 'en-US' : 'vi-VN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
                   <Button
