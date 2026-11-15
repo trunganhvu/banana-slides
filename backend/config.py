@@ -118,7 +118,7 @@ class Config:
     
     # Backend logic
     TEXT_MODEL = os.getenv('TEXT_MODEL', 'gemini-3.5-flash-lite')
-    IMAGE_MODEL = os.getenv('IMAGE_MODEL', 'gemini-3.1-flash-image')
+    IMAGE_MODEL = os.getenv('IMAGE_MODEL', 'gemini-2.5-flash-image')
 
     # Backend logic
     MINERU_TOKEN = _clean_env_key('MINERU_TOKEN')

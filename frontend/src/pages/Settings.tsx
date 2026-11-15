@@ -99,7 +99,7 @@ const normalizeGoogleModel = (model: string | undefined, fallback: string): stri
     trimmed === 'gemini-3-pro-image-preview' ||
     trimmed === 'imagen-3.0-generate-002'
   ) {
-    return 'gemini-3.1-flash-image';
+    return 'gemini-2.5-flash-image';
   }
   if (
     trimmed === 'gemini-2.0-flash' ||
@@ -518,7 +518,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     max_description_workers: data.max_description_workers || 5,
     max_image_workers: data.max_image_workers || 8,
     text_model: normalizeGoogleModel(data.text_model, 'gemini-3.5-flash-lite'),
-    image_model: normalizeGoogleModel(data.image_model, 'gemini-3.1-flash-image'),
+    image_model: normalizeGoogleModel(data.image_model, 'gemini-2.5-flash-image'),
     mineru_api_base: data.mineru_api_base || '',
     mineru_token: '',
     image_caption_model: normalizeGoogleModel(data.image_caption_model, 'gemini-3.5-flash-lite'),

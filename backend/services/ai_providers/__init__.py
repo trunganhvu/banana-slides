@@ -160,7 +160,7 @@ def get_default_models_for_provider(fmt: str = 'gemini', api_base: Optional[str]
     return {
         'text': 'gemini-3.5-flash-lite',
         'caption': 'gemini-3.5-flash-lite',
-        'image': 'gemini-3.1-flash-image',
+        'image': 'gemini-2.5-flash-image',
     }
 
 
@@ -184,7 +184,7 @@ _MODEL_ALIASES = {
 def _normalize_model_for_provider(model: str, role: str, config: Dict[str, Any]) -> str:
     """Normalize empty, obsolete, or non-Google model names to Google Gemini defaults."""
     trimmed = (model or '').strip()
-    default_model = 'gemini-3.1-flash-image' if role == 'image' else 'gemini-3.5-flash-lite'
+    default_model = 'gemini-2.5-flash-image' if role == 'image' else 'gemini-3.5-flash-lite'
     if not trimmed:
         return default_model
     if trimmed in _MODEL_ALIASES:
@@ -218,7 +218,7 @@ def get_text_provider(model: str = "gemini-3.5-flash-lite") -> TextProvider:
     return GenAITextProvider(api_key=config['api_key'], api_base=config['api_base'], model=model)
 
 
-def get_image_provider(model: str = "gemini-3.1-flash-image") -> ImageProvider:
+def get_image_provider(model: str = "gemini-2.5-flash-image") -> ImageProvider:
     """Factory: return a Google Gemini ImageProvider."""
     config = _get_model_type_provider_config('image')
     model = _normalize_model_for_provider(model, 'image', config)
