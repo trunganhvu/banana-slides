@@ -304,10 +304,11 @@ class ExportService:
                     'api key is required', 'api_key is required',
                     'google_api_key (from database settings or environment) is required',
                     'openai_api_key (from database settings or environment) is required',
+                    'mineru token is required', 'mineru_token', 'mineru',
                     'not configured', 'missing api key', 'chưa cấu hình', 'thiếu api key',
                 ),
                 'CONFIGURATION_MISSING',
-                'Thiếu cấu hình dịch vụ nhận diện ảnh',
+                'Thiếu cấu hình dịch vụ nhận diện ảnh hoặc MinerU Token',
                 False,
             ),
             (
@@ -505,9 +506,15 @@ class ExportService:
             'technical_message': ExportService._safe_technical_message(message),
         }
         if classification['reason'] == 'configuration_missing':
-            help_text = (
-                'Vui lòng bổ sung trong phần Cài đặt image caption provider, mô hình và API Key, Lưu và xác minh cấu hình rồi xuất lại. '
-            )
+            if 'mineru' in lowered:
+                help_text = (
+                    'Tính năng xuất PPTX có thể chỉnh sửa yêu cầu MinerU Token để bóc tách văn bản từ ảnh slide. '
+                    'Vui lòng cấu hình MINERU_TOKEN trong tệp .env hoặc sử dụng tính năng Xuất PPTX tiêu chuẩn (Tải PPTX).'
+                )
+            else:
+                help_text = (
+                    'Vui lòng bổ sung trong phần Cài đặt image caption provider, mô hình và API Key, Lưu và xác minh cấu hình rồi xuất lại. '
+                )
         else:
             help_text = (
                 'Vui lòng kiểm tra dịch vụ tương ứng theo giai đoạn lỗi rồi thử lại. Nếu chỉ muốn nhận trước kết quả có thể chỉnh sửa, '

@@ -113,6 +113,121 @@ const previewI18n = {
         exportTaskCreated: "Đã tạo nhiệm vụ xuất, đang xử lý...",
         exportFailed: "Xuất thất bại, vui lòng thử lại sau",
       }
+    },
+    preview: {
+      title: "Xem trước", pageCount: "{{count}} trang", export: "Xuất", exportTasks: "Nhiệm vụ xuất",
+      exportPptx: "Xuất PPTX (Tiêu chuẩn)", exportPdf: "Xuất PDF",
+      exportEditablePptx: "PPTX có thể chỉnh sửa (Yêu cầu MinerU)", exportImages: "Xuất gói hình ảnh",
+      exportVideo: "Xuất video thuyết minh",
+      videoSettingsLoading: "Đang tải cài đặt video...",
+      videoSettingsLoadFailed: "Không thể tải cài đặt xuất video. Vui lòng thử lại trước khi xuất.",
+      videoVoicesLoadFailed: "Không thể tải danh sách giọng nói ElevenLabs. Vui lòng thử lại sau.",
+      pptxExportTitle: "Cài đặt xuất PPTX",
+      pptxExportSubtitle: "Xác nhận cài đặt phát trình chiếu trước khi xuất tệp PPTX này.",
+      pptxTransitionToggle: "Bật hiệu ứng chuyển trang",
+      pptxTransitionDesc: "Tệp PPTX sẽ được thêm hiệu ứng chuyển slide. Nếu chọn nhiều hiệu ứng, mỗi trang sẽ ngẫu nhiên áp dụng một hiệu ứng.",
+      pptxTransitionFade: "Làm mờ (Fade)",
+      pptxTransitionPageTurn: "Lật trang (Page turn)",
+      pptxTransitionPush: "Đẩy (Push)",
+      pptxTransitionWipe: "Lau (Wipe)",
+      pptxTransitionSplit: "Tách (Split)",
+      pptxTransitionBlinds: "Mành che (Blinds)",
+      pptxTransitionChecker: "Bàn cờ (Checkerboard)",
+      pptxTransitionWheel: "Đồng hồ (Clock)",
+      pptxTransitionRequired: "Vui lòng chọn ít nhất một hiệu ứng chuyển trang",
+      pptxStartExport: "Bắt đầu xuất",
+      pptxCancel: "Hủy",
+      videoExportTitle: "Cài đặt xuất video thuyết minh",
+      videoExportSubtitle: "Điều chỉnh chiến lược thuyết minh ở bước xuất cuối cùng cho demo, tổng kết, ra mắt hoặc báo cáo.",
+      videoVoiceLabel: "Giọng đọc",
+      videoSpeedLabel: "Tốc độ nói",
+      videoSpeedHint: "0.7 chậm hơn — 1.0 mặc định — 1.2 nhanh hơn",
+      videoNarrationPresetTitle: "Chiến lược thuyết minh",
+      videoNarrationPersona: "Phong cách người nói",
+      videoNarrationAudience: "Đối tượng khán giả",
+      videoNarrationTone: "Giọng điệu",
+      videoNarrationTopic: "Chủ đề cốt lõi",
+      videoNarrationTopicPlaceholder: "Ví dụ: Lịch sử và hành trình phát triển của thương hiệu",
+      videoNarrationLength: "Số từ mỗi slide",
+      videoNarrationAdvanced: "Cài đặt nâng cao",
+      videoNarrationCollapse: "Thu gọn cài đặt nâng cao",
+      videoNarrationAdvancedHint: "Các tùy chọn này chỉ ảnh hưởng đến việc tạo kịch bản thuyết minh khi xuất.",
+      videoNarrationMinWords: "Từ tối thiểu",
+      videoNarrationMaxWords: "Từ tối đa",
+      videoNarrationSummaryLabel: "Chiến lược hiện tại",
+      videoNarrationGenerateMissing: "Tự động tạo thuyết minh cho slide còn thiếu",
+      videoUseElevenLabs: "Dùng chuyển văn bản thành giọng nói ElevenLabs",
+      videoElevenLabsNoKey: "Chưa cấu hình ElevenLabs API Key — tính năng tổng hợp giọng đọc sẽ không hoạt động.",
+      videoElevenLabsGoSettings: "Đi đến Cài đặt",
+      videoEnableKenBurns: "Bật chuyển động camera (Ken Burns)",
+      videoKenBurnsTip: "Thêm chuyển động phóng to hoặc lia máy chậm cho từng slide để video sinh động hơn",
+      videoIncludeNoImage: "Bao gồm các trang chưa tạo ảnh (dùng khung giữ chỗ)",
+      videoMissingImagesWarning: "{{count}} trang trong phạm vi xuất chưa có ảnh. Bật \"Bao gồm các trang chưa tạo ảnh\" hoặc tạo ảnh trước khi xuất.",
+      videoStartExport: "Bắt đầu xuất",
+      videoCancel: "Hủy",
+      editablePptxDialogTitle: "Xuất PPTX có thể chỉnh sửa văn bản (Beta)",
+      editablePptxDialogSubtitle: "Bóc tách văn bản trên slide thành các hộp chữ có thể chỉnh sửa trong PowerPoint bằng dịch vụ MinerU.",
+      editablePptxIconTransparent: "Tách nền trong suốt cho biểu tượng (Icon)",
+      editablePptxIconTransparentDesc: "Chạy mô hình RMBG-2.0 cục bộ để tạo ảnh PNG nền trong suốt cho biểu tượng, tránh xung đột màu nền.",
+      editablePptxModelHint: "Lần đầu sử dụng sẽ tải mô hình ~512MB vào ~/.cache/banana-slides/models/. Khuyến nghị RAM trống ≥16GB.",
+      editablePptxRangeLabel: "Phạm vi xuất",
+      editablePptxRangeAll: "Tất cả {{count}} trang",
+      editablePptxRangePages: "Trang {{pages}} (tổng {{count}} trang)",
+      editablePptxRangeTip: "Để chỉ xuất các trang nhất định, nhấn \"Chọn nhiều\" ở đầu thanh bên trái và đánh dấu các trang trước.",
+      editablePptxStartExport: "Bắt đầu xuất PPTX có thể chỉnh sửa",
+      editablePptxCancel: "Hủy",
+      exportSelectedPages: "Sẽ xuất {{count}} trang đã chọn",
+      regenerate: "Tạo lại", regenerating: "Đang tạo...",
+      editMode: "Chế độ sửa", viewMode: "Chế độ xem", page: "Trang {{num}}",
+      switchToMulti: "Dùng mẫu theo từng trang", switchToSingle: "Dùng mẫu chung", templateSetup: "Thiết lập mẫu", templateMenu: "Mẫu",
+      projectSettings: "Cài đặt dự án", changeTemplate: "Đổi mẫu", refresh: "Làm mới",
+      batchGenerate: "Tạo ảnh hàng loạt ({{count}})", generateSelected: "Tạo các trang đã chọn ({{count}})",
+      multiSelect: "Chọn nhiều", cancelMultiSelect: "Hủy chọn nhiều", pagesUnit: " trang",
+      noPages: "Chưa có trang nào", noPagesHint: "Vui lòng quay lại trình chỉnh sửa để thêm nội dung trước", backToEdit: "Về trình soạn thảo",
+      generating: "Đang tạo...", queued: "Đang xếp hàng...", notGenerated: "Chưa tạo ảnh", generateThisPage: "Tạo trang này",
+      prevPage: "Trang trước", nextPage: "Trang sau", historyVersions: "Lịch sử phiên bản",
+      play: "Trình chiếu",
+      versions: "Phiên bản", version: "Phiên bản", current: "Hiện tại", editPage: "Sửa trang",
+      regionSelect: "Chọn vùng", endRegionSelect: "Dừng chọn vùng",
+      inlineEditPromptPlaceholder: "Mô tả yêu cầu thay đổi, hoặc khoanh vùng trên ảnh trước…",
+      addReference: "Thêm ảnh tham khảo",
+      pageOutline: "Dàn ý trang (Có thể sửa)", pageDescription: "Mô tả trang (Có thể sửa)",
+      enterTitle: "Nhập tiêu đề trang", pointsPerLine: "Ý chính (mỗi dòng một ý)",
+      enterPointsPerLine: "Nhập mỗi ý chính trên một dòng", enterDescription: "Nhập mô tả chi tiết của trang",
+      selectContextImages: "Chọn ảnh ngữ cảnh (Tùy chọn)", useTemplateImage: "Dùng ảnh mẫu",
+      imagesInDescription: "Ảnh trong mô tả", uploadImages: "Tải ảnh lên",
+      selectFromMaterials: "Chọn từ kho tư liệu", upload: "Tải lên",
+      editPromptLabel: "Nhập chỉ dẫn chỉnh sửa (sẽ tự động đính kèm mô tả trang)",
+      editPromptPlaceholder: "Ví dụ: Xóa phần tử trong vùng chọn, đổi nền sang màu xanh, tăng cỡ chữ tiêu đề, đổi viền khung chữ sang nét đứt...",
+      saveOutlineOnly: "Chỉ lưu dàn ý / mô tả", generateImage: "Tạo ảnh",
+      templateModalDesc: "Chọn mẫu mới sẽ áp dụng cho các trang slide tạo trong tương lai (không ảnh hưởng trang đã tạo). Bạn có thể chọn mẫu có sẵn hoặc tải lên mẫu mới.",
+      useTextStyle: "Dùng mô tả văn bản để định hình phong cách",
+      applyStyle: "Áp dụng phong cách",
+      styleSaved: "Đã lưu mô tả phong cách",
+      uploadingTemplate: "Đang tải mẫu lên...",
+      resolution1KWarning: "Cảnh báo độ phân giải 1K",
+      resolution1KWarningText: "Hiện đang dùng độ phân giải 1K để tạo ảnh, có thể dẫn đến chữ bị mờ hoặc méo ký tự.",
+      resolution1KWarningHint: "Khuyến nghị chuyển sang độ phân giải 2K hoặc 4K trong Cài đặt để có chất lượng rõ nét nhất.",
+      dontShowAgain: "Không nhắc lại", generateAnyway: "Vẫn tiếp tục tạo",
+      confirmRegenerateSelected: "Sẽ tạo lại {{count}} trang đã chọn (lịch sử vẫn được lưu). Tiếp tục?",
+      confirmRegenerateAll: "Sẽ tạo lại tất cả các trang (lịch sử vẫn được lưu). Tiếp tục?",
+      confirmRegenerateTitle: "Xác nhận tạo lại",
+      generationFailed: "Tạo ảnh thất bại",
+      qualityControl: "Kiểm soát chất lượng",
+      qualityControlDesc: "Kiểm tra sau khi tạo; chỉ lưu các phiên bản đạt chuẩn",
+      qualityControlTooltip: "Khi bật tính năng này, hệ thống sẽ kiểm tra chữ có bị nhòe, sai chính tả hay hình ảnh bị lỗi không. Nếu có vấn đề sẽ tự động thử lại tối đa 3 lần. Chỉ lưu ảnh đạt yêu cầu làm phiên bản mới.",
+      qualityControlOn: "Bật",
+      qualityControlOff: "Tắt",
+      qualityControlSaved: "Đã lưu cài đặt kiểm soát chất lượng",
+      qualityControlSaveFailed: "Lưu cài đặt kiểm soát chất lượng thất bại",
+      disabledExportTip: "{{count}} trang trong phạm vi xuất chưa có ảnh. Hãy tạo ảnh trước hoặc điều chỉnh danh sách chọn",
+      messages: {
+        exportSuccess: "Xuất thành công", exportFailed: "Xuất thất bại",
+        regenerateSuccess: "Tạo lại hoàn tất", regenerateFailed: "Tạo lại thất bại",
+        loadingProject: "Đang tải dự án...", processing: "Đang xử lý...",
+        generatingBackgrounds: "Đang tách nền sạch...", creatingPdf: "Đang tạo PDF...",
+        parsingContent: "Đang phân tích nội dung...", creatingPptx: "Đang tạo PPTX...", complete: "Hoàn tất!"
+      }
     }
   },
   en: {
@@ -572,6 +687,7 @@ export const SlidePreview: React.FC = () => {
   const [showVideoExportDialog, setShowVideoExportDialog] = useState(false);
   const [isPreparingVideoExport, setIsPreparingVideoExport] = useState(false);
   const [showEditablePptxDialog, setShowEditablePptxDialog] = useState(false);
+  const [mineruTokenConfigured, setMineruTokenConfigured] = useState(true);
   const [editablePptxDialogIconTransparent, setEditablePptxDialogIconTransparent] = useState(true);
   const [pptxTransitionsEnabled, setPptxTransitionsEnabled] = useState(false);
   const [pptxTransitionEffects, setPptxTransitionEffects] = useState<PptxTransitionEffect[]>(['fade']);
@@ -768,6 +884,7 @@ export const SlidePreview: React.FC = () => {
       try {
         const response = await getSettings();
         if (!response.data || !isMounted) return;
+        setMineruTokenConfigured((response.data.mineru_token_length ?? 0) > 0);
         if (!hasTouchedImageQualityControlRef.current) {
           setImageQualityControlEnabled(Boolean(response.data.enable_image_quality_control));
         }
@@ -2706,6 +2823,37 @@ export const SlidePreview: React.FC = () => {
           <div className="bg-white dark:bg-background-secondary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
             <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
+            {!mineruTokenConfigured && (
+              <div className="mb-4 p-3.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs">
+                <div className="font-semibold text-sm flex items-center gap-1.5 mb-1.5 text-amber-800 dark:text-amber-300">
+                  <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span>{isEnglishUi ? 'MinerU Token Required' : 'Yêu cầu cấu hình MinerU Token'}</span>
+                </div>
+                <p className="leading-relaxed text-amber-700 dark:text-amber-300">
+                  {isEnglishUi
+                    ? 'Extracting editable text boxes from slide images requires a MinerU token (MINERU_TOKEN in .env). It is not currently configured.'
+                    : 'Tính năng bóc tách văn bản đệ quy sử dụng dịch vụ thông minh MinerU để tách chữ và nền, cần cấu hình MINERU_TOKEN trong tệp .env.'}
+                </p>
+                <div className="mt-3 pt-2.5 border-t border-amber-200 dark:border-amber-800">
+                  <p className="mb-2 font-medium text-amber-800 dark:text-amber-200">
+                    {isEnglishUi
+                      ? 'Tip: To export slides right away for presentation, use Standard PPTX Export:'
+                      : 'Mẹo: Để tải slide trình chiếu ngay mà không cần cấu hình thêm, vui lòng dùng Xuất PPTX tiêu chuẩn:'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditablePptxDialog(false);
+                      setShowPptxExportDialog(true);
+                    }}
+                    className="w-full py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <Download size={14} />
+                    <span>{isEnglishUi ? 'Switch to Standard PPTX Export' : 'Chuyển sang Xuất PPTX tiêu chuẩn'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-background-hover">
               <input
                 type="checkbox"
