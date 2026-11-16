@@ -34,7 +34,7 @@ test.describe('Template invalid response handling', () => {
   test('blocks project creation when a selected preset template is not an image', async ({ page }) => {
     let projectCreateCalls = 0;
 
-    await page.route('**/templates/template_y.png', async (route) => {
+    await page.route('**/templates/template_minimalist_clean.png', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'text/html',

@@ -3,15 +3,258 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#f59e0b" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Banana Slides | Trình tạo PPT AI gốc</title>
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Banana Slides - Ý Tưởng Trượt Thành Slide | AI Tạo Slide Chuẩn Thiết Kế</title>
+    <meta name="title" content="Banana Slides - Ý Tưởng Trượt Thành Slide | AI Tạo Slide Chuẩn Thiết Kế" />
+    <meta name="description" content="Banana Slides là công cụ tạo slide thuyết trình bằng AI thế hệ mới. Tự động hóa thiết kế từ dàn ý thô, prompt để chỉnh sửa từng trang và xuất file PowerPoint (PPTX) gốc chỉnh sửa tự do 100%." />
+    <meta name="keywords" content="Banana Slides, AI tạo slide, trình tạo slide AI, slide AI, tạo PowerPoint AI, xuất file PPTX, thiết kế bài thuyết trình, AI presentation maker, AI slide generator, prompt to presentation" />
+    <meta name="author" content="Banana Slides Team" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="alternate" hreflang="vi" href="/" />
+    <link rel="alternate" hreflang="en" href="/" />
+    <link rel="alternate" hreflang="x-default" href="/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Banana Slides" />
+    <meta property="og:title" content="Banana Slides - Ý Tưởng Trượt Thành Slide | AI Tạo Slide Chuẩn Thiết Kế" />
+    <meta property="og:description" content="Tạo slide thuyết trình bằng AI trong 30 giây. Trò chuyện để chỉnh sửa từng trang theo ý muốn và tải về file PowerPoint (PPTX) thật có thể biên tập tự do." />
+    <meta property="og:image" content="/templates/template_liquid_glass.png" />
+    <meta property="og:image:alt" content="Banana Slides AI - Mẫu slide Apple Liquid Glass chuẩn thiết kế" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Banana Slides - Ý Tưởng Trượt Thành Slide" />
+    <meta name="twitter:description" content="Tạo bài thuyết trình AI từ dàn ý thô. Tinh chỉnh từng trang bằng câu lệnh prompt và xuất file PowerPoint nguyên bản." />
+    <meta name="twitter:image" content="/templates/template_liquid_glass.png" />
+
+    <!-- Structured Data (JSON-LD @graph) for Google Search & AI Search Engines (ChatGPT, Perplexity, Gemini, Claude) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "Banana Slides",
+          "alternateName": "Banana Slides AI",
+          "inLanguage": ["vi", "en"],
+          "description": "Nền tảng tạo bài thuyết trình bằng AI thế hệ mới: chuyển đổi ý tưởng, dàn ý hoặc tài liệu PDF/DOCX thành slide chuẩn studio và xuất tệp PowerPoint (PPTX) chỉnh sửa tự do."
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Banana Slides",
+          "alternateName": "Banana Slides AI",
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "All",
+          "inLanguage": ["vi", "en"],
+          "description": "Nền tảng tạo bài thuyết trình bằng AI thế hệ mới. Biến ý tưởng và dàn ý thành slide chuẩn studio, hỗ trợ chỉnh sửa chi tiết từng trang bằng ngôn ngữ tự nhiên và xuất file PowerPoint (PPTX) gốc.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "VND"
+          },
+          "featureList": [
+            "Tạo bài thuyết trình tự động từ ý tưởng, dàn ý văn bản hoặc tài liệu PDF/DOCX/PPTX",
+            "Chỉnh sửa và tinh chỉnh chi tiết từng slide bằng câu lệnh prompt ngôn ngữ tự nhiên",
+            "Khoanh vùng vẽ lại chi tiết trên slide (Inpainting)",
+            "Xuất tệp PowerPoint (PPTX) thật có thể chỉnh sửa tự do 100%, cùng PDF và bộ ảnh độ phân giải cao",
+            "Bộ sưu tập 4 phong cách slide cao cấp: Apple Liquid Glass, Tối Giản Thanh Lịch, Infographic & Màu Sắc, Doanh Nghiệp & Học Thuật",
+            "Hỗ trợ đăng nhập Google SSO an toàn"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Banana Slides có hỗ trợ tạo slide bằng tiếng Việt không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Có. Banana Slides hỗ trợ giao diện, dàn ý, nội dung slide, ghi chú thuyết trình và câu lệnh chỉnh sửa hoàn toàn bằng tiếng Việt, đồng thời có thể chuyển đổi song ngữ sang tiếng Anh."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "File PowerPoint (PPTX) xuất từ Banana Slides có chỉnh sửa được không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Có. Bạn có thể tải về tệp PowerPoint (.pptx) gốc chỉnh sửa tự do từng văn bản, hình khối và bảng màu trên Microsoft PowerPoint hoặc Google Slides, bên cạnh định dạng PDF và hình ảnh."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Tôi có thể tải lên file PDF hoặc Word để tạo slide tự động không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Có. Banana Slides hỗ trợ nhập liệu từ 1 câu ý tưởng, dàn ý thô, mô tả chi tiết hoặc tải lên tài liệu tham khảo như PDF, DOCX, PPTX, TXT và Markdown để AI tổng hợp thành bộ slide hoàn chỉnh."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Làm thế nào để chỉnh sửa một slide hoặc chi tiết chưa ưng ý?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn chỉ cần nhập yêu cầu bằng ngôn ngữ tự nhiên để chỉnh sửa từng trang slide, hoặc dùng công cụ khoanh vùng trực tiếp lên khu vực cần sửa để AI vẽ lại chính xác phần đó."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Banana Slides cung cấp những phong cách thiết kế slide nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Hệ thống tích hợp sẵn 4 phong cách chuẩn studio gồm Apple Liquid Glass, Tối Giản Thanh Lịch, Infographic & Màu Sắc, và Doanh Nghiệp & Học Thuật, cùng khả năng tải lên mẫu thiết kế riêng."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Critical pre-mount styles to prevent FOUC and keep SEO shell visually clean during React hydration -->
+    <style>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .bs-boot-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      .bs-boot-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f59e0b;
+        border-top-color: transparent;
+        border-radius: 9999px;
+        animation: bs-spin 0.8s linear infinite;
+        margin: 0 auto 12px;
+      }
+      @keyframes bs-spin {
+        to { transform: rotate(360deg); }
+      }
+      @media (prefers-color-scheme: dark) {
+        .bs-boot-shell { background: #0c0f17; color: #94a3b8; }
+      }
+    </style>
+
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Clean loading indicator replaced immediately on React mount -->
+      <div class="bs-boot-shell" aria-hidden="true">
+        <div style="text-align: center;">
+          <div class="bs-boot-spinner"></div>
+          <p style="font-size: 14px; font-weight: 600; color: #475569; margin: 0;">Đang khởi tạo Banana Slides...</p>
+        </div>
+      </div>
+
+      <!-- Static Semantic HTML SEO & AI Search (GEO) Shell for non-JS crawlers (GPTBot, PerplexityBot, ClaudeBot, Googlebot) -->
+      <main class="sr-only">
+        <header>
+          <h1>Banana Slides - Ý Tưởng Trượt Thành Slide | AI Tạo Slide Chuẩn Thiết Kế</h1>
+          <p>
+            Banana Slides là công cụ tạo bài thuyết trình bằng AI thế hệ mới. Chỉ từ một câu ý tưởng,
+            dàn ý thô hoặc tài liệu PDF/Word/PowerPoint có sẵn, AI tự động thiết kế bộ slide chuyên nghiệp
+            trong 30 giây, hỗ trợ chỉnh sửa từng trang bằng câu lệnh tự nhiên và xuất tệp PowerPoint (PPTX)
+            gốc chỉnh sửa tự do 100%.
+          </p>
+        </header>
+
+        <section aria-labelledby="seo-features">
+          <h2 id="seo-features">Tại sao nên chọn Banana Slides?</h2>
+          <ul>
+            <li>
+              <strong>Đa dạng phương thức nhập liệu:</strong> Tạo từ 1 câu ý tưởng ngắn, dán dàn ý thô,
+              tài liệu mô tả chi tiết hoặc tải lên tệp PDF, DOCX, PPTX, TXT, Markdown để AI tái tạo lại.
+            </li>
+            <li>
+              <strong>Bố cục chuẩn Studio thiết kế:</strong> Tự động phân bổ tiêu đề, phân cấp ý chính theo
+              tỷ lệ vàng và chọn hình minh họa trực quan đồng bộ với ngữ cảnh.
+            </li>
+            <li>
+              <strong>Chỉnh sửa bằng ngôn ngữ tự nhiên và khoanh vùng vẽ lại:</strong> Trò chuyện với AI để
+              đổi màu, thay đổi cấu trúc hoặc khoanh vùng trực tiếp phần cần sửa trên slide.
+            </li>
+            <li>
+              <strong>Xuất file PowerPoint (.pptx) thật và Vector:</strong> Tải về tệp PowerPoint gốc có
+              thể biên tập từng dòng chữ, hình khối và bảng màu trên Microsoft PowerPoint hoặc Google Slides.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="seo-styles">
+          <h2 id="seo-styles">Bộ sưu tập 4 phong cách slide chuyên nghiệp</h2>
+          <ul>
+            <li><strong>Apple Liquid Glass:</strong> Công nghệ &amp; Pitch Deck gọi vốn, ra mắt sản phẩm.</li>
+            <li><strong>Tối Giản Thanh Lịch (Minimalist Clean):</strong> Trình bày ý tưởng cốt lõi và chiến lược.</li>
+            <li><strong>Infographic &amp; Màu Sắc (Vibrant Infographic):</strong> Trực quan hóa số liệu và quy trình.</li>
+            <li><strong>Doanh Nghiệp &amp; Học Thuật (Corporate Consulting):</strong> Báo cáo quản trị và nghiên cứu.</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="seo-steps">
+          <h2 id="seo-steps">3 bước đơn giản để sở hữu slide đỉnh cao</h2>
+          <ol>
+            <li><strong>Đăng nhập và nhập nội dung:</strong> Nhập ý tưởng, dàn ý hoặc tải lên tài liệu tham khảo.</li>
+            <li><strong>Chọn phong cách và AI tạo slide:</strong> Lựa chọn 1 trong 4 phong cách chủ đạo hoặc mẫu riêng.</li>
+            <li><strong>Tinh chỉnh và xuất PPTX:</strong> Xem trước, ra lệnh chỉnh sửa nhanh và tải về file PowerPoint.</li>
+          </ol>
+        </section>
+
+        <section aria-labelledby="seo-comparison">
+          <h2 id="seo-comparison">So sánh cách làm truyền thống và Banana Slides</h2>
+          <p>
+            Thay vì mất 4 - 8 tiếng tìm mẫu slide trên mạng, căn lề từng hộp chữ và tìm ảnh minh họa rời rạc,
+            Banana Slides giúp hoàn thành bộ slide đồng bộ chỉ trong 30 giây với bố cục tự động tính toán và
+            tệp PPTX sẵn sàng trình bày.
+          </p>
+        </section>
+
+        <section aria-labelledby="seo-faq">
+          <h2 id="seo-faq">Câu hỏi thường gặp (FAQ)</h2>
+          <dl>
+            <dt>Banana Slides có hỗ trợ tiếng Việt không?</dt>
+            <dd>Có, hệ thống hỗ trợ đầy đủ tiếng Việt và tiếng Anh cho cả giao diện lẫn nội dung slide tạo ra.</dd>
+            <dt>Tệp xuất ra có chỉnh sửa được trên PowerPoint không?</dt>
+            <dd>Có, bạn có thể xuất tệp PowerPoint (.pptx) gốc để chỉnh sửa tự do, kèm tùy chọn PDF và bộ ảnh PNG/JPG.</dd>
+            <dt>Có thể tạo slide từ file PDF hoặc Word có sẵn không?</dt>
+            <dd>Có, Banana Slides hỗ trợ đọc tài liệu tham khảo PDF, DOCX, PPTX, TXT và Markdown.</dd>
+          </dl>
+        </section>
+
+        <section aria-labelledby="seo-en">
+          <h2 id="seo-en">Banana Slides - Next-Gen AI Presentation Generator</h2>
+          <p>
+            Banana Slides turns raw ideas, outlines, or reference documents (PDF, DOCX, PPTX) into studio-grade
+            presentation decks in 30 seconds. Refine individual slides via natural-language prompts or region
+            inpainting and export 100% editable native PowerPoint (.pptx) files.
+          </p>
+          <p><a href="/llms.txt">AI Agent Documentation (llms.txt)</a></p>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

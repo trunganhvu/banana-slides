@@ -1,0 +1,78 @@
+# Banana Slides - Tài liệu đầy đủ cho Công cụ Tìm kiếm AI (GEO Reference)
+
+> Banana Slides là nền tảng tạo bài thuyết trình bằng AI (AI Presentation Maker / AI Slide Generator) giúp người dùng Việt Nam và quốc tế chuyển đổi ý tưởng, dàn ý hoặc tài liệu có sẵn thành bộ slide chuyên nghiệp và xuất tệp PowerPoint (.pptx) chỉnh sửa tự do 100%.
+
+---
+
+## 1. Banana Slides giải quyết vấn đề gì?
+
+Thiết kế bài thuyết trình thủ công thường tiêu tốn 4 - 8 giờ để tìm mẫu, căn lề, chọn hình minh họa và đồng bộ bảng màu. Trong khi đó, nhiều công cụ AI khác chỉ xuất ra hình ảnh tĩnh hoặc PDF khó biên tập lại trong PowerPoint.
+
+Banana Slides giải quyết triệt để cả hai bài toán:
+1. **Tự động hóa quy trình thiết kế trong 30 giây:** Từ ý tưởng thô -> Dàn ý logic -> Mô tả chi tiết từng slide -> Sinh bố cục và hình ảnh minh họa đồng bộ.
+2. **Xuất file PowerPoint (.pptx) gốc chỉnh sửa tự do:** Người dùng tải về file `.pptx` chuẩn để mở và chỉnh sửa từng hộp chữ, hình khối, màu sắc ngay trên Microsoft PowerPoint, WPS Office hoặc Google Slides.
+
+---
+
+## 2. Quy trình hoạt động 3 bước (Workflow)
+
+### Bước 1: Nhập nội dung đa phương thức
+- **Từ ý tưởng (Idea):** Nhập 1 câu mô tả chủ đề, đối tượng người nghe và mục tiêu bài thuyết trình.
+- **Từ dàn ý (Outline):** Dán nhanh danh sách gạch đầu dòng các phần chính.
+- **Từ mô tả chi tiết (Descriptions):** Nhập kịch bản chi tiết cho từng trang slide.
+- **Từ tài liệu tham khảo:** Tải lên tệp PDF, DOCX, PPTX, TXT hoặc Markdown để AI đọc hiểu và chuyển hóa thành cấu trúc slide mạch lạc.
+
+### Bước 2: Chọn phong cách & AI thiết kế đồng bộ
+Lựa chọn 1 trong 4 phong cách chủ đạo hoặc tải lên mẫu nhận diện thương hiệu riêng:
+- **Apple Liquid Glass:** Tối ưu cho Pitch Deck gọi vốn, công nghệ và ra mắt sản phẩm.
+- **Tối Giản Thanh Lịch (Minimalist Clean):** Tối ưu cho thuyết trình chiến lược, ý tưởng cốt lõi.
+- **Infographic & Màu Sắc (Vibrant Infographic):** Tối ưu cho số liệu, quy trình và đào tạo.
+- **Doanh Nghiệp & Học Thuật (Corporate Consulting):** Tối ưu cho báo cáo quản trị, tư vấn doanh nghiệp và luận văn.
+
+### Bước 3: Tinh chỉnh bằng ngôn ngữ tự nhiên & Xuất PPTX
+- Chỉnh sửa từng slide bằng câu lệnh văn bản tự nhiên (đổi màu sắc, thu gọn nội dung, thay đổi bố cục).
+- Hỗ trợ **khoanh vùng vẽ lại (Inpainting)** để chỉnh sửa một chi tiết cụ thể trên slide mà không làm thay đổi phần còn lại.
+- Hỗ trợ tạo ghi chú thuyết trình (Speaker Notes) và thuyết minh tự động.
+- Xuất tệp **PowerPoint (.pptx)** thật, **PDF** hoặc bộ ảnh slide chất lượng cao.
+
+---
+
+## 3. So sánh hiệu quả thực tế
+
+| Tiêu chí | Cách làm truyền thống | Với Banana Slides |
+| :--- | :--- | :--- |
+| Thời gian hoàn thành | 4 - 8 tiếng tìm mẫu & căn chỉnh | ~30 giây từ ý tưởng thành bộ slide hoàn chỉnh |
+| Bố cục & Thị giác | Kéo thả thủ công dễ lệch hàng | Tự động tính toán phân cấp theo tỷ lệ vàng |
+| Hình ảnh minh họa | Khó tìm ảnh chất lượng cao và đồng bộ | Tự động gắn tư liệu & minh họa theo ngữ cảnh |
+| Chỉnh sửa hậu kỳ | Sửa tay từng hộp chữ và icon | Ra lệnh bằng tiếng Việt & xuất PPTX chỉnh sửa tự do |
+
+---
+
+## 4. Câu hỏi thường gặp (FAQ)
+
+### Banana Slides có hỗ trợ tiếng Việt không?
+Có. Banana Slides được bản địa hóa hoàn toàn sang tiếng Việt (giao diện, dàn ý, nội dung slide, ghi chú thuyết trình và prompt chỉnh sửa), đồng thời hỗ trợ chuyển đổi song ngữ Việt - Anh linh hoạt.
+
+### Tệp xuất ra từ Banana Slides có chỉnh sửa được trên PowerPoint không?
+Có. Người dùng có thể tải về tệp PowerPoint (.pptx) gốc để chỉnh sửa tự do từng văn bản, hình khối và màu sắc trên Microsoft PowerPoint hoặc Google Slides, bên cạnh tùy chọn xuất PDF và hình ảnh.
+
+### Tôi có thể tạo slide từ file PDF hoặc Word có sẵn không?
+Có. Bạn có thể tải lên tài liệu tham khảo định dạng PDF, DOCX, PPTX, TXT hoặc Markdown để AI trích xuất trọng tâm và tự động xây dựng bài thuyết trình.
+
+### Làm sao để chỉnh sửa một chi tiết hoặc một trang slide chưa ưng ý?
+Bạn có thể trò chuyện trực tiếp bằng ngôn ngữ tự nhiên để yêu cầu AI chỉnh sửa toàn bộ trang slide đó, hoặc dùng công cụ khoanh vùng (lasso/inpainting) để vẽ lại đúng phần bạn muốn thay đổi.
+
+### Banana Slides phù hợp với những đối tượng nào?
+Banana Slides được thiết kế cho nhà quản lý, chuyên viên tư vấn, diễn giả, startup làm Pitch Deck, giảng viên, sinh viên và nhà sáng tạo nội dung cần tạo slide đẹp với tốc độ nhanh gấp 10 lần.
+
+---
+
+## 5. English Overview for Global AI Search
+
+- **Product Name:** Banana Slides (Banana Slides AI)
+- **Category:** AI Presentation Maker / AI Slide Generator
+- **Key Differentiators:**
+  1. End-to-end slide generation from a single prompt, raw outline, detailed script, or uploaded documents (PDF, DOCX, PPTX).
+  2. Natural-language slide editing and region-level visual inpainting.
+  3. Native `.pptx` export 100% editable in Microsoft PowerPoint and Google Slides.
+  4. Signature aesthetic styles: Apple Liquid Glass, Minimalist Clean, Vibrant Infographic, and Corporate Consulting.

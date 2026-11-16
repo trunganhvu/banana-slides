@@ -180,6 +180,7 @@ def create_app():
                     alembic_ini = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'alembic.ini')
                     alembic_config = AlembicConfig(alembic_ini)
                     alembic_config.set_main_option('sqlalchemy.url', app.config['SQLALCHEMY_DATABASE_URI'])
+                    db.create_all()
                     alembic_command.upgrade(alembic_config, 'head')
                     from desktop_bootstrap import repair_desktop_settings_schema
                     repair_desktop_settings_schema(db)

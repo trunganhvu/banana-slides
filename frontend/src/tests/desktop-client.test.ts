@@ -25,6 +25,7 @@ describe('API client desktop detection', () => {
     delete (window as any).electronAPI;
     delete (window as any).__BACKEND_PORT__;
     sessionStorage.clear();
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -172,5 +173,58 @@ describe('API client desktop detection', () => {
     expect(openSpy).not.toHaveBeenCalled();
     createSpy.mockRestore();
     openSpy.mockRestore();
+  });
+
+  it('web mode: returns normalized VITE_API_BASE_URL from getBaseURL when configured', async () => {
+    delete (window as any).electronAPI;
+    vi.stubEnv('VITE_API_BASE_URL', ' https://api.bananaslides.example.com/// ');
+    const { getBaseURL } = await import('../api/client');
+
+    expect(getBaseURL()).toBe('https://api.bananaslides.example.com');
+  });
+
+  it('web mode: returns empty string from getBaseURL when VITE_API_BASE_URL is blank', async () => {
+    delete (window as any).electronAPI;
+    vi.stubEnv('VITE_API_BASE_URL', '   ');
+    const { getBaseURL } = await import('../api/client');
+
+    expect(getBaseURL()).toBe('');
+  });
+
+  it('web mode: prepends VITE_API_BASE_URL to relative image URLs and preserves absolute/client URLs', async () => {
+    delete (window as any).electronAPI;
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.bananaslides.example.com/');
+    const { getImageUrl } = await import('../api/client');
+
+    expect(getImageUrl('/files/p1/slide.png')).toBe('https://api.bananaslides.example.com/files/p1/slide.png');
+    expect(getImageUrl('uploads/slide.png', 456)).toBe('https://api.bananaslides.example.com/uploads/slide.png?v=456');
+    expect(getImageUrl('https://cdn.example.com/slide.png')).toBe('https://cdn.example.com/slide.png');
+    expect(getImageUrl('/data:image/png;base64,abc')).toBe('data:image/png;base64,abc');
+  });
+
+  it('web mode: prepends VITE_API_BASE_URL to relative download URLs', async () => {
+    delete (window as any).electronAPI;
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.bananaslides.example.com/');
+    const createdLinks: HTMLAnchorElement[] = [];
+    const originalCreateElement = document.createElement.bind(document);
+    const createSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const el = originalCreateElement(tag) as HTMLElement;
+      if (tag === 'a') {
+        const anchor = el as HTMLAnchorElement;
+        anchor.click = vi.fn();
+        createdLinks.push(anchor);
+      }
+      return el;
+    });
+    const { triggerDownload } = await import('../api/client');
+
+    triggerDownload('/files/p1/exports/presentation.pptx');
+
+    expect(createdLinks).toHaveLength(1);
+    expect(createdLinks[0].getAttribute('href')).toBe(
+      'https://api.bananaslides.example.com/files/p1/exports/presentation.pptx',
+    );
+    expect(createdLinks[0].download).toBe('presentation.pptx');
+    createSpy.mockRestore();
   });
 });

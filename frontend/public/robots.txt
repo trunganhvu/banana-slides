@@ -1,0 +1,101 @@
+# Robots & AI Search Crawler Policy for Banana Slides
+# Allow search engines and AI answer engines to index public pages and llms.txt
+
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+# AI Search & Generative Answer Engines (GEO)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: Meta-ExternalAgent
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /project/
+Disallow: /settings
+Disallow: /history
+
+Sitemap: /sitemap.xml

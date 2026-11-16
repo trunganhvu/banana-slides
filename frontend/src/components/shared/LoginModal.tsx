@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Modal } from './Modal';
 import { useAuth } from '@/context/AuthContext';
-import { LogIn, Sparkles, ShieldCheck } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export const LoginModal: React.FC = () => {
-  const { isLoginModalOpen, closeLoginModal, renderGoogleButton, devLogin } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isLoginModalOpen, closeLoginModal, renderGoogleButton } = useAuth();
 
   useEffect(() => {
     if (isLoginModalOpen) {
@@ -16,12 +15,6 @@ export const LoginModal: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [isLoginModalOpen, renderGoogleButton]);
-
-  const handleDevLogin = async () => {
-    setIsSubmitting(true);
-    await devLogin();
-    setIsSubmitting(false);
-  };
 
   return (
     <Modal
@@ -42,24 +35,11 @@ export const LoginModal: React.FC = () => {
           Đăng nhập với Google để tách biệt dữ liệu, lưu trữ lịch sử tạo slide và đồng bộ dự án cá nhân.
         </p>
 
-        <div className="flex flex-col items-center justify-center gap-4 min-h-[50px] mb-6">
-          <div id="google-modal-btn" className="flex justify-center" />
-        </div>
-
-        <div className="border-t border-gray-100 dark:border-zinc-800 pt-4 mt-2">
-          <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
-            <span>Xác thực an toàn qua Google OAuth 2.0</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDevLogin}
-            disabled={isSubmitting}
-            className="w-full text-xs text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 py-1.5 px-3 rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 hover:border-amber-400 transition-colors"
-          >
-            Đăng nhập nhanh Admin (Môi trường Dev)
-          </button>
+        <div className="w-full flex justify-center items-center my-6 min-h-[50px]">
+          <div
+            id="google-modal-btn"
+            className="flex justify-center items-center w-full [&>div]:!mx-auto [&>iframe]:!mx-auto"
+          />
         </div>
       </div>
     </Modal>

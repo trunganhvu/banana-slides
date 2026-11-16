@@ -1,0 +1,27 @@
+# Banana Slides
+
+> Banana Slides là nền tảng tạo bài thuyết trình bằng AI thế hệ mới (AI Native Presentation Generator). Biến một câu ý tưởng, dàn ý thô hoặc tài liệu PDF/Word/PowerPoint thành bộ slide chuẩn studio thiết kế trong 30 giây, cho phép chỉnh sửa từng trang bằng ngôn ngữ tự nhiên và xuất tệp PowerPoint (.pptx) gốc chỉnh sửa tự do 100%.
+
+## Tính năng cốt lõi (Core Capabilities)
+
+- **Đa dạng phương thức nhập liệu:** Tạo slide từ 1 câu ý tưởng ngắn, dán dàn ý thô, mô tả chi tiết từng trang hoặc tải lên tài liệu tham khảo (PDF, DOCX, PPTX, TXT, Markdown).
+- **Bố cục chuẩn Studio thiết kế:** AI tự động phân bổ tiêu đề, phân cấp ý chính, tỷ lệ vàng và chọn hình minh họa đồng bộ theo ngữ cảnh.
+- **Chỉnh sửa bằng ngôn ngữ tự nhiên & Khoanh vùng vẽ lại (Inpainting):** Trò chuyện trực tiếp với AI để đổi màu, cấu trúc lại bố cục hoặc khoanh vùng một chi tiết trên slide để vẽ lại tức thì.
+- **Xuất file PowerPoint (.pptx) thật:** Tải về tệp PPTX gốc có thể biên tập từng dòng chữ, hình khối và bảng màu trên Microsoft PowerPoint hoặc Google Slides, kèm tùy chọn xuất PDF và bộ ảnh slide độ phân giải cao.
+
+## Bộ sưu tập 4 phong cách slide chủ đạo
+
+- [Apple Liquid Glass](/landing): Phong cách công nghệ hiện đại với hiệu ứng kính mờ cao cấp, tối ưu cho Pitch Deck và ra mắt sản phẩm.
+- [Tối Giản Thanh Lịch (Minimalist Clean)](/landing): Bố cục tinh gọn, tập trung vào ý tưởng cốt lõi và thông điệp chiến lược.
+- [Infographic & Màu Sắc (Vibrant Infographic)](/landing): Tối ưu cho số liệu, biểu đồ, quy trình và bài giảng trực quan.
+- [Doanh Nghiệp & Học Thuật (Corporate Consulting)](/landing): Chuẩn mực cho báo cáo quản trị, hồ sơ tư vấn và nghiên cứu học thuật.
+
+## Liên kết công khai (Public Pages)
+
+- [Trang chủ Banana Slides](/): Ứng dụng tạo slide AI và trang giới thiệu cho người dùng mới.
+- [Trang giới thiệu sản phẩm](/landing): Tổng quan tính năng, thư viện mẫu slide thực tế và quy trình 3 bước.
+- [Tài liệu đầy đủ dành cho AI](/llms-full.txt): Mô tả chi tiết quy trình hoạt động, bảng so sánh hiệu quả và FAQ song ngữ Việt - Anh.
+
+## English Summary
+
+Banana Slides is a next-generation AI presentation generator for managers, educators, founders, and content creators. Turn a short prompt, raw outline, or uploaded reference file (PDF, DOCX, PPTX) into a design-perfect slide deck in 30 seconds, refine individual slides or masked regions in natural language, and download 100% editable native PowerPoint (.pptx) files.

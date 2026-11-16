@@ -38,8 +38,15 @@ if (isDesktop) {
   (window as any).__BACKEND_PORT__ = resolveDesktopBackendPort();
 }
 
+function normalizeWebBaseURL(rawUrl: unknown): string {
+  if (typeof rawUrl !== 'string') return '';
+  return rawUrl.trim().replace(/\/+$/, '');
+}
+
 export function getBaseURL(): string {
-  if (!isDesktop) return '';
+  if (!isDesktop) {
+    return normalizeWebBaseURL(import.meta.env.VITE_API_BASE_URL);
+  }
   const port = (window as any).__BACKEND_PORT__;
   if (!isValidPort(port)) {
     console.warn('Desktop backend port is unavailable');
@@ -77,8 +84,21 @@ export function triggerDownload(relativeOrAbsoluteUrl: string, filename?: string
     (window as any).electronAPI.downloadFile(url, filename || fallbackFilename);
   } else {
     // Downloads may start after a long export request, when popup activation has expired.
+    let downloadUrl = relativeOrAbsoluteUrl;
+    if (isClientSideUrl(relativeOrAbsoluteUrl)) {
+      downloadUrl = normalizeClientSideUrl(relativeOrAbsoluteUrl);
+    } else if (!/^https?:\/\//i.test(relativeOrAbsoluteUrl)) {
+      const baseUrl = getBaseURL();
+      if (baseUrl) {
+        const normalizedPath = relativeOrAbsoluteUrl.startsWith('/')
+          ? relativeOrAbsoluteUrl
+          : `/${relativeOrAbsoluteUrl}`;
+        downloadUrl = `${baseUrl}${normalizedPath}`;
+      }
+    }
+
     const link = document.createElement('a');
-    link.href = relativeOrAbsoluteUrl;
+    link.href = downloadUrl;
     link.rel = 'noopener';
     link.download = filename || relativeOrAbsoluteUrl.split(/[?#]/)[0].split('/').pop() || '';
     link.hidden = true;
@@ -183,8 +203,9 @@ export const getImageUrl = (path?: string, timestamp?: string | number): string 
   // API client endpoint
   let url = path.startsWith('/') ? path : '/' + path;
 
-  if (isDesktop) {
-    url = `${getBaseURL()}${url}`;
+  const baseUrl = getBaseURL();
+  if (baseUrl) {
+    url = `${baseUrl}${url}`;
   }
   
   // API client endpoint

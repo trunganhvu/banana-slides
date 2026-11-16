@@ -1,0 +1,21 @@
+{
+  "name": "Banana Slides - AI Tạo Slide Chuẩn Thiết Kế",
+  "short_name": "Banana Slides",
+  "description": "Nền tảng tạo bài thuyết trình bằng AI thế hệ mới. Biến ý tưởng và dàn ý thành slide chuẩn studio và xuất file PowerPoint (PPTX) chỉnh sửa tự do.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f59e0b",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png"
+    }
+  ]
+}

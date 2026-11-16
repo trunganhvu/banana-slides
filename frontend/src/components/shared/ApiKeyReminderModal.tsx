@@ -5,6 +5,7 @@ import { KeyRound, Settings, AlertTriangle, ArrowRight, Clock, X, Sparkles, Chec
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { useApiKeyReminderStore } from '@/store/useApiKeyReminderStore';
+import { useAuth } from '@/context/AuthContext';
 
 const reminderI18n = {
   zh: {
@@ -38,6 +39,7 @@ const reminderI18n = {
 };
 
 export const ApiKeyReminderModal: React.FC = () => {
+  const { user } = useAuth();
   const { i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,12 +57,14 @@ export const ApiKeyReminderModal: React.FC = () => {
     dismissFloating,
   } = useApiKeyReminderStore();
 
-  // Run initial check on mount
+  // Run check on mount only if user is logged in
   useEffect(() => {
-    checkSettings();
-  }, [checkSettings]);
+    if (user) {
+      checkSettings();
+    }
+  }, [user, checkSettings]);
 
-  // If user is currently on /settings, hide both modal and floating pill
+  // If user is not logged in or currently on /settings, hide both modal and floating pill
   const isSettingsPage = location.pathname === '/settings';
 
   const handleNavigateToSettings = () => {
@@ -68,7 +72,7 @@ export const ApiKeyReminderModal: React.FC = () => {
     navigate('/settings');
   };
 
-  if (isSettingsPage || isConfigured === true || isConfigured === null) {
+  if (!user || isSettingsPage || isConfigured === true || isConfigured === null) {
     return null;
   }
 

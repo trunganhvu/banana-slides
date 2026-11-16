@@ -181,3 +181,17 @@ body {
 .markdown-content {
   line-height: 1.6;
 }
+
+/* Center Google Sign-in button */
+#google-modal-btn {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+#google-modal-btn > div,
+#google-modal-btn iframe {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}

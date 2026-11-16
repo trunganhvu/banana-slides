@@ -13,6 +13,12 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', role: 'user' },
+  }),
+}));
+
 describe('ApiKeyReminderModal', () => {
   beforeEach(() => {
     mockedNavigate.mockReset();

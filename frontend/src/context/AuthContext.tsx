@@ -194,10 +194,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  token: null,
+  isLoading: false,
+  googleClientId: '',
+  loginWithGoogleCredential: async () => false,
+  devLogin: async () => false,
+  logout: () => {},
+  openLoginModal: () => {},
+  closeLoginModal: () => {},
+  isLoginModalOpen: false,
+  renderGoogleButton: () => {},
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return context || defaultAuthContext;
 };
