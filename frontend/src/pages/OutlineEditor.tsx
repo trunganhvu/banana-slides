@@ -23,8 +23,8 @@ const outlineI18n = {
       aiPlaceholder: "Ví dụ: Thêm một trang về..., xóa trang 3, gộp 2 trang đầu... · Ctrl+Enter để gửi",
       aiPlaceholderShort: "Ví dụ: Thêm/xóa trang... · Ctrl+Enter",
       contextLabels: { idea: "Ý tưởng PPT", outline: "Dàn ý", description: "Mô tả" },
-      inputLabel: { idea: "Ý tưởng PPT", outline: "Dàn ý gốc", description: "Mô tả trang", ppt_renovation: "Nội dung PPT gốc" },
-      inputPlaceholder: { idea: "Nhập ý tưởng PPT của bạn...", outline: "Nhập nội dung dàn ý...", description: "Nhập mô tả trang...", ppt_renovation: "Đã trích xuất nội dung từ PDF" },
+      inputLabel: { idea: "Ý tưởng PPT", outline: "Dàn ý gốc", description: "Mô tả trang", ppt_renovation: "Nội dung PPT gốc", html_renovation: "Nội dung HTML Slide" },
+      inputPlaceholder: { idea: "Nhập ý tưởng PPT của bạn...", outline: "Nhập nội dung dàn ý...", description: "Nhập mô tả trang...", ppt_renovation: "Đã trích xuất nội dung từ PDF", html_renovation: "Đã trích xuất nội dung từ HTML Slide" },
       outlineRequirements: "Yêu cầu tạo dàn ý",
       outlineRequirementsPlaceholder: "Ví dụ: Giới hạn trong 10 trang, mỗi trang không quá 3 ý chính, dùng nhiều biểu đồ...",
       importModalTitle: "Nhập Markdown",
@@ -67,8 +67,8 @@ const outlineI18n = {
       aiPlaceholder: "e.g., Add a page about XXX, delete page 3, merge first two pages... · Ctrl+Enter to submit",
       aiPlaceholderShort: "e.g., Add/delete pages... · Ctrl+Enter",
       contextLabels: { idea: "PPT Idea", outline: "Outline", description: "Description" },
-      inputLabel: { idea: "PPT Idea", outline: "Original Outline", description: "Page Descriptions", ppt_renovation: "Original PPT Content" },
-      inputPlaceholder: { idea: "Enter your PPT idea...", outline: "Enter outline content...", description: "Enter page descriptions...", ppt_renovation: "Content extracted from PDF" },
+      inputLabel: { idea: "PPT Idea", outline: "Original Outline", description: "Page Descriptions", ppt_renovation: "Original PPT Content", html_renovation: "HTML Slide Content" },
+      inputPlaceholder: { idea: "Enter your PPT idea...", outline: "Enter outline content...", description: "Enter page descriptions...", ppt_renovation: "Content extracted from PDF", html_renovation: "Content extracted from HTML Slide" },
       outlineRequirements: "Generation Requirements",
       outlineRequirementsPlaceholder: "e.g., Limit to 10 pages, max 3 points per page, use more charts...",
       importModalTitle: "Import Markdown",
@@ -213,7 +213,7 @@ export const OutlineEditor: React.FC = () => {
   const fileMenuRef = useRef<HTMLDivElement>(null);
   const getInputText = useCallback((project: typeof currentProject) => {
     if (!project) return '';
-    if (project.creation_type === 'outline' || project.creation_type === 'ppt_renovation') return project.outline_text || project.idea_prompt || '';
+    if (project.creation_type === 'outline' || project.creation_type === 'ppt_renovation' || project.creation_type === 'html_renovation') return project.outline_text || project.idea_prompt || '';
     if (project.creation_type === 'descriptions') return project.description_text || project.idea_prompt || '';
     return project.idea_prompt || '';
   }, []);

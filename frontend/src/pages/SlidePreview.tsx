@@ -221,6 +221,8 @@ const previewI18n = {
       qualityControlSaved: "Đã lưu cài đặt kiểm soát chất lượng",
       qualityControlSaveFailed: "Lưu cài đặt kiểm soát chất lượng thất bại",
       disabledExportTip: "{{count}} trang trong phạm vi xuất chưa có ảnh. Hãy tạo ảnh trước hoặc điều chỉnh danh sách chọn",
+      viewOriginalHtml: "Xem HTML gốc",
+      viewAiImage: "Xem ảnh AI",
       messages: {
         exportSuccess: "Xuất thành công", exportFailed: "Xuất thất bại",
         regenerateSuccess: "Tạo lại hoàn tất", regenerateFailed: "Tạo lại thất bại",
@@ -355,6 +357,8 @@ const previewI18n = {
       qualityControlSaved: "Quality control setting saved",
       qualityControlSaveFailed: "Failed to save quality control setting",
       disabledExportTip: "{{count}} page(s) in this export range have no images yet. Generate images first or adjust the selection",
+      viewOriginalHtml: "View original HTML",
+      viewAiImage: "View AI image",
       messages: {
         exportSuccess: "Export successful", exportFailed: "Export failed",
         regenerateSuccess: "Regeneration complete", regenerateFailed: "Failed to regenerate",
@@ -407,13 +411,14 @@ import { triggerDownload } from '@/api/client';
 import type { Material } from '@/api/endpoints';
 import { SlideCard } from '@/components/preview/SlideCard';
 import { SlidePlayer } from '@/components/preview/SlidePlayer';
+import { HtmlSlidePreview } from '@/components/preview/HtmlSlidePreview';
 import { PagePropertiesDrawer, clampWidth, readStoredDrawerWidth } from '@/components/preview/PagePropertiesDrawer';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useExportTasksStore, type ExportTaskType } from '@/store/useExportTasksStore';
 import { getImageUrl } from '@/api/client';
 import { getPageImageVersions, setCurrentImageVersion, updateProject, uploadTemplate, exportPPTX as apiExportPPTX, exportPDF as apiExportPDF, exportImages as apiExportImages, exportEditablePPTX as apiExportEditablePPTX, exportVideo as apiExportVideo, getSettings, getElevenLabsVoices, updateSettings } from '@/api/endpoints';
 import type { ImageVersion, DescriptionContent, ExportExtractorMethod, ExportInpaintMethod, Page, NarrationConfig } from '@/types';
-import { normalizeErrorMessage } from '@/utils';
+import { normalizeErrorMessage, shouldShowHtmlSlide } from '@/utils';
 
 const VIDEO_VOICE_OPTIONS = [
   { group: 'Tiếng Việt', voices: [
@@ -631,6 +636,10 @@ export const SlidePreview: React.FC = () => {
   }, [restoreActiveTasks]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [preferOriginalHtml, setPreferOriginalHtml] = useState(false);
+  useEffect(() => {
+    setPreferOriginalHtml(false);
+  }, [selectedIndex]);
   // Slide preview logic
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const playTriggerRef = useRef<HTMLElement | null>(null);
@@ -2172,6 +2181,10 @@ export const SlidePreview: React.FC = () => {
   const imageUrl = selectedPage?.generated_image_path
     ? getImageUrl(selectedPage.generated_image_path, selectedPage.updated_at)
     : '';
+  const canToggleOriginalHtml = Boolean(selectedPage?.html_slide_url) && !shouldShowHtmlSlide(selectedPage);
+  const showSelectedHtmlSlide = Boolean(selectedPage?.html_slide_url) && !isInlineEditing && (
+    shouldShowHtmlSlide(selectedPage) || preferOriginalHtml
+  );
 
   const exportRangePages = isMultiSelectMode && selectedPageIds.size > 0
     ? currentProject.pages.filter((page) => {
@@ -2985,7 +2998,14 @@ export const SlidePreview: React.FC = () => {
                           : 'border-gray-200 dark:border-border-primary'
                       } ${isMultiSelectMode && page.id && selectedPageIds.has(page.id) ? 'ring-2 ring-banana-400' : ''}`}
                     >
-                      {page.generated_image_path ? (
+                      {shouldShowHtmlSlide(page) && page.html_slide_url ? (
+                        <HtmlSlidePreview
+                          htmlUrl={page.html_slide_url}
+                          title={page.outline_content?.title}
+                          aspectRatio={aspectRatio}
+                          className="w-full h-full rounded pointer-events-none"
+                        />
+                      ) : page.generated_image_path ? (
                         <img
                           src={getImageUrl(page.generated_image_path, page.updated_at)}
                           alt={`Slide ${index + 1}`}
@@ -3096,7 +3116,15 @@ export const SlidePreview: React.FC = () => {
                     onPointerUp={isInlineEditing ? handleSelectionPointerUp : undefined}
                     onPointerCancel={isInlineEditing ? handleSelectionPointerCancel : undefined}
                   >
-                    {selectedPage?.generated_image_path ? (
+                    {showSelectedHtmlSlide && selectedPage?.html_slide_url ? (
+                      <HtmlSlidePreview
+                        htmlUrl={selectedPage.html_slide_url}
+                        title={selectedPage.outline_content?.title}
+                        aspectRatio={aspectRatio}
+                        allowFullscreen
+                        className="w-full h-full"
+                      />
+                    ) : selectedPage?.generated_image_path ? (
                       <img
                         ref={isInlineEditing ? imageRef : undefined}
                         src={imageUrl}
@@ -3131,6 +3159,18 @@ export const SlidePreview: React.FC = () => {
                           )}
                         </div>
                       </div>
+                    )}
+                    {canToggleOriginalHtml && !isInlineEditing && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreferOriginalHtml((prev) => !prev);
+                        }}
+                        className="absolute top-3 left-3 z-20 px-2.5 py-1 rounded-full text-xs font-medium bg-black/70 hover:bg-black/85 text-white shadow transition-colors"
+                      >
+                        {preferOriginalHtml ? t('preview.viewAiImage') : t('preview.viewOriginalHtml')}
+                      </button>
                     )}
                     {/* Slide preview */}
                     {isInlineEditing && (

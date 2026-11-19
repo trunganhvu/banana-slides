@@ -97,6 +97,21 @@ class Page(db.Model):
             filename = Path(display_image_path).name
             display_image_url = f'/files/{self.project_id}/pages/{filename}'
 
+        html_slide_url = None
+        if self.project_id and self.id:
+            upload_folder = None
+            try:
+                from flask import current_app, has_app_context
+                if has_app_context() and hasattr(current_app, 'config'):
+                    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+            except Exception:
+                pass
+            if not upload_folder:
+                upload_folder = Path(__file__).resolve().parent.parent / 'uploads'
+            html_path = Path(upload_folder) / self.project_id / 'pages' / f'{self.id}.html'
+            if html_path.is_file():
+                html_slide_url = f'/files/{self.project_id}/pages/{self.id}.html'
+
         data = {
             'page_id': self.id,
             'order_index': self.order_index,
@@ -105,6 +120,7 @@ class Page(db.Model):
             'description_content': self.get_description_content(),
             'narration_text': self.narration_text,
             'generated_image_url': display_image_url,
+            'html_slide_url': html_slide_url,
             'template_asset_id': self.template_asset_id,
             'template_style_text': self.template_style_text,
             'template_selection_source': self.template_selection_source,

@@ -1579,21 +1579,247 @@ def process_material_image_task(
                     shutil.rmtree(temp_dir, ignore_errors=True)
 
 
+def _process_html_renovation_pages(
+    task_id: str,
+    project_id: str,
+    project,
+    ai_service,
+    file_service,
+    keep_layout: bool,
+    max_workers: int,
+    app,
+    language: str,
+) -> None:
+    """Process an HTML slide renovation project: render browser previews and reverse-synthesize descriptions."""
+    from services.html_slide_service import (
+        _find_headless_browser,
+        build_fallback_slide_content,
+        detect_html_aspect_ratio_and_size,
+        extract_slide_from_standalone_html,
+        render_html_slide_to_image,
+    )
+
+    project_dir = Path(app.config['UPLOAD_FOLDER']) / project_id
+    split_dir = project_dir / "split_pages"
+    pages_dir = project_dir / "pages"
+    template_dir = project_dir / "template"
+
+    slide_width, slide_height = 1280, 720
+    for f in (template_dir.iterdir() if template_dir.exists() else []):
+        if f.suffix.lower() in {'.html', '.htm'}:
+            try:
+                raw_html = f.read_text(encoding='utf-8', errors='replace')
+                _ratio, slide_width, slide_height = detect_html_aspect_ratio_and_size(raw_html)
+            except Exception:
+                pass
+            break
+
+    pages = Page.query.filter_by(project_id=project_id).order_by(Page.order_index).all()
+    page_count = len(pages)
+    if page_count == 0:
+        raise ValueError("No pages to process")
+
+    try:
+        extra_fields = Settings.get_settings().get_description_extra_fields()
+    except Exception:
+        extra_fields = list(Settings.DEFAULT_EXTRA_FIELDS)
+
+    has_browser = _find_headless_browser() is not None
+
+    task = Task.query.get(task_id)
+    if task:
+        task.set_progress({
+            "total": page_count,
+            "completed": 0,
+            "failed": 0,
+            "current_step": "parsing",
+        })
+        db.session.commit()
+
+    progress_lock = threading.Lock()
+    completed = 0
+    failed = 0
+    extraction_errors: List[str] = []
+    content_results: Dict[int, Dict[str, Any]] = {}
+
+    def process_single_html_page(idx: int, page_id: str, order_index: int):
+        nonlocal completed, failed
+        with app.app_context():
+            try:
+                split_html_path = split_dir / f"page_{order_index + 1}.html"
+                page_html_path = pages_dir / f"{page_id}.html"
+                target_html_path = page_html_path if page_html_path.exists() else split_html_path
+                if not target_html_path.exists():
+                    raise ValueError(f"HTML slide file missing for page {order_index + 1}")
+
+                standalone_html = target_html_path.read_text(encoding='utf-8', errors='replace')
+                slide_data = extract_slide_from_standalone_html(standalone_html, index=idx)
+
+                rendered_browser_img = None
+                if has_browser:
+                    try:
+                        rendered_browser_img = render_html_slide_to_image(
+                            standalone_html,
+                            slide_data,
+                            width=slide_width,
+                            height=slide_height,
+                            html_file_path=str(target_html_path),
+                            use_browser=True,
+                        )
+                    except Exception as render_exc:
+                        logger.warning(f"Headless browser render failed for page {idx}: {render_exc}")
+
+                try:
+                    with task_scope(task_id), text_resource_limiter.slot(
+                        f"html-renovation-extract project={project_id} page-index={idx}"
+                    ):
+                        content = ai_service.extract_html_slide_content(
+                            slide_data,
+                            language=language,
+                            extra_fields=extra_fields,
+                            keep_layout=keep_layout,
+                        )
+                    if not isinstance(content, dict) or not content.get('description'):
+                        content = build_fallback_slide_content(slide_data, index=idx, language=language)
+                except Exception as ai_exc:
+                    logger.warning(
+                        "AI reverse-synthesis failed for HTML slide %s, using structured fallback: %s",
+                        idx,
+                        ai_exc,
+                    )
+                    content = build_fallback_slide_content(slide_data, index=idx, language=language)
+
+                content_results[idx] = content
+                page_obj = Page.query.get(page_id)
+                if page_obj:
+                    title = content.get('title') or f'Slide {idx + 1}'
+                    points = content.get('points') or []
+                    description = content.get('description') or ''
+                    part = (content.get('part') or '').strip()
+
+                    if part and not page_obj.part:
+                        page_obj.part = part
+
+                    page_obj.set_outline_content({
+                        'title': title,
+                        'points': points,
+                    })
+                    desc_payload: Dict[str, Any] = {
+                        "text": description,
+                        "generated_at": datetime.utcnow().isoformat(),
+                    }
+                    if content.get('extra_fields'):
+                        desc_payload['extra_fields'] = content['extra_fields']
+                    page_obj.set_description_content(desc_payload)
+
+                    if rendered_browser_img is not None:
+                        try:
+                            if page_obj.generated_image_path:
+                                abs_img_path = file_service.get_absolute_path(page_obj.generated_image_path)
+                                rendered_browser_img.save(abs_img_path, 'PNG')
+                                page_obj.cached_image_path = file_service.save_cached_image(
+                                    rendered_browser_img,
+                                    project_id,
+                                    page_obj.id,
+                                    version_number=1,
+                                    quality=85,
+                                )
+                            else:
+                                save_image_with_version(
+                                    rendered_browser_img,
+                                    project_id,
+                                    page_obj.id,
+                                    file_service,
+                                    page_obj=page_obj,
+                                )
+                        finally:
+                            rendered_browser_img.close()
+
+                    page_obj.status = 'DESCRIPTION_GENERATED'
+                    page_obj.updated_at = datetime.utcnow()
+                    _commit_with_retry()
+
+                with progress_lock:
+                    completed += 1
+                    task_obj = Task.query.get(task_id)
+                    if task_obj:
+                        task_obj.update_progress(completed=completed, failed=failed)
+                        _commit_with_retry()
+
+            except Exception as e:
+                logger.error(f"HTML slide pipeline failed for page {idx}: {e}")
+                with progress_lock:
+                    failed += 1
+                    extraction_errors.append(str(e))
+                    task_obj = Task.query.get(task_id)
+                    if task_obj:
+                        task_obj.update_progress(completed=completed, failed=failed)
+                        _commit_with_retry()
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(process_single_html_page, i, page.id, page.order_index)
+            for i, page in enumerate(pages)
+        ]
+        for future in as_completed(futures):
+            future.result()
+
+    if failed > 0:
+        reason = extraction_errors[0] if extraction_errors else "empty page content"
+        raise ValueError(f"{failed}/{page_count} trang trích xuất nội dung HTML thất bại: {reason}")
+
+    proj = Project.query.get(project_id)
+    if proj:
+        all_outlines = []
+        all_descriptions = []
+        for i in range(page_count):
+            c = content_results.get(i, {})
+            title = c.get('title', '')
+            points = c.get('points', [])
+            description = c.get('description', '')
+            header = f"Trang {i + 1}: {title}"
+            if points:
+                all_outlines.append(f"{header}\n" + "\n".join(f"- {p}" for p in points))
+            else:
+                all_outlines.append(header)
+            all_descriptions.append(f"--- Trang {i + 1} ---\n{description}")
+        proj.outline_text = "\n\n".join(all_outlines)
+        proj.description_text = "\n\n".join(all_descriptions)
+        proj.status = 'DESCRIPTIONS_GENERATED'
+        proj.updated_at = datetime.utcnow()
+
+    _commit_with_retry()
+
+    task = Task.query.get(task_id)
+    if task:
+        task.status = 'COMPLETED'
+        task.completed_at = datetime.utcnow()
+        task.set_progress({
+            "total": page_count,
+            "completed": completed,
+            "failed": failed,
+            "current_step": "done",
+        })
+        _commit_with_retry()
+
+    logger.info(f"Task {task_id} COMPLETED - HTML slide renovation processed {page_count} pages")
+
+
 def process_ppt_renovation_task(task_id: str, project_id: str, ai_service,
                                 file_service, file_parser_service,
                                 keep_layout: bool = False,
                                 max_workers: int = 5, app=None,
                                 language: str = 'zh'):
     """
-    Background task for PPT renovation: parse PDF pages → extract content → fill outline + description
+    Background task for PPT renovation: parse PDF/HTML pages -> extract content -> fill outline + description
 
     Flow:
-    1. Split PDF → per-page PDFs
-    2. Parallel: parse each page PDF → markdown via fileparser
-    3. Parallel: AI extract {title, points, description} from each markdown
-    4. If keep_layout: parallel caption model describe layout → append to description
+    1. Split PDF -> per-page PDFs (or read split HTML slides for html_renovation)
+    2. Parallel: parse each page -> markdown/DOM structured data
+    3. Parallel: AI extract {title, points, description, extra_fields}
+    4. If keep_layout: parallel caption model describe layout -> append to description
     5. Update page.outline_content + page.description_content
-    6. Concatenate descriptions → project.description_text
+    6. Concatenate descriptions -> project.description_text
     7. project.status = DESCRIPTIONS_GENERATED
 
     Args:
@@ -1625,11 +1851,30 @@ def process_ppt_renovation_task(task_id: str, project_id: str, ai_service,
             if not project:
                 raise ValueError(f"Project {project_id} not found")
 
+            project_dir = Path(app.config['UPLOAD_FOLDER']) / project_id
+            template_dir = project_dir / "template"
+            is_html_renovation = (project.creation_type == 'html_renovation') or any(
+                f.suffix.lower() in {'.html', '.htm'}
+                for f in (template_dir.iterdir() if template_dir.exists() else [])
+            )
+            if is_html_renovation:
+                _process_html_renovation_pages(
+                    task_id=task_id,
+                    project_id=project_id,
+                    project=project,
+                    ai_service=ai_service,
+                    file_service=file_service,
+                    keep_layout=keep_layout,
+                    max_workers=max_workers,
+                    app=app,
+                    language=language,
+                )
+                return
+
             # Get the PDF path from project
             pdf_path = None
-            project_dir = Path(app.config['UPLOAD_FOLDER']) / project_id
             # Look for the uploaded PDF file
-            for f in (project_dir / "template").iterdir() if (project_dir / "template").exists() else []:
+            for f in (template_dir.iterdir() if template_dir.exists() else []):
                 if f.suffix.lower() == '.pdf':
                     pdf_path = str(f)
                     break

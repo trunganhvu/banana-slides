@@ -892,16 +892,73 @@ def regenerate_renovation_page(project_id, page_id):
             return not_found('Project')
 
         # Verify this is a renovation project
-        if project.creation_type != 'ppt_renovation':
-            return bad_request("This endpoint is only for PPT renovation projects")
+        if project.creation_type not in ('ppt_renovation', 'html_renovation'):
+            return bad_request("This endpoint is only for PPT or HTML renovation projects")
 
         data = request.get_json() or {}
         language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
         keep_layout = data.get('keep_layout', False)
 
-        # Find the split PDF for this page
         project_dir = Path(current_app.config['UPLOAD_FOLDER']) / project_id
         split_dir = project_dir / "split_pages"
+        pages_dir = project_dir / "pages"
+        page_html_path = pages_dir / f"{page.id}.html"
+        split_html_path = split_dir / f"page_{page.order_index + 1}.html"
+
+        if project.creation_type == 'html_renovation' or page_html_path.exists() or split_html_path.exists():
+            target_html_path = page_html_path if page_html_path.exists() else split_html_path
+            if not target_html_path.exists():
+                return bad_request(f"Split HTML not found for page {page.order_index + 1}")
+
+            from models import Settings
+            from services.html_slide_service import (
+                build_fallback_slide_content,
+                extract_slide_from_standalone_html,
+            )
+
+            standalone_html = target_html_path.read_text(encoding='utf-8', errors='replace')
+            slide_data = extract_slide_from_standalone_html(standalone_html, index=page.order_index)
+            try:
+                extra_fields = Settings.get_settings().get_description_extra_fields()
+            except Exception:
+                extra_fields = list(Settings.DEFAULT_EXTRA_FIELDS)
+
+            ai_service = get_ai_service()
+            try:
+                content = ai_service.extract_html_slide_content(
+                    slide_data,
+                    language=language,
+                    extra_fields=extra_fields,
+                    keep_layout=keep_layout,
+                )
+                if not isinstance(content, dict) or not content.get('description'):
+                    content = build_fallback_slide_content(slide_data, index=page.order_index, language=language)
+            except Exception as ai_exc:
+                logger.warning(f"AI reverse-synthesis failed for HTML page {page.id}, falling back: {ai_exc}")
+                content = build_fallback_slide_content(slide_data, index=page.order_index, language=language)
+
+            title = content.get('title') or f'Slide {page.order_index + 1}'
+            points = content.get('points') or []
+            description = content.get('description') or ''
+            if content.get('part') and not page.part:
+                page.part = content['part']
+
+            page.set_outline_content({'title': title, 'points': points})
+            desc_payload = {
+                "text": description,
+                "generated_at": datetime.utcnow().isoformat(),
+            }
+            if content.get('extra_fields'):
+                desc_payload['extra_fields'] = content['extra_fields']
+            page.set_description_content(desc_payload)
+            page.status = 'DESCRIPTION_GENERATED'
+            page.updated_at = datetime.utcnow()
+
+            db.session.commit()
+            logger.info(f"Regenerated HTML renovation page {page.order_index + 1} successfully")
+            return success_response(page.to_dict())
+
+        # Find the split PDF for this page
         page_pdf_path = split_dir / f"page_{page.order_index + 1}.pdf"
 
         if not page_pdf_path.exists():

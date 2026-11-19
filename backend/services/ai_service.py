@@ -24,6 +24,7 @@ from .prompts import (
     get_outline_refinement_prompt,
     get_descriptions_refinement_prompt,
     get_ppt_page_content_extraction_prompt,
+    get_html_slide_reverse_description_prompt,
     get_layout_caption_prompt,
     get_style_extraction_prompt,
     get_style_from_content_prompt,
@@ -1361,6 +1362,67 @@ class AIService:
         result.setdefault('description', '')
 
         return result
+
+    def extract_html_slide_content(
+        self,
+        slide_data: Dict[str, Any],
+        language: str = 'vi',
+        extra_fields: Optional[List[str]] = None,
+        keep_layout: bool = True,
+    ) -> Dict[str, Any]:
+        """Reverse-synthesize outline and detailed description fields from parsed HTML slide data."""
+        from services.html_slide_service import build_fallback_slide_content
+
+        index = int(slide_data.get('index') or 0)
+        fallback = build_fallback_slide_content(slide_data, index=index, language=language)
+        requested_fields = list(extra_fields) if extra_fields else self._get_extra_field_names()
+
+        prompt = get_html_slide_reverse_description_prompt(
+            slide_data=slide_data,
+            language=language,
+            extra_fields=requested_fields,
+            keep_layout=keep_layout,
+        )
+        result = self.generate_json(prompt, thinking_budget=1000)
+
+        if not isinstance(result, dict):
+            raise ValueError(f"Expected dict, got {type(result)}")
+
+        title = str(result.get('title') or '').strip() or fallback['title']
+        part = str(result.get('part') or '').strip() or fallback.get('part', '')
+
+        raw_points = result.get('points')
+        if isinstance(raw_points, list):
+            points = [str(p).strip() for p in raw_points if p is not None and str(p).strip()]
+        elif isinstance(raw_points, str) and raw_points.strip():
+            points = [ln.lstrip('- ').strip() for ln in raw_points.splitlines() if ln.strip()]
+        else:
+            points = fallback['points']
+
+        description = str(result.get('description') or '').strip() or fallback['description']
+
+        from models import Settings
+        raw_extra = result.get('extra_fields')
+        normalized_extra: Dict[str, str] = {}
+        if isinstance(raw_extra, dict):
+            for k, v in raw_extra.items():
+                if v is None or not str(v).strip():
+                    continue
+                norm_k = Settings.LEGACY_FIELD_EQUIV.get(str(k).strip(), str(k).strip())
+                normalized_extra[norm_k] = str(v).strip()
+
+        for fname in requested_fields:
+            norm_fname = Settings.LEGACY_FIELD_EQUIV.get(fname, fname)
+            if norm_fname not in normalized_extra and norm_fname in fallback['extra_fields']:
+                normalized_extra[norm_fname] = fallback['extra_fields'][norm_fname]
+
+        return {
+            'title': title,
+            'part': part,
+            'points': points,
+            'description': description,
+            'extra_fields': normalized_extra,
+        }
 
     def _generate_text_from_image(self, prompt: str, image_path: str) -> str:
         """Helper to generate text from a prompt and an image, using caption_provider."""

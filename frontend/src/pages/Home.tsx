@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, History, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X, Menu } from 'lucide-react';
+import { Sparkles, FileText, FileEdit, FileCode, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, History, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw, FilePlus, ArrowRight, X, Menu } from 'lucide-react';
 import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, SettingsModal, HistoryModal, Footer, TextStyleSelector, UserNavMenu } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
@@ -19,7 +19,146 @@ import logoUrl from '@/assets/logo.png';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 import { isDesktop } from '@/utils';
 
-type CreationType = 'idea' | 'outline' | 'description' | 'ppt_renovation';
+type CreationType = 'idea' | 'outline' | 'description' | 'ppt_renovation' | 'html_renovation';
+
+interface HtmlPreviewMeta {
+  count: number;
+  titles: string[];
+}
+
+const SLIDE_CLASS_TOKENS = new Set([
+  'slide',
+  'ppt-slide',
+  'slide-page',
+  'slide-item',
+  'slide-card',
+  'slide-frame',
+  'deck-slide',
+  'swiper-slide',
+  'remark-slide-container',
+  'bespoke-slide',
+]);
+
+function filterOutermostElements(elements: Element[]): Element[] {
+  const unique = Array.from(new Set(elements));
+  const outer = unique.filter((el) => !unique.some((other) => other !== el && other.contains(el)));
+  if (outer.length === 1) {
+    const inner = unique.filter((el) => el !== outer[0] && outer[0].contains(el));
+    if (inner.length >= 2) {
+      return filterOutermostElements(inner);
+    }
+  }
+  return outer;
+}
+
+function detectHtmlSlidesPreview(htmlText: string): HtmlPreviewMeta {
+  try {
+    const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+    const body = doc.body;
+    if (!body) return { count: 1, titles: ['Slide 1'] };
+
+    let candidates: Element[] = [];
+
+    const explicit = Array.from(
+      body.querySelectorAll('[data-slide], [aria-roledescription="slide"]')
+    ).filter((el) => el.tagName !== 'BUTTON' && el.tagName !== 'A' && !el.hasAttribute('data-slide-to'));
+    const explicitOuter = filterOutermostElements(explicit);
+    if (explicitOuter.length >= 2) {
+      candidates = explicitOuter;
+    }
+
+    if (candidates.length === 0) {
+      const byClass = Array.from(body.querySelectorAll('section, div, article, main, li')).filter((el) =>
+        Array.from(el.classList).some((cls) => SLIDE_CLASS_TOKENS.has(cls.toLowerCase()))
+      );
+      const classOuter = filterOutermostElements(byClass);
+      if (classOuter.length >= 2) {
+        candidates = classOuter;
+      } else {
+        const bySecondary = filterOutermostElements(
+          Array.from(body.querySelectorAll('section, div, article, main, li')).filter((el) =>
+            Array.from(el.classList).some((cls) => cls.toLowerCase() === 'page' || cls.toLowerCase() === 'step')
+          )
+        );
+        if (bySecondary.length >= 2) {
+          candidates = bySecondary;
+        } else {
+          const byId = filterOutermostElements(
+            Array.from(body.querySelectorAll('div[id], section[id], article[id]')).filter((el) =>
+              /^(?:slide|page|frame|screen)[-_]?\d+$/i.test(el.id.trim())
+            )
+          );
+          if (byId.length >= 2) {
+            candidates = byId;
+          } else {
+            const revealContainer = doc.querySelector('.reveal .slides');
+            if (revealContainer) {
+              const revealSlides: Element[] = [];
+              Array.from(revealContainer.children).forEach((sec) => {
+                if (sec.tagName !== 'SECTION') return;
+                const nested = Array.from(sec.children).filter((c) => c.tagName === 'SECTION');
+                if (nested.length > 0) revealSlides.push(...nested);
+                else revealSlides.push(sec);
+              });
+              if (revealSlides.length >= 1) candidates = revealSlides;
+            }
+          }
+          if (candidates.length === 0) {
+            const directSections = Array.from(body.children).filter((el) => el.tagName === 'SECTION');
+            if (directSections.length >= 2) {
+              candidates = directSections;
+            } else {
+              const allSections = filterOutermostElements(Array.from(body.querySelectorAll('section')));
+              if (allSections.length >= 2) {
+                candidates = allSections;
+              }
+            }
+          }
+          if (candidates.length === 0 && classOuter.length === 1) {
+            candidates = classOuter;
+          } else if (candidates.length === 0 && explicitOuter.length === 1) {
+            candidates = explicitOuter;
+          }
+        }
+      }
+    }
+
+    if (candidates.length === 0) {
+      const containerCandidates = [body];
+      const bodyChildren = Array.from(body.children).filter(
+        (el) => !['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'].includes(el.tagName)
+      );
+      if (bodyChildren.length === 1 && ['DIV', 'MAIN', 'SECTION'].includes(bodyChildren[0].tagName)) {
+        containerCandidates.push(bodyChildren[0]);
+      }
+      for (const container of containerCandidates) {
+        const frameChildren = Array.from(container.children).filter((el) => {
+          if (!['DIV', 'SECTION', 'ARTICLE'].includes(el.tagName)) return false;
+          const hint = `${el.className || ''} ${el.getAttribute('style') || ''}`;
+          return /(?:100vh|min-h-screen|h-screen|aspect-video|1280px|1920px|720px|1080px|page-break-after)/i.test(hint);
+        });
+        if (frameChildren.length >= 2) {
+          candidates = frameChildren;
+          break;
+        }
+      }
+    }
+
+    if (candidates.length === 0) {
+      candidates = [body];
+    }
+
+    const titles = candidates.map((el, idx) => {
+      const heading = el.querySelector('h1, h2, [class*="title"], [class*="heading"], h3');
+      const text = heading?.textContent?.replace(/\s+/g, ' ').trim();
+      return text || `Slide ${idx + 1}`;
+    });
+
+    return { count: candidates.length, titles };
+  } catch {
+    return { count: 1, titles: ['Slide 1'] };
+  }
+}
 
 // Supported document extensions for reference files (consistent with backend file_parser_service)
 const ALLOWED_DOC_EXTENSIONS = ['pdf', 'docx', 'pptx', 'doc', 'ppt', 'xlsx', 'xls', 'csv', 'txt', 'md'];
@@ -54,12 +193,14 @@ const homeI18n = {
         outline: 'Từ dàn ý',
         description: 'Từ mô tả',
         ppt_renovation: 'Làm mới PPT',
+        html_renovation: 'Từ HTML Slide',
       },
       tabDescriptions: {
         idea: 'Nhập ý tưởng của bạn, AI sẽ tạo toàn bộ bản trình bày hoàn chỉnh',
         outline: 'Đã có dàn ý? Dán trực tiếp, AI sẽ tự động phân tách thành dàn ý cấu trúc',
         description: 'Đã có mô tả đầy đủ? AI sẽ phân tích và tạo ảnh trực tiếp, bỏ qua bước dàn ý',
-        ppt_renovation: 'Tải lên tệp PDF/PPTX hiện có, AI sẽ phân tích nội dung và tái tạo thành PPT mới',
+        ppt_renovation: 'Tải lên tệp PDF/PPTX/HTML hiện có, AI sẽ phân tích nội dung và tái tạo thành PPT mới',
+        html_renovation: 'Tải lên tệp slide HTML hiện có, giữ nguyên hiển thị slide HTML và dùng AI tổng hợp ngược thành mô tả chi tiết để chỉnh sửa hoặc xuất PPTX/PDF',
       },
       placeholders: {
         idea: 'Ví dụ: Tạo một bài thuyết trình về lịch sử phát triển của AI',
@@ -84,11 +225,19 @@ const homeI18n = {
         startBlankHint: 'Không tạo dàn ý, tự thêm hoặc nhập trang',
       },
       renovation: {
-        uploadHint: 'Nhấp hoặc kéo thả để tải lên tệp PDF / PPTX',
-        formatHint: 'Hỗ trợ định dạng .pdf, .pptx, .ppt (khuyến nghị dùng PDF)',
+        uploadHint: 'Nhấp hoặc kéo thả để tải lên tệp PDF / PPTX / HTML',
+        formatHint: 'Hỗ trợ định dạng .pdf, .pptx, .ppt, .html, .htm (khuyến nghị dùng PDF hoặc HTML)',
         keepLayout: 'Giữ nguyên bố cục gốc',
-        onlyPdfPptx: 'Chỉ hỗ trợ tệp PDF và PPTX',
-        uploadFile: 'Vui lòng tải lên tệp PDF hoặc PPTX trước',
+        onlyPdfPptx: 'Chỉ hỗ trợ tệp PDF, PPTX và HTML',
+        uploadFile: 'Vui lòng tải lên tệp PDF, PPTX hoặc HTML trước',
+      },
+      htmlRenovation: {
+        uploadHint: 'Nhấp hoặc kéo thả để tải lên tệp HTML Slide (.html, .htm)',
+        formatHint: 'Hỗ trợ tệp slide HTML đơn hoặc nhiều trang (.html, .htm)',
+        keepLayout: 'Tổng hợp giữ nguyên bố cục HTML gốc',
+        onlyHtml: 'Chỉ hỗ trợ tệp HTML (.html, .htm)',
+        uploadFile: 'Vui lòng tải lên tệp HTML Slide trước',
+        detectedSlides: 'Phát hiện {{count}} slide trong tệp HTML',
       },
       messages: {
         enterContent: 'Vui lòng nhập nội dung',
@@ -141,12 +290,14 @@ const homeI18n = {
         outline: 'From Outline',
         description: 'From Description',
         ppt_renovation: 'PPT Renovation',
+        html_renovation: 'From HTML Slide',
       },
       tabDescriptions: {
         idea: 'Enter your idea, AI will generate a complete PPT for you',
         outline: 'Have an outline? Paste it directly, AI will split it into a structured outline',
         description: 'Have detailed descriptions? AI will parse and generate images directly, skipping the outline step',
-        ppt_renovation: 'Upload an existing PDF/PPTX file, AI will parse its content and regenerate the renovated PPT',
+        ppt_renovation: 'Upload an existing PDF/PPTX/HTML file, AI will parse its content and regenerate the renovated PPT',
+        html_renovation: 'Upload an existing HTML slide file; preserve exact HTML slide rendering and reverse-synthesize detailed descriptions for editing or export',
       },
       placeholders: {
         idea: 'e.g., Generate a presentation about the history of AI',
@@ -171,11 +322,19 @@ const homeI18n = {
         startBlankHint: 'Skip outline generation — add or import pages yourself',
       },
       renovation: {
-        uploadHint: 'Click or drag to upload PDF / PPTX file',
-        formatHint: 'Supports .pdf, .pptx, .ppt formats (PDF recommended)',
+        uploadHint: 'Click or drag to upload PDF / PPTX / HTML file',
+        formatHint: 'Supports .pdf, .pptx, .ppt, .html, .htm formats (PDF or HTML recommended)',
         keepLayout: 'Keep original layout',
-        onlyPdfPptx: 'Only PDF and PPTX files are supported',
-        uploadFile: 'Please upload a PDF or PPTX file first',
+        onlyPdfPptx: 'Only PDF, PPTX, and HTML files are supported',
+        uploadFile: 'Please upload a PDF, PPTX, or HTML file first',
+      },
+      htmlRenovation: {
+        uploadHint: 'Click or drag to upload HTML Slide file (.html, .htm)',
+        formatHint: 'Supports single or multi-slide HTML files (.html, .htm)',
+        keepLayout: 'Preserve original HTML layout details',
+        onlyHtml: 'Only HTML files (.html, .htm) are supported',
+        uploadFile: 'Please upload an HTML slide file first',
+        detectedSlides: 'Detected {{count}} slide(s) in HTML file',
       },
       messages: {
         enterContent: 'Please enter content',
@@ -247,6 +406,12 @@ export const Home: React.FC = () => {
   const [isAspectRatioOpen, setIsAspectRatioOpen] = useState(false);
   const [renovationFile, setRenovationFile] = useState<File | null>(null);
   const [keepLayout, setKeepLayout] = useState(false);
+  const [htmlFile, setHtmlFile] = useState<File | null>(null);
+  const [keepHtmlLayout, setKeepHtmlLayout] = useState(true);
+  const [htmlPreviewMeta, setHtmlPreviewMeta] = useState<Record<'ppt_renovation' | 'html_renovation', HtmlPreviewMeta | null>>({
+    ppt_renovation: null,
+    html_renovation: null,
+  });
   const renovationFileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
@@ -598,7 +763,50 @@ export const Home: React.FC = () => {
       description: t('home.tabDescriptions.ppt_renovation'),
       example: null as string | null,
     },
+    html_renovation: {
+      icon: <FileCode size={20} />,
+      label: t('home.tabs.html_renovation'),
+      placeholder: '',
+      description: t('home.tabDescriptions.html_renovation'),
+      example: null as string | null,
+    },
   };
+
+  const handleRenovationFilePicked = useCallback(async (file: File, mode: 'ppt_renovation' | 'html_renovation') => {
+    const lowerName = file.name.toLowerCase();
+    const isHtml = lowerName.endsWith('.html') || lowerName.endsWith('.htm');
+    const isPdfOrPpt = lowerName.endsWith('.pdf') || lowerName.endsWith('.pptx') || lowerName.endsWith('.ppt');
+
+    if (mode === 'html_renovation') {
+      if (!isHtml) {
+        show({ message: t('home.htmlRenovation.onlyHtml'), type: 'error' });
+        return;
+      }
+      setHtmlFile(file);
+    } else {
+      if (!isHtml && !isPdfOrPpt) {
+        show({ message: t('home.renovation.onlyPdfPptx'), type: 'error' });
+        return;
+      }
+      setRenovationFile(file);
+      const ext = lowerName.split('.').pop();
+      if (ext === 'ppt' || ext === 'pptx') {
+        show({ message: t('home.messages.pptTip'), type: 'info' });
+      }
+    }
+
+    if (isHtml) {
+      try {
+        const text = await file.text();
+        const meta = detectHtmlSlidesPreview(text);
+        setHtmlPreviewMeta((prev) => ({ ...prev, [mode]: meta }));
+      } catch {
+        setHtmlPreviewMeta((prev) => ({ ...prev, [mode]: null }));
+      }
+    } else {
+      setHtmlPreviewMeta((prev) => ({ ...prev, [mode]: null }));
+    }
+  }, [show, t]);
 
   const handleTemplateSelect = async (templateFile: File | null, templateId?: string) => {
     // Always set file if provided
@@ -645,10 +853,15 @@ export const Home: React.FC = () => {
       show({ message: !i18n.language?.startsWith('en') ? 'Vui lòng nhập chủ đề để tiếp tục' : 'Enter a topic to continue', type: 'error' });
       return;
     }
-    // For ppt_renovation, validate file instead of content
+    // For ppt_renovation / html_renovation, validate uploaded file instead of text content
     if (activeTab === 'ppt_renovation') {
       if (!renovationFile) {
         show({ message: t('home.renovation.uploadFile'), type: 'error' });
+        return;
+      }
+    } else if (activeTab === 'html_renovation') {
+      if (!htmlFile) {
+        show({ message: t('home.htmlRenovation.uploadFile'), type: 'error' });
         return;
       }
     } else if (!content.trim()) {
@@ -670,11 +883,13 @@ export const Home: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      // PPT renovation mode: separate upload + async parse flow
-      if (activeTab === 'ppt_renovation' && renovationFile) {
+      // PPT / HTML renovation mode: separate upload + async parse flow
+      const activeRenovationFile = activeTab === 'html_renovation' ? htmlFile : activeTab === 'ppt_renovation' ? renovationFile : null;
+      if ((activeTab === 'ppt_renovation' || activeTab === 'html_renovation') && activeRenovationFile) {
         const styleDesc = templateStyle.trim() ? templateStyle.trim() : undefined;
-        const result = await createPptRenovationProject(renovationFile, {
-          keepLayout,
+        const activeKeepLayout = activeTab === 'html_renovation' ? keepHtmlLayout : keepLayout;
+        const result = await createPptRenovationProject(activeRenovationFile, {
+          keepLayout: activeKeepLayout,
           templateStyle: styleDesc,
         });
 
@@ -1155,7 +1370,7 @@ export const Home: React.FC = () => {
         {/* Creation card */}
         <Card className="p-3.5 sm:p-6 md:p-10 bg-white/90 dark:bg-background-secondary backdrop-blur-xl dark:backdrop-blur-none shadow-2xl dark:shadow-none border-0 dark:border dark:border-border-primary hover:shadow-3xl dark:hover:shadow-none transition-all duration-300 rounded-xl sm:rounded-2xl">
           {/* Tabs */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap lg:flex-nowrap gap-2 sm:gap-2.5 md:gap-3 mb-4 sm:mb-6 md:mb-8">
             {(Object.keys(tabConfig) as CreationType[]).map((type) => {
               const config = tabConfig[type];
               return (
@@ -1198,8 +1413,14 @@ export const Home: React.FC = () => {
 
           {/* Input area with toolbar */}
           <div className="mb-2">
-            {activeTab === 'ppt_renovation' ? (
-              /* PPT renovation: file upload */
+            {(activeTab === 'ppt_renovation' || activeTab === 'html_renovation') ? (() => {
+              const isHtmlTab = activeTab === 'html_renovation';
+              const currentUploadFile = isHtmlTab ? htmlFile : renovationFile;
+              const currentKeepLayout = isHtmlTab ? keepHtmlLayout : keepLayout;
+              const currentHtmlMeta = htmlPreviewMeta[activeTab];
+              const isHtmlSelected = Boolean(currentUploadFile && /\.(html|htm)$/i.test(currentUploadFile.name));
+              return (
+              /* PPT / HTML renovation: file upload */
               <div className="space-y-4">
                 <div
                   className="border-2 border-dashed border-gray-300 dark:border-border-primary rounded-xl p-8 text-center cursor-pointer hover:border-banana-400 dark:hover:border-banana transition-colors duration-200"
@@ -1209,52 +1430,92 @@ export const Home: React.FC = () => {
                     e.preventDefault();
                     e.stopPropagation();
                     const file = e.dataTransfer.files[0];
-                    if (file && (file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.pptx') || file.name.toLowerCase().endsWith('.ppt'))) {
-                      setRenovationFile(file);
-                      const ext = file.name.split('.').pop()?.toLowerCase();
-                      if (ext === 'ppt' || ext === 'pptx') {
-                        show({ message: t('home.messages.pptTip'), type: 'info' });
-                      }
-                    } else {
-                      show({ message: t('home.renovation.onlyPdfPptx'), type: 'error' });
+                    if (file) {
+                      void handleRenovationFilePicked(file, activeTab);
                     }
                   }}
                 >
-                  {renovationFile ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <FileText size={24} className="text-banana-600 dark:text-banana" />
-                      <div className="text-left">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{renovationFile.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-foreground-tertiary">{(renovationFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                  {currentUploadFile ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-center gap-3">
+                        {isHtmlSelected ? (
+                          <FileCode size={24} className="text-banana-600 dark:text-banana" />
+                        ) : (
+                          <FileText size={24} className="text-banana-600 dark:text-banana" />
+                        )}
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{currentUploadFile.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-foreground-tertiary">
+                            {currentUploadFile.size >= 1024 * 1024
+                              ? `${(currentUploadFile.size / 1024 / 1024).toFixed(1)} MB`
+                              : `${Math.max(1, Math.round(currentUploadFile.size / 1024))} KB`}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isHtmlTab) {
+                              setHtmlFile(null);
+                            } else {
+                              setRenovationFile(null);
+                            }
+                            setHtmlPreviewMeta((prev) => ({ ...prev, [activeTab]: null }));
+                          }}
+                          className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setRenovationFile(null); }}
-                        className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
+                      {currentHtmlMeta && (
+                        <div className="pt-2 border-t border-gray-200 dark:border-border-primary flex flex-col items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-banana-100 dark:bg-banana/20 text-banana-800 dark:text-banana">
+                            {t('home.htmlRenovation.detectedSlides', { count: currentHtmlMeta.slideCount })}
+                          </span>
+                          {currentHtmlMeta.titles.length > 0 && (
+                            <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-xl">
+                              {currentHtmlMeta.titles.slice(0, 6).map((title, idx) => (
+                                <span
+                                  key={`${idx}-${title}`}
+                                  className="px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-background-hover text-gray-700 dark:text-foreground-secondary max-w-[180px] truncate"
+                                >
+                                  {idx + 1}. {title}
+                                </span>
+                              ))}
+                              {currentHtmlMeta.titles.length > 6 && (
+                                <span className="text-xs text-gray-400 dark:text-foreground-tertiary">
+                                  +{currentHtmlMeta.titles.length - 6}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Upload size={32} className="mx-auto text-gray-400 dark:text-foreground-tertiary" />
-                      <p className="text-sm text-gray-600 dark:text-foreground-secondary">{t('home.renovation.uploadHint')}</p>
-                      <p className="text-xs text-gray-400 dark:text-foreground-tertiary">{t('home.renovation.formatHint')}</p>
+                      {isHtmlTab ? (
+                        <FileCode size={32} className="mx-auto text-gray-400 dark:text-foreground-tertiary" />
+                      ) : (
+                        <Upload size={32} className="mx-auto text-gray-400 dark:text-foreground-tertiary" />
+                      )}
+                      <p className="text-sm text-gray-600 dark:text-foreground-secondary">
+                        {t(isHtmlTab ? 'home.htmlRenovation.uploadHint' : 'home.renovation.uploadHint')}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-foreground-tertiary">
+                        {t(isHtmlTab ? 'home.htmlRenovation.formatHint' : 'home.renovation.formatHint')}
+                      </p>
                     </div>
                   )}
                 </div>
                 <input
                   ref={renovationFileInputRef}
                   type="file"
-                  accept=".pdf,.pptx,.ppt"
+                  accept={isHtmlTab ? '.html,.htm' : '.pdf,.pptx,.ppt,.html,.htm'}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      setRenovationFile(file);
-                      const ext = file.name.split('.').pop()?.toLowerCase();
-                      if (ext === 'ppt' || ext === 'pptx') {
-                        show({ message: t('home.messages.pptTip'), type: 'info' });
-                      }
+                      void handleRenovationFilePicked(file, activeTab);
                     }
                     e.target.value = '';
                   }}
@@ -1265,13 +1526,19 @@ export const Home: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <span className="text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                      {t('home.renovation.keepLayout')}
+                      {t(isHtmlTab ? 'home.htmlRenovation.keepLayout' : 'home.renovation.keepLayout')}
                     </span>
                     <div className="relative">
                       <input
                         type="checkbox"
-                        checked={keepLayout}
-                        onChange={(e) => setKeepLayout(e.target.checked)}
+                        checked={currentKeepLayout}
+                        onChange={(e) => {
+                          if (isHtmlTab) {
+                            setKeepHtmlLayout(e.target.checked);
+                          } else {
+                            setKeepLayout(e.target.checked);
+                          }
+                        }}
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
@@ -1281,14 +1548,15 @@ export const Home: React.FC = () => {
                     size="sm"
                     onClick={handleSubmit}
                     loading={isSubmitting || isGlobalLoading}
-                    disabled={!renovationFile}
+                    disabled={!currentUploadFile}
                     className="shadow-sm dark:shadow-background-primary/30 text-xs md:text-sm px-3 md:px-4"
                   >
                     {t('common.next')}
                   </Button>
                 </div>
               </div>
-            ) : (
+              );
+            })() : (
             <>
             {activeTab === 'idea' && <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
               {[false, true].map(report => <button type="button" key={String(report)} aria-pressed={reportMode === report}

@@ -4,6 +4,7 @@ import { useT } from '@/hooks/useT';
 import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
 import { Card, ContextualStatusBadge, Button, Modal, Skeleton, Markdown, MaterialSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
+import { HtmlSlidePreview } from './HtmlSlidePreview';
 import { useDescriptionGeneratingState } from '@/hooks/useGeneratingState';
 import type { Page, DescriptionContent, Material } from '@/types';
 
@@ -39,6 +40,7 @@ export interface DescriptionCardProps {
   page: Page;
   index: number;
   projectId?: string;
+  aspectRatio?: string;
   extraFieldNames?: string[];
   imagePromptFields?: string[];
   showToast: (props: { message: string; type: 'success' | 'error' | 'info' | 'warning' }) => void;
@@ -77,6 +79,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
   page,
   index,
   projectId,
+  aspectRatio = '16:9',
   extraFieldNames = [],
   imagePromptFields,
   showToast,
@@ -190,13 +193,34 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
                   {page.part}
                 </span>
               )}
+              {page.html_slide_url && (
+                <span className="text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">
+                  HTML Slide
+                </span>
+              )}
             </div>
             <ContextualStatusBadge page={page} context="description" />
           </div>
         </div>
 
         {/* UI element */}
-        <div className="p-4 flex-1 max-h-96 overflow-y-auto desc-card-scroll" data-testid="description-card-content">
+        <div className={`p-4 flex-1 ${page.html_slide_url ? 'max-h-[34rem]' : 'max-h-96'} overflow-y-auto desc-card-scroll`} data-testid="description-card-content">
+          {page.html_slide_url && (
+            <div className="mb-3">
+              <HtmlSlidePreview
+                htmlUrl={page.html_slide_url}
+                title={page.outline_content?.title}
+                aspectRatio={aspectRatio}
+                allowFullscreen
+                className="rounded-lg border border-gray-200 dark:border-border-primary shadow-sm"
+              />
+              {page.outline_content?.title && (
+                <div className="mt-1.5 text-xs font-semibold text-gray-800 dark:text-foreground-primary truncate">
+                  {page.outline_content.title}
+                </div>
+              )}
+            </div>
+          )}
           {generating ? (
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
@@ -336,9 +360,12 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
   prev.index === next.index &&
   prev.isAiRefining === next.isAiRefining &&
   prev.projectId === next.projectId &&
+  prev.aspectRatio === next.aspectRatio &&
   prev.page.id === next.page.id &&
   prev.page.status === next.page.status &&
   prev.page.part === next.page.part &&
+  prev.page.html_slide_url === next.page.html_slide_url &&
+  prev.page.outline_content?.title === next.page.outline_content?.title &&
   getDescriptionText(prev.page.description_content) === getDescriptionText(next.page.description_content) &&
   getExtraFieldsKey(prev.page.description_content) === getExtraFieldsKey(next.page.description_content) &&
   JSON.stringify(prev.extraFieldNames) === JSON.stringify(next.extraFieldNames) &&

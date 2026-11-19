@@ -1506,8 +1506,10 @@ def create_ppt_renovation_project():
 
         # Check file extension
         filename = file.filename.lower()
-        if not (filename.endswith('.pdf') or filename.endswith('.pptx') or filename.endswith('.ppt')):
-            return bad_request("Only PDF and PPTX files are supported")
+        is_html = filename.endswith('.html') or filename.endswith('.htm')
+        is_pdf_or_ppt = filename.endswith('.pdf') or filename.endswith('.pptx') or filename.endswith('.ppt')
+        if not (is_html or is_pdf_or_ppt):
+            return bad_request("Only PDF, PPTX, and HTML files are supported")
 
         keep_layout = request.form.get('keep_layout', 'false').lower() == 'true'
         template_style = request.form.get('template_style', '').strip() or None
@@ -1517,7 +1519,7 @@ def create_ppt_renovation_project():
         user = get_current_user()
         project = Project(
             user_id=user.id if user else None,
-            creation_type='ppt_renovation',
+            creation_type='html_renovation' if is_html else 'ppt_renovation',
             template_style=template_style,
             status='DRAFT'
         )
@@ -1534,133 +1536,198 @@ def create_ppt_renovation_project():
         template_dir.mkdir(parents=True, exist_ok=True)
 
         # Save original file with a standardized name to avoid encoding issues
-        # (secure_filename strips non-ASCII chars, causing Chinese filenames like
-        # Backend logic
         original_ext = file.filename.rsplit('.', 1)[-1].lower()
-        safe_name = f'original.{original_ext}'
+        safe_name = 'original.html' if is_html else f'original.{original_ext}'
         original_path = template_dir / safe_name
         file.save(str(original_path))
 
-        # Convert PPTX to PDF if needed
-        pdf_path = str(original_path)
-        if safe_name.lower().endswith(('.pptx', '.ppt')):
-            try:
-                subprocess.run(
-                    ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', str(template_dir), str(original_path)],
-                    check=True, timeout=120, capture_output=True
-                )
-                pdf_name = safe_name.rsplit('.', 1)[0] + '.pdf'
-                pdf_path = str(template_dir / pdf_name)
-                if not os.path.exists(pdf_path):
-                    raise ValueError("PDF conversion failed - output file not found")
-                logger.info(f"Converted PPTX to PDF: {pdf_path}")
-            except subprocess.TimeoutExpired:
-                raise ValueError(
-                    "PPTX chuyển PDF quá thời gian chờ, Vui lòng thử lại sau hoặc chuyển thủ công sang PDF rồi tải lên. "
-                    if language == 'zh' else
-                    "PPTX to PDF conversion timed out. Please retry or convert to PDF manually before uploading."
-                )
-            except FileNotFoundError:
-                raise ValueError(
-                    "PPTX Chuyển đổi cần cài đặt LibreOffice, nhưng môi trường hiện tại không phát hiện thấy. Vui lòng chuyển cục bộ PPTX chuyển thành PDF rồi tải lên lại. "
-                    if language == 'zh' else
-                    "PPTX conversion requires LibreOffice, which is not installed. Please convert your PPTX to PDF locally before uploading."
-                )
-
-        # Convert PDF to page images using PyMuPDF or pdf2image
-        pages_dir = project_dir / "pages"
-        pages_dir.mkdir(parents=True, exist_ok=True)
-
-        page_image_paths = []
-        pdf_page_width = None
-        pdf_page_height = None
-        try:
-            import fitz  # PyMuPDF
-            doc = fitz.open(pdf_path)
-            # Extract page dimensions from the first page before rendering
-            if len(doc) > 0:
-                rect = doc[0].rect
-                pdf_page_width = rect.width
-                pdf_page_height = rect.height
-            for i, fitz_page in enumerate(doc):
-                try:
-                    mat = fitz.Matrix(2, 2)
-                    pix = fitz_page.get_pixmap(matrix=mat)
-                    img_path = str(pages_dir / f"page_{i + 1}_original.png")
-                    pix.save(img_path)
-                    page_image_paths.append(img_path)
-                except Exception as e:
-                    logger.error(f"Failed to render page {i + 1} with PyMuPDF: {e}")
-                    page_image_paths.append(None)
-            doc.close()
-        except ImportError:
-            # Fallback: use pdf2image
-            try:
-                from pdf2image import convert_from_path
-                images = convert_from_path(pdf_path, dpi=200)
-                for i, img in enumerate(images):
-                    try:
-                        # Extract page dimensions from the first image
-                        if pdf_page_width is None:
-                            pdf_page_width = img.width
-                            pdf_page_height = img.height
-                        img_path = str(pages_dir / f"page_{i + 1}_original.png")
-                        img.save(img_path, 'PNG')
-                        page_image_paths.append(img_path)
-                    except Exception as e:
-                        logger.error(f"Failed to render page {i + 1} with pdf2image: {e}")
-                        page_image_paths.append(None)
-            except ImportError:
-                raise ValueError("Neither PyMuPDF nor pdf2image is available for PDF rendering")
-
-        # Fail-fast if no pages rendered at all
-        valid_pages = [p for p in page_image_paths if p is not None]
-        if not valid_pages:
-            raise ValueError("All pages failed to render from PDF")
-
-        logger.info(f"Rendered {len(valid_pages)}/{len(page_image_paths)} page images from PDF")
-
-        # Set project aspect ratio from PDF page dimensions
-        if pdf_page_width and pdf_page_height and pdf_page_width > 0 and pdf_page_height > 0:
-            try:
-                raw_ratio = f"{int(round(pdf_page_width))}:{int(round(pdf_page_height))}"
-                project.image_aspect_ratio = normalize_aspect_ratio(raw_ratio)
-                logger.info(f"Set project aspect ratio from PDF: {pdf_page_width}x{pdf_page_height} -> {project.image_aspect_ratio}")
-            except (ValueError, OverflowError) as e:
-                logger.warning(f"Could not normalize PDF aspect ratio ({pdf_page_width}x{pdf_page_height}): {e}, keeping default 16:9")
-
-        # Create Page records with initial images
         from services.task_manager import save_image_with_version
-        from PIL import Image as PILImage
 
         pages_list = []
-        for i, img_path in enumerate(page_image_paths):
-            if img_path is None:
-                logger.warning(f"Skipping page {i + 1}: render failed")
-                continue
-
-            page = Page(
-                project_id=project_id,
-                order_index=len(pages_list),
-                status='DRAFT'
+        if is_html:
+            from services.html_slide_service import (
+                detect_html_aspect_ratio_and_size,
+                render_html_slide_to_image,
+                split_html_to_slides,
             )
-            page.set_outline_content({
-                'title': f'Page {i + 1}',
-                'points': []
-            })
-            db.session.add(page)
-            db.session.flush()  # Get page.id
 
-            # Save the PDF page image as initial version
-            img = PILImage.open(img_path)
-            image_path, _version = save_image_with_version(
-                img, project_id, page.id, file_service, page_obj=page
-            )
-            img.close()
+            raw_bytes = original_path.read_bytes()
+            html_content = None
+            for enc in ('utf-8-sig', 'utf-8', 'cp1252'):
+                try:
+                    html_content = raw_bytes.decode(enc)
+                    break
+                except UnicodeDecodeError:
+                    continue
+            if html_content is None:
+                html_content = raw_bytes.decode('utf-8', errors='replace')
 
-            pages_list.append(page)
+            detected_ratio, slide_width, slide_height = detect_html_aspect_ratio_and_size(html_content)
+            try:
+                project.image_aspect_ratio = normalize_aspect_ratio(detected_ratio)
+            except (ValueError, OverflowError) as e:
+                logger.warning(f"Could not normalize HTML aspect ratio ({detected_ratio}): {e}, keeping default 16:9")
 
-        db.session.commit()
+            slides = split_html_to_slides(html_content)
+            if not slides:
+                raise ValueError("No slides detected in HTML file")
+
+            pages_dir = project_dir / "pages"
+            pages_dir.mkdir(parents=True, exist_ok=True)
+            split_dir = project_dir / "split_pages"
+            split_dir.mkdir(parents=True, exist_ok=True)
+
+            for i, slide_data in enumerate(slides):
+                page = Page(
+                    project_id=project_id,
+                    order_index=i,
+                    part=(slide_data.get('part') or '').strip() or None,
+                    status='DRAFT',
+                )
+                page.set_outline_content({
+                    'title': slide_data.get('title') or f'Page {i + 1}',
+                    'points': slide_data.get('points', []),
+                })
+                db.session.add(page)
+                db.session.flush()
+
+                standalone_html = slide_data.get('standalone_html') or html_content
+                (pages_dir / f"{page.id}.html").write_text(standalone_html, encoding='utf-8')
+                (split_dir / f"page_{i + 1}.html").write_text(standalone_html, encoding='utf-8')
+
+                img = render_html_slide_to_image(
+                    standalone_html,
+                    slide_data,
+                    width=slide_width,
+                    height=slide_height,
+                    use_browser=False,
+                )
+                save_image_with_version(img, project_id, page.id, file_service, page_obj=page)
+                img.close()
+                page.status = 'DRAFT'
+
+                pages_list.append(page)
+
+            db.session.commit()
+        else:
+            # Convert PPTX to PDF if needed
+            pdf_path = str(original_path)
+            if safe_name.lower().endswith(('.pptx', '.ppt')):
+                try:
+                    subprocess.run(
+                        ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', str(template_dir), str(original_path)],
+                        check=True, timeout=120, capture_output=True
+                    )
+                    pdf_name = safe_name.rsplit('.', 1)[0] + '.pdf'
+                    pdf_path = str(template_dir / pdf_name)
+                    if not os.path.exists(pdf_path):
+                        raise ValueError("PDF conversion failed - output file not found")
+                    logger.info(f"Converted PPTX to PDF: {pdf_path}")
+                except subprocess.TimeoutExpired:
+                    raise ValueError(
+                        "PPTX chuyển PDF quá thời gian chờ, Vui lòng thử lại sau hoặc chuyển thủ công sang PDF rồi tải lên. "
+                        if language == 'zh' else
+                        "PPTX to PDF conversion timed out. Please retry or convert to PDF manually before uploading."
+                    )
+                except FileNotFoundError:
+                    raise ValueError(
+                        "PPTX Chuyển đổi cần cài đặt LibreOffice, nhưng môi trường hiện tại không phát hiện thấy. Vui lòng chuyển cục bộ PPTX chuyển thành PDF rồi tải lên lại. "
+                        if language == 'zh' else
+                        "PPTX conversion requires LibreOffice, which is not installed. Please convert your PPTX to PDF locally before uploading."
+                    )
+
+            # Convert PDF to page images using PyMuPDF or pdf2image
+            pages_dir = project_dir / "pages"
+            pages_dir.mkdir(parents=True, exist_ok=True)
+
+            page_image_paths = []
+            pdf_page_width = None
+            pdf_page_height = None
+            try:
+                import fitz  # PyMuPDF
+                doc = fitz.open(pdf_path)
+                # Extract page dimensions from the first page before rendering
+                if len(doc) > 0:
+                    rect = doc[0].rect
+                    pdf_page_width = rect.width
+                    pdf_page_height = rect.height
+                for i, fitz_page in enumerate(doc):
+                    try:
+                        mat = fitz.Matrix(2, 2)
+                        pix = fitz_page.get_pixmap(matrix=mat)
+                        img_path = str(pages_dir / f"page_{i + 1}_original.png")
+                        pix.save(img_path)
+                        page_image_paths.append(img_path)
+                    except Exception as e:
+                        logger.error(f"Failed to render page {i + 1} with PyMuPDF: {e}")
+                        page_image_paths.append(None)
+                doc.close()
+            except ImportError:
+                # Fallback: use pdf2image
+                try:
+                    from pdf2image import convert_from_path
+                    images = convert_from_path(pdf_path, dpi=200)
+                    for i, img in enumerate(images):
+                        try:
+                            # Extract page dimensions from the first image
+                            if pdf_page_width is None:
+                                pdf_page_width = img.width
+                                pdf_page_height = img.height
+                            img_path = str(pages_dir / f"page_{i + 1}_original.png")
+                            img.save(img_path, 'PNG')
+                            page_image_paths.append(img_path)
+                        except Exception as e:
+                            logger.error(f"Failed to render page {i + 1} with pdf2image: {e}")
+                            page_image_paths.append(None)
+                except ImportError:
+                    raise ValueError("Neither PyMuPDF nor pdf2image is available for PDF rendering")
+
+            # Fail-fast if no pages rendered at all
+            valid_pages = [p for p in page_image_paths if p is not None]
+            if not valid_pages:
+                raise ValueError("All pages failed to render from PDF")
+
+            logger.info(f"Rendered {len(valid_pages)}/{len(page_image_paths)} page images from PDF")
+
+            # Set project aspect ratio from PDF page dimensions
+            if pdf_page_width and pdf_page_height and pdf_page_width > 0 and pdf_page_height > 0:
+                try:
+                    raw_ratio = f"{int(round(pdf_page_width))}:{int(round(pdf_page_height))}"
+                    project.image_aspect_ratio = normalize_aspect_ratio(raw_ratio)
+                    logger.info(f"Set project aspect ratio from PDF: {pdf_page_width}x{pdf_page_height} -> {project.image_aspect_ratio}")
+                except (ValueError, OverflowError) as e:
+                    logger.warning(f"Could not normalize PDF aspect ratio ({pdf_page_width}x{pdf_page_height}): {e}, keeping default 16:9")
+
+            # Create Page records with initial images
+            from PIL import Image as PILImage
+
+            for i, img_path in enumerate(page_image_paths):
+                if img_path is None:
+                    logger.warning(f"Skipping page {i + 1}: render failed")
+                    continue
+
+                page = Page(
+                    project_id=project_id,
+                    order_index=len(pages_list),
+                    status='DRAFT'
+                )
+                page.set_outline_content({
+                    'title': f'Page {i + 1}',
+                    'points': []
+                })
+                db.session.add(page)
+                db.session.flush()  # Get page.id
+
+                # Save the PDF page image as initial version
+                img = PILImage.open(img_path)
+                image_path, _version = save_image_with_version(
+                    img, project_id, page.id, file_service, page_obj=page
+                )
+                img.close()
+
+                pages_list.append(page)
+
+            db.session.commit()
 
         # Create async task
         task = Task(

@@ -93,6 +93,7 @@ export interface Page {
   narration_text?: string; 
   generated_image_url?: string; 
   generated_image_path?: string; 
+  html_slide_url?: string;
   status: PageStatus;
   created_at?: string;
   updated_at?: string;

@@ -942,14 +942,107 @@ Hãy trả về kết quả phân tích thuộc tính dưới định dạng JSO
     return prompt
 
 
-def get_ppt_page_content_extraction_prompt(page_index: int, total_pages: int, ocr_text: str = "") -> str:
-    """Tạo prompt trích xuất nội dung trang PPT từ ảnh."""
-    prompt = f"""Phân tích ảnh trang PPT (trang {page_index}/{total_pages}). Trích xuất nội dung văn bản đầy đủ và mô tả bố cục theo cấu trúc chuẩn.
-Dữ liệu OCR tham khảo:
-{ocr_text}
+def get_ppt_page_content_extraction_prompt(markdown_text: str = "", language: str = None, **kwargs) -> str:
+    """Tạo prompt trích xuất nội dung trang PPT từ văn bản markdown đã phân tích."""
+    content = (markdown_text or kwargs.get('ocr_text') or "").strip()
+    prompt = f"""\
+You are a helpful assistant that extracts structured PPT page content from parsed document text.
 
-Trả về định dạng có cấu trúc bao gồm tiêu đề, văn bản chính và các lưu ý bố cục.
+<slide_content>
+{content}
+</slide_content>
+
+Extract the following structured information from this slide:
+1. **title**: Main heading/title of the slide.
+2. **points**: Array of key bullet points or content items on the slide.
+3. **description**: Complete page description suitable for regenerating this slide, containing the page text and any charts/tables/visual references.
+
+Return ONLY a JSON object with keys: "title" (string), "points" (array of strings), "description" (string).
+{get_language_instruction(language)}
 """
+    logger.debug(f"[get_ppt_page_content_extraction_prompt] Final prompt:\n{prompt}")
+    return prompt
+
+
+def get_html_slide_reverse_description_prompt(
+    slide_data: Dict[str, Any],
+    language: str = None,
+    extra_fields: Optional[List[str]] = None,
+    keep_layout: bool = True,
+) -> str:
+    """Tạo prompt để AI tổng hợp ngược mô tả chi tiết (outline + description + extra_fields) từ nội dung slide HTML."""
+    field_names = list(extra_fields) if extra_fields else [
+        'Hình ảnh & Tư liệu',
+        'Bố cục & Trọng tâm',
+        'Ghi chú thuyết trình',
+    ]
+    field_schema_lines = []
+    for name in field_names:
+        if name == 'Hình ảnh & Tư liệu':
+            desc = 'Mô tả chi tiết hình ảnh, biểu đồ, sơ đồ SVG, icon hoặc minh họa xuất hiện trong slide HTML'
+        elif name == 'Bố cục & Trọng tâm':
+            desc = 'Mô tả cấu trúc bố cục trang (chia cột, lưới thẻ, vị trí khối) và điểm nhấn thị giác của slide HTML'
+        elif name == 'Ghi chú thuyết trình':
+            desc = 'Ghi chú thuyết trình hoặc gợi ý lời dẫn cho diễn giả dựa trên nội dung trang'
+        else:
+            desc = f'Nội dung tổng hợp cho trường {name}'
+        field_schema_lines.append(f'    "{name}": "{desc}"')
+    extra_fields_schema = ',\n'.join(field_schema_lines)
+
+    title_hint = (slide_data.get('title') or '').strip()
+    part_hint = (slide_data.get('part') or '').strip()
+    markdown_text = (slide_data.get('markdown_text') or '').strip()
+    visual_summary = (slide_data.get('visual_summary') or '').strip()
+    layout_summary = (slide_data.get('layout_summary') or '').strip()
+    speaker_notes = (slide_data.get('speaker_notes') or '').strip()
+    compact_html = (slide_data.get('compact_html') or '').strip()
+
+    layout_rule = (
+        "Preserve exact layout, column arrangement, card hierarchy, and color cues from the HTML slide."
+        if keep_layout
+        else "Summarize the structural layout clearly so the slide can be cleanly redesigned or edited."
+    )
+
+    prompt = f"""\
+You are a senior presentation analyst. Reverse-synthesize a structured slide specification from the parsed HTML slide below.
+
+<html_slide_metadata>
+- Detected title: {title_hint}
+- Detected section/part: {part_hint or '(none)'}
+- Visual elements summary: {visual_summary or '(none)'}
+- Layout summary: {layout_summary or '(none)'}
+- Speaker notes found in HTML: {speaker_notes or '(none)'}
+</html_slide_metadata>
+
+<html_slide_text_markdown>
+{markdown_text or '(empty)'}
+</html_slide_text_markdown>
+
+<html_slide_dom_excerpt>
+{compact_html or '(empty)'}
+</html_slide_dom_excerpt>
+
+Task:
+Reverse-engineer this HTML slide into structured outline and detailed page description fields so the user can review, edit, or regenerate it.
+- "title": Accurate main title of the slide.
+- "part": Section/chapter label if clearly present, otherwise "".
+- "points": Concise list (2-6 items) of key bullet points capturing the slide's takeaways.
+- "description": Clean Markdown text representing ONLY the actual on-slide text, numbers, bullets, and tables (do NOT put layout instructions or speaker notes here; put those in extra_fields).
+- "extra_fields": Object containing the requested extra fields. {layout_rule}
+
+Return ONLY valid JSON matching this schema (no markdown code fence, no extra text):
+{{
+  "title": "Tiêu đề chính của trang slide",
+  "part": "",
+  "points": ["Ý chính 1", "Ý chính 2"],
+  "description": "Nội dung văn bản hiển thị trên trang dạng Markdown...",
+  "extra_fields": {{
+{extra_fields_schema}
+  }}
+}}
+{get_language_instruction(language)}
+"""
+    logger.debug(f"[get_html_slide_reverse_description_prompt] Final prompt:\n{prompt}")
     return prompt
 
 

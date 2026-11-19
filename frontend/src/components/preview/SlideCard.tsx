@@ -2,7 +2,9 @@ import React from 'react';
 import { Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { StatusBadge, Skeleton, useConfirm } from '@/components/shared';
+import { HtmlSlidePreview } from './HtmlSlidePreview';
 import { getImageUrl } from '@/api/client';
+import { shouldShowHtmlSlide } from '@/utils';
 import type { Page } from '@/types';
 
 // Component logic
@@ -53,7 +55,9 @@ export const SlideCard: React.FC<SlideCardProps> = ({
   const imageUrl = page.generated_image_path
     ? getImageUrl(page.generated_image_path, page.updated_at)
     : '';
-  
+  const showHtmlSlide = shouldShowHtmlSlide(page);
+  const hasPreview = showHtmlSlide || Boolean(page.generated_image_path);
+
   const generating = isGenerating || page.status === 'QUEUED' || page.status === 'GENERATING';
 
   return (
@@ -67,15 +71,24 @@ export const SlideCard: React.FC<SlideCardProps> = ({
       <div className="relative bg-gray-100 dark:bg-background-secondary rounded-lg overflow-hidden mb-2" style={{ aspectRatio: aspectRatio.replace(':', '/') }}>
         {generating ? (
           <Skeleton className="w-full h-full" />
-        ) : page.generated_image_path ? (
+        ) : hasPreview ? (
           <>
-            <img
-              src={imageUrl}
-              alt={`Slide ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
+            {showHtmlSlide ? (
+              <HtmlSlidePreview
+                htmlUrl={page.html_slide_url}
+                title={page.outline_content?.title}
+                aspectRatio={aspectRatio}
+                className="w-full h-full pointer-events-none"
+              />
+            ) : (
+              <img
+                src={imageUrl}
+                alt={`Slide ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            )}
             {/* UI element */}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
               <button
                 onClick={(e) => {
                   e.stopPropagation();

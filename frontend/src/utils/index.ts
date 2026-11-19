@@ -29,7 +29,19 @@ export function normalizePage(data: any): Page {
     ...data,
     id: data.page_id || data.id,
     generated_image_path: data.generated_image_url || data.generated_image_path,
+    html_slide_url: data.html_slide_url || undefined,
   };
+}
+
+/**
+ * Determine whether a page should render its original HTML slide preview
+ * (when html_slide_url exists and the page is still on its initial v1 placeholder/capture).
+ */
+export function shouldShowHtmlSlide(page?: Page | null): boolean {
+  if (!page?.html_slide_url) return false;
+  const imgPath = page.generated_image_path || page.generated_image_url;
+  if (!imgPath) return true;
+  return /_v1(?:_thumb)?\.(?:png|jpg|jpeg|webp)(?:\?.*)?$/i.test(imgPath);
 }
 
 /**

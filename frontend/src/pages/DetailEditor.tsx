@@ -22,8 +22,9 @@ const detailI18n = {
     home: { title: 'Banana Slides' },
     detail: {
       title: "Chỉnh sửa mô tả trang", pageCount: "Tổng cộng {{count}} trang", generateImages: "Tạo hình ảnh",
+      previewAndExport: "Xem slide & Xuất",
       generating: "Đang tạo...", page: "Trang {{num}}", titleLabel: "Tiêu đề",
-      description: "Mô tả", batchGenerate: "Tạo hàng loạt mô tả", export: "Xuất mô tả", exportFull: "Xuất dàn ý và mô tả", import: "Nhập", importExport: "Nhập/Xuất",
+      description: "Mô tả", batchGenerate: "Tạo hàng loạt mô tả", export: "Xuất mô tả", exportFull: "Xuất dàn ý và mô tả", exportPptx: "Xuất PPTX", exportPdf: "Xuất PDF", exporting: "Đang xuất...", import: "Nhập", importExport: "Nhập/Xuất",
       pagesCompleted: "trang đã hoàn thành", noPages: "Chưa có trang nào",
       toMultiTemplate: "Chuyển sang mẫu riêng từng trang", toTemplateSetup: "Đi tới cấu hình mẫu", switchFailed: "Chuyển chế độ mẫu thất bại",
       noPagesHint: "Vui lòng quay lại trang chỉnh sửa dàn ý để thêm trang trước", backToOutline: "Quay lại chỉnh sửa dàn ý",
@@ -64,6 +65,7 @@ const detailI18n = {
         confirmRegenerateTitle: "Xác nhận tạo lại",
         confirmRegeneratePage: "Trang này đã có mô tả, tạo lại sẽ ghi đè nội dung hiện tại. Tiếp tục?",
         confirmRenovationRegenerate: "Bạn đang ở chế độ làm mới PPT. Tạo lại sẽ phân tích lại trang PDF gốc và tạo lại dàn ý cùng mô tả, ghi đè nội dung cũ. Tiếp tục?",
+        confirmHtmlRegenerate: "Bạn đang ở chế độ HTML Slide. Tạo lại sẽ tổng hợp ngược lại mô tả từ HTML gốc của slide này, ghi đè nội dung cũ. Tiếp tục?",
         confirmRenovationRegenerateTitle: "Phân tích lại trang này",
         refineSuccess: "Chỉnh sửa mô tả trang thành công", refineFailed: "Chỉnh sửa thất bại, vui lòng thử lại sau",
         exportSuccess: "Xuất thành công", importSuccess: "Nhập thành công", importFailed: "Nhập thất bại, vui lòng kiểm tra định dạng tệp", importEmpty: "Không tìm thấy trang hợp lệ trong tệp",
@@ -78,8 +80,9 @@ const detailI18n = {
     home: { title: 'Banana Slides' },
     detail: {
       title: "Edit Descriptions", pageCount: "{{count}} pages", generateImages: "Generate Images",
+      previewAndExport: "Preview & Export",
       generating: "Generating...", page: "Page {{num}}", titleLabel: "Title",
-      description: "Description", batchGenerate: "Batch Generate Descriptions", export: "Export Descriptions", exportFull: "Export Outline & Descriptions", import: "Import", importExport: "Import/Export",
+      description: "Description", batchGenerate: "Batch Generate Descriptions", export: "Export Descriptions", exportFull: "Export Outline & Descriptions", exportPptx: "Export PPTX", exportPdf: "Export PDF", exporting: "Exporting...", import: "Import", importExport: "Import/Export",
       pagesCompleted: "pages completed", noPages: "No pages yet",
       toMultiTemplate: "Switch to per-page templates", toTemplateSetup: "Go to template setup", switchFailed: "Failed to switch template mode",
       noPagesHint: "Please go back to outline editor to add pages first", backToOutline: "Back to Outline Editor",
@@ -120,6 +123,7 @@ const detailI18n = {
         confirmRegenerateTitle: "Confirm Regenerate",
         confirmRegeneratePage: "This page already has a description. Regenerating will overwrite it. Continue?",
         confirmRenovationRegenerate: "You are in PPT renovation mode. Regenerating will re-parse the original PDF page and regenerate the outline and description, overwriting existing content. Continue?",
+        confirmHtmlRegenerate: "You are in HTML Slide mode. Regenerating will re-synthesize descriptions from the original HTML of this slide, overwriting existing content. Continue?",
         confirmRenovationRegenerateTitle: "Re-parse This Page",
         refineSuccess: "Descriptions modified successfully", refineFailed: "Modification failed, please try again",
         exportSuccess: "Export successful", importSuccess: "Import successful", importFailed: "Import failed, please check file format", importEmpty: "No valid pages found in file",
@@ -134,7 +138,8 @@ const detailI18n = {
 import { Button, Loading, useToast, useConfirm, AiRefineInput, FilePreviewModal, ReferenceFileList, MaterialSelector, ImportMarkdownModal } from '@/components/shared';
 import { DescriptionCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
-import { refineDescriptions, getTaskStatus, addPages, updateProject, getSettings, updateSettings } from '@/api/endpoints';
+import { refineDescriptions, getTaskStatus, addPages, updateProject, getSettings, updateSettings, exportPPTX, exportPDF } from '@/api/endpoints';
+import { triggerDownload } from '@/api/client';
 import { normalizeRenovationErrorMessage } from '@/utils';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 
@@ -269,6 +274,7 @@ export const DetailEditor: React.FC = () => {
   const settingsRef = useRef<HTMLDivElement>(null);
   const [newFieldName, setNewFieldName] = useState('');
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
+  const [isExportingFile, setIsExportingFile] = useState<'pptx' | 'pdf' | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const fileMenuRef = useRef<HTMLDivElement>(null);
   const settingsSaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -510,8 +516,9 @@ export const DetailEditor: React.FC = () => {
     const page = currentProject.pages.find((p) => p.id === pageId);
     if (!page) return;
 
-    // Check if PPT renovation mode
-    const isRenovation = currentProject.creation_type === 'ppt_renovation';
+    // Check if PPT or HTML renovation mode
+    const isHtmlRenovation = currentProject.creation_type === 'html_renovation';
+    const isRenovation = currentProject.creation_type === 'ppt_renovation' || isHtmlRenovation;
 
     const executeRegenerate = async () => {
       try {
@@ -532,7 +539,7 @@ export const DetailEditor: React.FC = () => {
     // Confirmation required for renovation mode or existing descriptions
     if (isRenovation) {
       confirm(
-        t('detail.messages.confirmRenovationRegenerate'),
+        t(isHtmlRenovation ? 'detail.messages.confirmHtmlRegenerate' : 'detail.messages.confirmRenovationRegenerate'),
         executeRegenerate,
         { title: t('detail.messages.confirmRenovationRegenerateTitle'), variant: 'warning' }
       );
@@ -597,6 +604,25 @@ export const DetailEditor: React.FC = () => {
     exportProjectToMarkdown(currentProject);
     show({ message: t('detail.messages.exportSuccess'), type: 'success' });
   }, [currentProject, show, t]);
+
+  const handleDirectExportFile = useCallback(async (format: 'pptx' | 'pdf') => {
+    if (!currentProject || !projectId || isExportingFile) return;
+    setIsExportingFile(format);
+    try {
+      const res = format === 'pptx' ? await exportPPTX(projectId) : await exportPDF(projectId);
+      const url = res.data?.download_url || res.data?.file_url;
+      if (url) {
+        triggerDownload(url);
+        show({ message: t('detail.messages.exportSuccess'), type: 'success' });
+      } else {
+        show({ message: t('common.unknownError'), type: 'error' });
+      }
+    } catch (error: any) {
+      show({ message: error?.message || t('common.unknownError'), type: 'error' });
+    } finally {
+      setIsExportingFile(null);
+    }
+  }, [currentProject, projectId, isExportingFile, show, t]);
 
   // Import description Markdown (append new pages)
   const handleImportDescriptions = useCallback(async (text: string) => {
@@ -726,7 +752,9 @@ export const DetailEditor: React.FC = () => {
               <span className="hidden sm:inline">
                 {currentProject.template_mode === 'multi'
                   ? t('detail.toTemplateSetup')
-                  : t('detail.generateImages')}
+                  : currentProject.creation_type === 'html_renovation'
+                    ? t('detail.previewAndExport')
+                    : t('detail.generateImages')}
               </span>
             </Button>
           </div>
@@ -993,6 +1021,29 @@ export const DetailEditor: React.FC = () => {
                     <Download size={14} />
                     {t('detail.exportFull')}
                   </button>
+                  {currentProject.pages.some(p => Boolean(p.generated_image_path)) && (
+                    <>
+                      <div className="border-t border-gray-100 dark:border-border-primary" />
+                      <button
+                        type="button"
+                        onClick={() => { void handleDirectExportFile('pptx'); setFileMenuOpen(false); }}
+                        disabled={Boolean(isExportingFile)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
+                      >
+                        <Download size={14} />
+                        {isExportingFile === 'pptx' ? t('detail.exporting') : t('detail.exportPptx')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { void handleDirectExportFile('pdf'); setFileMenuOpen(false); }}
+                        disabled={Boolean(isExportingFile)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
+                      >
+                        <Download size={14} />
+                        {isExportingFile === 'pdf' ? t('detail.exporting') : t('detail.exportPdf')}
+                      </button>
+                    </>
+                  )}
                   <div className="border-t border-gray-100 dark:border-border-primary" />
                   <button
                     type="button"
@@ -1079,6 +1130,7 @@ export const DetailEditor: React.FC = () => {
                     page={effectivePage}
                     index={index}
                     projectId={currentProject.id}
+                    aspectRatio={currentProject.image_aspect_ratio || '16:9'}
                     extraFieldNames={extraFieldNames}
                     imagePromptFields={imagePromptFields}
                     showToast={show}

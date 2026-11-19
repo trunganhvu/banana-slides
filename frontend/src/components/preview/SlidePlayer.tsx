@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Maximize2, Minimize2, Play, X } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { getImageUrl } from '@/api/client';
+import { shouldShowHtmlSlide } from '@/utils';
+import { HtmlSlidePreview } from './HtmlSlidePreview';
 import type { Page } from '@/types';
 
 const playerI18n = {
@@ -251,7 +253,8 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
 
   const imageUrl = pageImageUrl(page);
   const generating = page?.status === 'QUEUED' || page?.status === 'GENERATING';
-  const hasImage = !!imageUrl;
+  const showHtmlSlide = shouldShowHtmlSlide(page);
+  const hasImage = showHtmlSlide || !!imageUrl;
 
   return (
     <div
@@ -312,14 +315,23 @@ export const SlidePlayer: React.FC<SlidePlayerProps> = ({
           data-testid="player-slide-stage"
         >
           {hasImage ? (
-            <img
-              src={imageUrl}
-              alt={`Slide ${clampedIndex + 1}`}
-              className={`h-full w-full select-none ${
-                isNativeFullscreen ? 'object-cover' : 'object-contain'
-              }`}
-              draggable={false}
-            />
+            showHtmlSlide && page?.html_slide_url ? (
+              <HtmlSlidePreview
+                htmlUrl={page.html_slide_url}
+                title={page.outline_content?.title}
+                aspectRatio={aspectRatio}
+                className="h-full w-full pointer-events-none"
+              />
+            ) : (
+              <img
+                src={imageUrl}
+                alt={`Slide ${clampedIndex + 1}`}
+                className={`h-full w-full select-none ${
+                  isNativeFullscreen ? 'object-cover' : 'object-contain'
+                }`}
+                draggable={false}
+              />
+            )
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gray-900">
               <div className="text-center">
