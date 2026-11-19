@@ -9,12 +9,14 @@ import re
 import shutil
 import subprocess
 import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 from math import gcd
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from bs4 import BeautifulSoup, NavigableString, Tag
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
 
 logger = logging.getLogger(__name__)
 
@@ -822,11 +824,16 @@ def _render_with_headless_browser(
     html_file_path: str,
     width: int,
     height: int,
-    timeout: int = 18,
+    timeout: int = 30,
+    device_scale_factor: Optional[float] = None,
 ) -> Optional[Image.Image]:
     browser = _find_headless_browser()
     if not browser:
         return None
+
+    scale = device_scale_factor if device_scale_factor is not None else (1.5 if width <= 1280 else 1.0)
+    target_w = max(1, round(width * scale))
+    target_h = max(1, round(height * scale))
 
     file_uri = Path(html_file_path).resolve().as_uri()
     with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
@@ -834,6 +841,7 @@ def _render_with_headless_browser(
 
     try:
         for headless_flag in ('--headless=new', '--headless'):
+            profile_dir = tempfile.mkdtemp(prefix='banana_chromium_')
             cmd = [
                 browser,
                 headless_flag,
@@ -841,8 +849,14 @@ def _render_with_headless_browser(
                 '--no-sandbox',
                 '--disable-dev-shm-usage',
                 '--hide-scrollbars',
-                '--virtual-time-budget=1500',
+                '--no-first-run',
+                '--disable-extensions',
+                '--disable-sync',
+                '--run-all-compositor-stages-before-draw',
+                '--virtual-time-budget=5000',
+                f'--force-device-scale-factor={scale}',
                 f'--window-size={width},{height}',
+                f'--user-data-dir={profile_dir}',
                 f'--screenshot={out_png}',
                 file_uri,
             ]
@@ -857,14 +871,17 @@ def _render_with_headless_browser(
                 if proc.returncode == 0 and os.path.isfile(out_png) and os.path.getsize(out_png) > 200:
                     with Image.open(out_png) as img:
                         loaded = img.convert('RGB')
-                    if loaded.size != (width, height):
-                        loaded = loaded.resize((width, height), Image.Resampling.LANCZOS)
+                    if loaded.size != (target_w, target_h):
+                        loaded = loaded.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                    loaded.info['banana_renderer'] = 'chromium'
                     return loaded
             except subprocess.TimeoutExpired:
                 logger.warning("Headless browser screenshot timed out for %s", html_file_path)
                 break
             except Exception as exc:
                 logger.debug("Headless browser attempt failed (%s): %s", headless_flag, exc)
+            finally:
+                shutil.rmtree(profile_dir, ignore_errors=True)
     finally:
         try:
             os.remove(out_png)
@@ -983,7 +1000,163 @@ def _render_slide_fallback_image(
 
     footer = f"HTML Slide {slide_data.get('index', 0) + 1}"
     draw.text((inner_x, height - pad - 34), footer, font=meta_font, fill=(148, 163, 184))
+    img.info['banana_renderer'] = 'pillow_fallback'
     return img
+
+
+def save_rendered_html_slide_png(image: Image.Image, output_path: str) -> None:
+    """Save a rendered HTML slide PNG with explicit renderer provenance metadata."""
+    parent_dir = os.path.dirname(os.path.abspath(output_path))
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
+    pnginfo = PngImagePlugin.PngInfo()
+    renderer = str(image.info.get('banana_renderer') or 'pillow_fallback')
+    pnginfo.add_text('banana_renderer', renderer)
+    image.save(output_path, 'PNG', pnginfo=pnginfo)
+
+
+def is_chromium_rendered_png(image_path: str) -> bool:
+    """Return True if the PNG at image_path was rendered by headless Chromium."""
+    if not image_path or not os.path.isfile(image_path):
+        return False
+    try:
+        with Image.open(image_path) as img:
+            return img.info.get('banana_renderer') == 'chromium'
+    except Exception:
+        return False
+
+
+def _resolve_project_base_dimensions(project, upload_folder: Path) -> Tuple[int, int]:
+    """Resolve base viewport dimensions (width, height) from template HTML or project aspect ratio."""
+    template_dir = upload_folder / project.id / 'template'
+    if template_dir.exists():
+        for f in template_dir.iterdir():
+            if f.suffix.lower() in {'.html', '.htm'}:
+                try:
+                    raw_html = f.read_text(encoding='utf-8', errors='replace')
+                    _ratio, w, h = detect_html_aspect_ratio_and_size(raw_html)
+                    return w, h
+                except Exception:
+                    pass
+                break
+
+    ratio_map = {
+        '4:3': (1024, 768),
+        '1:1': (1080, 1080),
+        '9:16': (720, 1280),
+        '3:4': (768, 1024),
+        '16:9': (1280, 720),
+    }
+    return ratio_map.get(getattr(project, 'image_aspect_ratio', '16:9') or '16:9', (1280, 720))
+
+
+def ensure_html_pages_rendered(
+    pages,
+    project,
+    file_service,
+    max_workers: int = 4,
+    db_session=None,
+) -> int:
+    """Upgrade any v1 Pillow-fallback PNGs for HTML slide pages to full headless Chromium renders."""
+    if not pages or not project:
+        return 0
+
+    browser = _find_headless_browser()
+    if not browser:
+        logger.warning("No headless Chromium browser found; cannot upgrade HTML slide PNGs for project %s", project.id)
+        return 0
+
+    upload_folder = Path(file_service.upload_folder)
+    pages_dir = upload_folder / project.id / 'pages'
+    split_dir = upload_folder / project.id / 'split_pages'
+
+    candidates: List[Tuple[Any, Path]] = []
+    for page in pages:
+        page_html = pages_dir / f'{page.id}.html'
+        split_html = split_dir / f'page_{page.order_index + 1}.html'
+        target_html = page_html if page_html.is_file() else (split_html if split_html.is_file() else None)
+        if target_html is None:
+            continue
+
+        rel_img = page.generated_image_path
+        is_v1 = (not rel_img) or bool(re.search(r'_v1\.png$', rel_img.replace('\\', '/'), re.IGNORECASE))
+        if not is_v1:
+            continue
+
+        if rel_img:
+            abs_img = file_service.get_absolute_path(rel_img)
+            if os.path.isfile(abs_img) and is_chromium_rendered_png(abs_img):
+                continue
+
+        candidates.append((page, target_html))
+
+    if not candidates:
+        return 0
+
+    base_w, base_h = _resolve_project_base_dimensions(project, upload_folder)
+    worker_count = max(1, min(max_workers, len(candidates)))
+    logger.info(
+        "Upgrading %s HTML slide page(s) to Chromium renders (%sx%s) for project %s",
+        len(candidates),
+        base_w,
+        base_h,
+        project.id,
+    )
+
+    rendered_results: List[Tuple[Any, Image.Image]] = []
+    with ThreadPoolExecutor(max_workers=worker_count) as executor:
+        future_map = {
+            executor.submit(
+                _render_with_headless_browser,
+                str(html_path),
+                base_w,
+                base_h,
+            ): page
+            for page, html_path in candidates
+        }
+        for future in as_completed(future_map):
+            page = future_map[future]
+            try:
+                img = future.result()
+                if img is not None and img.info.get('banana_renderer') == 'chromium':
+                    rendered_results.append((page, img))
+            except Exception as exc:
+                logger.warning("Failed to render HTML page %s with Chromium: %s", page.id, exc)
+
+    upgraded_count = 0
+    for page, img in rendered_results:
+        try:
+            if page.generated_image_path:
+                abs_img_path = file_service.get_absolute_path(page.generated_image_path)
+                save_rendered_html_slide_png(img, abs_img_path)
+                page.cached_image_path = file_service.save_cached_image(
+                    img,
+                    project.id,
+                    page.id,
+                    version_number=1,
+                    quality=85,
+                )
+            else:
+                from services.task_manager import save_image_with_version
+                rel_path, _ver = save_image_with_version(
+                    img,
+                    project.id,
+                    page.id,
+                    file_service,
+                    page_obj=page,
+                )
+                abs_img_path = file_service.get_absolute_path(rel_path)
+                save_rendered_html_slide_png(img, abs_img_path)
+
+            page.updated_at = datetime.utcnow()
+            upgraded_count += 1
+        finally:
+            img.close()
+
+    if upgraded_count > 0 and db_session is not None:
+        db_session.commit()
+
+    return upgraded_count
 
 
 def render_html_slide_to_image(

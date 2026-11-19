@@ -52,10 +52,14 @@ RUN if [ -n "$APT_MIRROR" ]; then \
             sed -i "s@deb.debian.org@$APT_MIRROR@g" /etc/apt/sources.list.d/debian.sources; \
         fi; \
     fi && \
-    apt-get update && apt-get install -y \
+    apt-get update && apt-get install -y --no-install-recommends \
+        chromium \
         curl \
         ffmpeg \
+        fonts-dejavu-core \
+        fonts-liberation \
         fonts-noto-cjk \
+        fonts-noto-color-emoji \
         nginx \
         supervisor \
     && rm -rf /var/lib/apt/lists/*

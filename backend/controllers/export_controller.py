@@ -21,6 +21,7 @@ from utils import (
 from utils.client_settings import get_current_client_override, extract_client_settings_from_request
 from services import ExportService, FileService
 from services.ai_service_manager import get_ai_service
+from services.html_slide_service import ensure_html_pages_rendered
 from services.prompts import normalize_narration_generation_config
 
 logger = logging.getLogger(__name__)
@@ -177,6 +178,7 @@ def export_pptx(project_id):
         
         # Get image paths
         file_service = FileService(current_app.config['UPLOAD_FOLDER'])
+        ensure_html_pages_rendered(pages, project, file_service, max_workers=4, db_session=db.session)
         
         image_paths = []
         for page in pages:
@@ -260,6 +262,7 @@ def export_pdf(project_id):
         
         # Get image paths
         file_service = FileService(current_app.config['UPLOAD_FOLDER'])
+        ensure_html_pages_rendered(pages, project, file_service, max_workers=4, db_session=db.session)
         
         image_paths = []
         for page in pages:
@@ -325,6 +328,7 @@ def export_images(project_id):
             return bad_request("No pages found for project")
 
         file_service = FileService(current_app.config['UPLOAD_FOLDER'])
+        ensure_html_pages_rendered(pages, project, file_service, max_workers=4, db_session=db.session)
 
         image_items = []
         for page in pages:

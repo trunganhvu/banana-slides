@@ -34,10 +34,14 @@ RUN if [ -n "$APT_MIRROR" ]; then \
             echo "Warning: /etc/apt/sources.list.d/debian.sources not found, skipping mirror setup." >&2; \
         fi; \
     fi && \
-    apt-get update && apt-get install -y \
+    apt-get update && apt-get install -y --no-install-recommends \
+    chromium \
     curl \
     ffmpeg \
+    fonts-dejavu-core \
+    fonts-liberation \
     fonts-noto-cjk \
+    fonts-noto-color-emoji \
     && rm -rf /var/lib/apt/lists/*
 
 # Sao chép tệp thực thi từ giai đoạn uv

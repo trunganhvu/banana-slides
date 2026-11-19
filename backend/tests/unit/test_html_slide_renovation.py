@@ -3,16 +3,21 @@ import io
 import os
 from unittest.mock import MagicMock, patch
 
+from PIL import Image
 import pytest
 
 from models import Page, Project, Task, db
 from services.ai_service import AIService
 from services.file_service import FileService
 from services.html_slide_service import (
+    _render_with_headless_browser,
     build_fallback_slide_content,
     detect_html_aspect_ratio_and_size,
+    ensure_html_pages_rendered,
     extract_slide_from_standalone_html,
+    is_chromium_rendered_png,
     render_html_slide_to_image,
+    save_rendered_html_slide_png,
     split_html_to_slides,
 )
 
@@ -399,3 +404,130 @@ class TestHtmlRenovationEndpointsAndTasks:
         assert page_data['outline_content']['title'] == 'Regenerated HTML Title'
         assert page_data['description_content']['text'] == 'Fresh reverse description from standalone HTML.'
         assert page_data['html_slide_url'] == f'/files/{project_id}/pages/{page_id}.html'
+
+
+class TestHtmlSlidePngProvenanceAndUpgrade:
+    def test_png_renderer_metadata_distinguishes_chromium_and_fallback(self, tmp_path):
+        chromium_png = tmp_path / 'chromium_v1.png'
+        fallback_png = tmp_path / 'fallback_v1.png'
+        untagged_png = tmp_path / 'untagged_v1.png'
+
+        img_chr = Image.new('RGB', (16, 16), color=(10, 20, 30))
+        img_chr.info['banana_renderer'] = 'chromium'
+        save_rendered_html_slide_png(img_chr, str(chromium_png))
+
+        img_fb = Image.new('RGB', (16, 16), color=(40, 50, 60))
+        img_fb.info['banana_renderer'] = 'pillow_fallback'
+        save_rendered_html_slide_png(img_fb, str(fallback_png))
+
+        Image.new('RGB', (16, 16), color=(70, 80, 90)).save(str(untagged_png), 'PNG')
+
+        assert is_chromium_rendered_png(str(chromium_png)) is True
+        assert is_chromium_rendered_png(str(fallback_png)) is False
+        assert is_chromium_rendered_png(str(untagged_png)) is False
+        assert is_chromium_rendered_png(str(tmp_path / 'missing.png')) is False
+
+    def test_render_with_headless_browser_uses_isolated_profile_and_hd_scale(self, tmp_path):
+        html_file = tmp_path / 'slide.html'
+        html_file.write_text('<!DOCTYPE html><html><body><h1>Hi</h1></body></html>', encoding='utf-8')
+        recorded_cmds = []
+
+        def fake_run(cmd, **kwargs):
+            recorded_cmds.append(cmd)
+            shot_arg = [arg for arg in cmd if arg.startswith('--screenshot=')][0]
+            out_path = shot_arg.split('=', 1)[1]
+            Image.new('RGB', (1920, 1080), color=(250, 248, 245)).save(out_path, 'PNG')
+            proc = MagicMock()
+            proc.returncode = 0
+            return proc
+
+        with (
+            patch('services.html_slide_service._find_headless_browser', return_value='/usr/bin/chromium'),
+            patch('services.html_slide_service.subprocess.run', side_effect=fake_run),
+        ):
+            img = _render_with_headless_browser(str(html_file), width=1280, height=720)
+
+        assert img is not None
+        assert img.size == (1920, 1080)
+        assert img.info.get('banana_renderer') == 'chromium'
+        assert len(recorded_cmds) == 1
+        cmd = recorded_cmds[0]
+        assert '--virtual-time-budget=5000' in cmd
+        assert '--force-device-scale-factor=1.5' in cmd
+        assert '--window-size=1280,720' in cmd
+        assert any(arg.startswith('--user-data-dir=') for arg in cmd)
+
+    def test_ensure_html_pages_rendered_upgrades_stale_v1_and_skips_v2(self, app, db_session):
+        upload_folder = app.config['UPLOAD_FOLDER']
+        file_service = FileService(upload_folder)
+
+        project = Project(
+            project_title='Upgrade Test',
+            creation_type='html_renovation',
+            image_aspect_ratio='16:9',
+            status='DESCRIPTIONS_GENERATED',
+        )
+        db.session.add(project)
+        db.session.flush()
+
+        pages_dir = os.path.join(upload_folder, project.id, 'pages')
+        os.makedirs(pages_dir, exist_ok=True)
+
+        p1 = Page(project_id=project.id, order_index=0, status='DESCRIPTION_GENERATED')
+        p2 = Page(project_id=project.id, order_index=1, status='DESCRIPTION_GENERATED')
+        p3 = Page(project_id=project.id, order_index=2, status='COMPLETED')
+        db.session.add_all([p1, p2, p3])
+        db.session.flush()
+
+        for idx, p in enumerate((p1, p2, p3)):
+            with open(os.path.join(pages_dir, f'{p.id}.html'), 'w', encoding='utf-8') as f:
+                f.write(f'<!DOCTYPE html><html><body><h1>Slide {idx + 1}</h1></body></html>')
+
+        # p1: stale Pillow fallback _v1.png
+        p1_rel = f'{project.id}/pages/{p1.id}_v1.png'
+        fb_img = Image.new('RGB', (1280, 720), color=(248, 250, 252))
+        fb_img.info['banana_renderer'] = 'pillow_fallback'
+        save_rendered_html_slide_png(fb_img, os.path.join(upload_folder, p1_rel))
+        p1.generated_image_path = p1_rel
+
+        # p2: already Chromium-rendered _v1.png
+        p2_rel = f'{project.id}/pages/{p2.id}_v1.png'
+        ok_img = Image.new('RGB', (1920, 1080), color=(250, 248, 245))
+        ok_img.info['banana_renderer'] = 'chromium'
+        save_rendered_html_slide_png(ok_img, os.path.join(upload_folder, p2_rel))
+        p2.generated_image_path = p2_rel
+
+        # p3: AI-regenerated _v2.png (must not be overwritten)
+        p3_rel = f'{project.id}/pages/{p3.id}_v2.png'
+        Image.new('RGB', (1920, 1080), color=(12, 34, 56)).save(os.path.join(upload_folder, p3_rel), 'PNG')
+        p3.generated_image_path = p3_rel
+        db.session.commit()
+
+        rendered_calls = []
+
+        def fake_render(html_file_path, width, height, **kwargs):
+            rendered_calls.append((html_file_path, width, height))
+            out = Image.new('RGB', (1920, 1080), color=(255, 0, 128))
+            out.info['banana_renderer'] = 'chromium'
+            return out
+
+        with (
+            patch('services.html_slide_service._find_headless_browser', return_value='/usr/bin/chromium'),
+            patch('services.html_slide_service._render_with_headless_browser', side_effect=fake_render),
+        ):
+            upgraded = ensure_html_pages_rendered(
+                [p1, p2, p3],
+                project,
+                file_service,
+                max_workers=2,
+                db_session=db.session,
+            )
+
+        assert upgraded == 1
+        assert len(rendered_calls) == 1
+        assert p1.id in rendered_calls[0][0]
+        assert is_chromium_rendered_png(file_service.get_absolute_path(p1.generated_image_path)) is True
+        with Image.open(file_service.get_absolute_path(p1.generated_image_path)) as upgraded_img:
+            assert upgraded_img.size == (1920, 1080)
+        with Image.open(file_service.get_absolute_path(p3.generated_image_path)) as v2_img:
+            assert v2_img.getpixel((0, 0)) == (12, 34, 56)

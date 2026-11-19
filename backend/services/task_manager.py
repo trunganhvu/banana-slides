@@ -1597,6 +1597,7 @@ def _process_html_renovation_pages(
         detect_html_aspect_ratio_and_size,
         extract_slide_from_standalone_html,
         render_html_slide_to_image,
+        save_rendered_html_slide_png,
     )
 
     project_dir = Path(app.config['UPLOAD_FOLDER']) / project_id
@@ -1714,24 +1715,27 @@ def _process_html_renovation_pages(
 
                     if rendered_browser_img is not None:
                         try:
-                            if page_obj.generated_image_path:
-                                abs_img_path = file_service.get_absolute_path(page_obj.generated_image_path)
-                                rendered_browser_img.save(abs_img_path, 'PNG')
-                                page_obj.cached_image_path = file_service.save_cached_image(
-                                    rendered_browser_img,
-                                    project_id,
-                                    page_obj.id,
-                                    version_number=1,
-                                    quality=85,
-                                )
-                            else:
-                                save_image_with_version(
-                                    rendered_browser_img,
-                                    project_id,
-                                    page_obj.id,
-                                    file_service,
-                                    page_obj=page_obj,
-                                )
+                            if rendered_browser_img.info.get('banana_renderer') == 'chromium':
+                                if page_obj.generated_image_path:
+                                    abs_img_path = file_service.get_absolute_path(page_obj.generated_image_path)
+                                    save_rendered_html_slide_png(rendered_browser_img, abs_img_path)
+                                    page_obj.cached_image_path = file_service.save_cached_image(
+                                        rendered_browser_img,
+                                        project_id,
+                                        page_obj.id,
+                                        version_number=1,
+                                        quality=85,
+                                    )
+                                else:
+                                    rel_path, _ver = save_image_with_version(
+                                        rendered_browser_img,
+                                        project_id,
+                                        page_obj.id,
+                                        file_service,
+                                        page_obj=page_obj,
+                                    )
+                                    abs_img_path = file_service.get_absolute_path(rel_path)
+                                    save_rendered_html_slide_png(rendered_browser_img, abs_img_path)
                         finally:
                             rendered_browser_img.close()
 
@@ -2183,7 +2187,16 @@ def export_editable_pptx_with_recursive_analysis_task(
             pages = get_filtered_pages(project_id, page_ids)
             if not pages:
                 raise ValueError('No pages found for project')
-            
+
+            from services.html_slide_service import ensure_html_pages_rendered
+            ensure_html_pages_rendered(
+                pages,
+                project,
+                file_service,
+                max_workers=max_workers,
+                db_session=db.session,
+            )
+
             image_paths = []
             for page in pages:
                 if page.generated_image_path:
@@ -2482,6 +2495,15 @@ def export_video_task(
             pages = get_filtered_pages(project_id, page_ids)
             if not pages:
                 raise ValueError("Không tìm thấy trang nào có thể xuất")
+
+            from services.html_slide_service import ensure_html_pages_rendered
+            ensure_html_pages_rendered(
+                pages,
+                project,
+                file_service,
+                max_workers=4,
+                db_session=db.session,
+            )
 
             # Backend logic
             valid_pages = []
