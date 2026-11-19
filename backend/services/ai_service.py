@@ -133,18 +133,28 @@ class AIService:
             current_app = None  # type: ignore
             has_app_context = lambda: False  # type: ignore
 
-        from .ai_providers import _resolve_setting
+        from .ai_providers import _resolve_setting, get_provider_format
+        from .ai_providers.openai_compat import parse_provider_format
+        provider_fmt = get_provider_format()
+        use_config_model_defaults = (
+            provider_fmt == 'gemini'
+            or parse_provider_format(config.AI_PROVIDER_FORMAT) == 'openai'
+        )
+        default_text_model = config.TEXT_MODEL if use_config_model_defaults else ""
+        default_image_model = config.IMAGE_MODEL if use_config_model_defaults else ""
+        default_caption_model = config.IMAGE_CAPTION_MODEL if use_config_model_defaults else ""
+
         if has_app_context() and current_app and hasattr(current_app, "config"):
-            self.text_model = _resolve_setting("TEXT_MODEL") or current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
-            self.image_model = _resolve_setting("IMAGE_MODEL") or current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
+            self.text_model = _resolve_setting("TEXT_MODEL") or current_app.config.get("TEXT_MODEL", default_text_model) or default_text_model
+            self.image_model = _resolve_setting("IMAGE_MODEL") or current_app.config.get("IMAGE_MODEL", default_image_model) or default_image_model
             # Backend logic
             self.enable_text_reasoning = current_app.config.get("ENABLE_TEXT_REASONING", False)
             self.text_thinking_budget = current_app.config.get("TEXT_THINKING_BUDGET", 1024)
             self.enable_image_reasoning = current_app.config.get("ENABLE_IMAGE_REASONING", False)
             self.image_thinking_budget = current_app.config.get("IMAGE_THINKING_BUDGET", 1024)
         else:
-            self.text_model = _resolve_setting("TEXT_MODEL") or config.TEXT_MODEL
-            self.image_model = _resolve_setting("IMAGE_MODEL") or config.IMAGE_MODEL
+            self.text_model = _resolve_setting("TEXT_MODEL") or default_text_model
+            self.image_model = _resolve_setting("IMAGE_MODEL") or default_image_model
             self.enable_text_reasoning = False
             self.text_thinking_budget = 1024
             self.enable_image_reasoning = False
@@ -152,14 +162,29 @@ class AIService:
         
         # Caption model for multimodal (image→text) tasks
         if has_app_context() and current_app and hasattr(current_app, "config"):
-            self.caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or current_app.config.get("IMAGE_CAPTION_MODEL", config.IMAGE_CAPTION_MODEL)
+            self.caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or current_app.config.get("IMAGE_CAPTION_MODEL", default_caption_model) or default_caption_model
         else:
-            self.caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or config.IMAGE_CAPTION_MODEL
+            self.caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or default_caption_model
 
         # Use provided providers or create from factory based on AI_PROVIDER_FORMAT (from Flask config or env var)
-        self.text_provider = text_provider or get_text_provider(model=self.text_model)
-        self.image_provider = image_provider or get_image_provider(model=self.image_model)
-        self.caption_provider = caption_provider or get_caption_provider(model=self.caption_model)
+        self.text_provider = text_provider if text_provider is not None else get_text_provider(model=self.text_model)
+        if image_provider is not None:
+            self.image_provider = image_provider
+        else:
+            try:
+                self.image_provider = get_image_provider(model=self.image_model)
+            except ValueError as e:
+                logger.warning("Image provider unavailable (%s); continuing in text-only mode", e)
+                self.image_provider = None
+
+        if caption_provider is not None:
+            self.caption_provider = caption_provider
+        else:
+            try:
+                self.caption_provider = get_caption_provider(model=self.caption_model)
+            except ValueError as e:
+                logger.warning("Caption provider unavailable (%s); falling back to text_provider", e)
+                self.caption_provider = self.text_provider
     
     def _get_text_thinking_budget(self) -> int:
         """
@@ -1097,6 +1122,12 @@ class AIService:
         Raises:
             Exception with detailed error message if generation fails
         """
+        if self.image_provider is None:
+            raise ValueError(
+                "Chưa cấu hình mô hình tạo ảnh (Image Model). Nếu đang dùng Self-Hosted Local LLM chỉ hỗ trợ văn bản, "
+                "hãy nhập Image Model hỗ trợ /v1/images/generations hoặc chuyển sang Google Gemini."
+            )
+
         try:
             logger.debug(f"Reference image: {ref_image_path}")
             if additional_ref_images:

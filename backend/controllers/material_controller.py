@@ -57,9 +57,18 @@ def _generate_image_caption(filepath: str) -> str:
         else:
             prompt = "Hãy mô tả ngắn gọn nội dung chính của bức ảnh này bằng một câu tiếng Việt. Chỉ trả về văn bản mô tả, không kèm giải thích khác. "
 
-        provider_format = (current_app.config.get('AI_PROVIDER_FORMAT') or 'gemini').lower()
+        from services.ai_providers.openai_compat import (
+            LOCAL_DUMMY_API_KEY,
+            normalize_openai_base_url,
+            normalize_provider_format,
+        )
+        from services.ai_providers.text import strip_think_tags
+
+        provider_format = normalize_provider_format(current_app.config.get('AI_PROVIDER_FORMAT') or 'gemini')
         caption_source = (current_app.config.get('IMAGE_CAPTION_MODEL_SOURCE') or '').lower()
-        caption_model = current_app.config.get('IMAGE_CAPTION_MODEL', 'gemini-3.5-flash-lite')
+        caption_model = current_app.config.get('IMAGE_CAPTION_MODEL') or (
+            current_app.config.get('TEXT_MODEL', '') if provider_format == 'openai' else 'gemini-3.5-flash-lite'
+        )
 
         # Determine effective format: per-model source overrides global
         effective_format = caption_source or provider_format
@@ -115,12 +124,14 @@ def _generate_image_caption(filepath: str) -> str:
 
         elif effective_format == 'openai':
             from openai import OpenAI
-            api_key = current_app.config.get('OPENAI_API_KEY', '')
-            if not api_key:
+            api_key = current_app.config.get('OPENAI_API_KEY', '') or ''
+            raw_base = current_app.config.get('OPENAI_API_BASE') or ''
+            api_base = normalize_openai_base_url(raw_base, rewrite_docker_localhost=True) if raw_base else ''
+            if not api_key and not api_base:
                 return ""
             client = OpenAI(
-                api_key=api_key,
-                base_url=current_app.config.get('OPENAI_API_BASE') or None
+                api_key=api_key or LOCAL_DUMMY_API_KEY,
+                base_url=api_base or None,
             )
 
             buffered = io.BytesIO()
@@ -143,7 +154,7 @@ def _generate_image_caption(filepath: str) -> str:
                 temperature=0.3,
                 stream=False,
             )
-            return response.choices[0].message.content.strip()
+            return strip_think_tags(response.choices[0].message.content or "")
         else:
             # Gemini (default)
             from google import genai

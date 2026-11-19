@@ -245,18 +245,54 @@ const pageToMarkdown = (page: Page, index: number, opts: ExportOptions = {}): st
   return md;
 };
 
+export const slugifyFilename = (text: string, maxLength = 48, fallback = 'banana-slides'): string => {
+  const cleaned = (text || '')
+    .trim()
+    .replace(/^[#*\-\s"'“”‘’]+/, '')
+    .replace(/^(?:trang|page|slide)\s*\d+\s*[:\-–.]?\s*/i, '')
+    .trim();
+  if (!cleaned) return fallback;
+
+  const ascii = cleaned
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+  let slug = ascii.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!slug) return fallback;
+
+  if (maxLength > 0 && slug.length > maxLength) {
+    let cut = slug.slice(0, maxLength);
+    const lastDash = cut.lastIndexOf('-');
+    if (lastDash >= Math.floor(maxLength / 2)) {
+      cut = cut.slice(0, lastDash);
+    }
+    slug = cut.replace(/-+$/, '');
+  }
+
+  return slug || fallback;
+};
+
 export const exportProjectToMarkdown = (project: Project, opts?: ExportOptions): void => {
-  const locale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
+  const isEn = Boolean(i18n.language?.startsWith('en'));
+  const locale = isEn ? 'en-US' : 'vi-VN';
   let md = `# ${getProjectTitle(project)}\n\n`;
   md += `> ${t('projectUtils.generatedAt')}: ${new Date().toLocaleString(locale)}\n\n---\n\n`;
   project.pages.forEach((page, i) => { md += pageToMarkdown(page, i, opts); });
   const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const prefix = opts?.outline === false
-    ? t('projectUtils.prefixDesc')
+  const baseName = slugifyFilename(
+    getProjectTitle(project),
+    48,
+    `banana-slides-${project.id?.slice(0, 8) || 'export'}`
+  );
+  const suffix = opts?.outline === false
+    ? (isEn ? '-descriptions' : '-mo-ta')
     : opts?.description === false
-      ? t('projectUtils.prefixOutline')
-      : t('projectUtils.prefixProject');
-  downloadFile(blob, `${prefix}_${project.id?.slice(0, 8) || 'export'}.md`);
+      ? (isEn ? '-outline' : '-dan-y')
+      : '';
+  downloadFile(blob, `${baseName}${suffix}.md`);
 };
 
 // --- Import ---

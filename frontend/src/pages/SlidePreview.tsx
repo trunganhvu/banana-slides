@@ -15,6 +15,8 @@ const previewI18n = {
       pageGenerating: "Trang này đang được tạo, vui lòng đợi...", generationStarted: "Đã bắt đầu tạo ảnh, vui lòng đợi...",
       versionSwitched: "Đã chuyển sang phiên bản này", outlineSaved: "Đã lưu dàn ý và mô tả",
       materialsAdded: "Đã thêm {{count}} tư liệu", exportStarted: "Nhiệm vụ xuất đã bắt đầu, có thể theo dõi tiến độ trong bảng nhiệm vụ xuất",
+      exportEditableCached: "Nội dung chưa thay đổi — đã tải lại tệp PPTX chỉnh sửa từ lần xuất trước (không gọi lại AI).",
+      exportEditableReused: "Đang có tác vụ xuất PPTX chỉnh sửa giống hệt đang chạy — đang theo dõi tiến độ.",
       exportStartResponseLost: "Phản hồi tạo nhiệm vụ xuất bị gián đoạn, đang dùng mã nhiệm vụ để xác nhận trạng thái nền; điều này không đồng nghĩa với xuất thất bại",
       cannotRefresh: "Không thể làm mới: Thiếu ID dự án", refreshSuccess: "Làm mới thành công",
       extraRequirementsSaved: "Đã lưu yêu cầu bổ sung", styleDescSaved: "Đã lưu mô tả phong cách",
@@ -239,6 +241,8 @@ const previewI18n = {
       pageGenerating: "This page is generating, please wait...", generationStarted: "Image generation started, please wait...",
       versionSwitched: "Switched to this version", outlineSaved: "Outline and description saved",
       materialsAdded: "Added {{count}} material(s)", exportStarted: "Export task started, check progress in export tasks panel",
+      exportEditableCached: "No changes detected — reused previously exported editable PPTX (no AI calls).",
+      exportEditableReused: "An identical editable PPTX export is already running — tracking its progress.",
       exportStartResponseLost: "The create-task response was interrupted. Checking the backend with the reserved task ID; this does not mean the export failed",
       cannotRefresh: "Cannot refresh: Missing project ID", refreshSuccess: "Refresh successful",
       switchedToMulti: "Switched to per-page templates", switchFailed: "Failed to switch template mode: {{error}}",
@@ -628,7 +632,7 @@ export const SlidePreview: React.FC = () => {
     uploadTemplateAsset,
   } = useProjectStore();
   
-  const { addTask, pollTask: pollExportTask, tasks: exportTasks, restoreActiveTasks } = useExportTasksStore();
+  const { addTask, removeTask, pollTask: pollExportTask, tasks: exportTasks, restoreActiveTasks } = useExportTasksStore();
 
   // Slide preview logic
   useEffect(() => {
@@ -1763,6 +1767,7 @@ export const SlidePreview: React.FC = () => {
             : await apiExportImages(projectId, pageIds);
         const downloadUrl = response.data?.download_url || response.data?.download_url_absolute;
         if (downloadUrl) {
+          const downloadFilename = response.data?.filename || downloadUrl.split(/[?#]/)[0].split('/').pop();
           addTask({
             id: exportTaskId,
             taskId: '',
@@ -1770,12 +1775,13 @@ export const SlidePreview: React.FC = () => {
             type: type as ExportTaskType,
             status: 'COMPLETED',
             downloadUrl,
+            filename: downloadFilename,
             pageIds: pageIds,
           });
-          triggerDownload(downloadUrl);
+          triggerDownload(downloadUrl, downloadFilename);
         }
       } else if (type === 'editable-pptx') {
-        // Async export - create processing task and start polling
+        // Async export - create optimistic processing task and invoke backend
         addTask({
           id: exportTaskId,
           taskId: backendTaskId!,
@@ -1784,24 +1790,65 @@ export const SlidePreview: React.FC = () => {
           status: 'PROCESSING',
           pageIds: pageIds,
         });
-        
-        show({ message: t('slidePreview.exportStarted'), type: 'success' });
-        
+
         const response = await apiExportEditablePPTX(projectId, undefined, pageIds, backendTaskId);
-        const taskId = response.data?.task_id;
-        
-        if (taskId) {
-          // Update task with real taskId
+        const data = response.data;
+        const taskId = data?.task_id;
+
+        if (data?.cached && data?.download_url) {
+          const downloadUrl = data.download_url;
+          const downloadFilename = data.filename || downloadUrl.split(/[?#]/)[0].split('/').pop();
+          const existingCachedTask = useExportTasksStore.getState().tasks.find(
+            (t) => t.id !== exportTaskId && t.taskId === taskId
+          );
+          if (existingCachedTask) {
+            removeTask(exportTaskId);
+          } else {
+            addTask({
+              id: exportTaskId,
+              taskId: taskId || backendTaskId!,
+              projectId,
+              type: 'editable-pptx',
+              status: 'COMPLETED',
+              downloadUrl,
+              filename: downloadFilename,
+              pageIds: pageIds,
+            });
+          }
+          show({ message: t('slidePreview.exportEditableCached'), type: 'success' });
+          triggerDownload(downloadUrl, downloadFilename);
+        } else if (data?.reused && taskId) {
+          const existingRunningTask = useExportTasksStore.getState().tasks.find(
+            (t) => t.id !== exportTaskId && t.taskId === taskId
+          );
+          if (existingRunningTask) {
+            removeTask(exportTaskId);
+            pollExportTask(existingRunningTask.id, projectId, taskId);
+          } else {
+            addTask({
+              id: exportTaskId,
+              taskId,
+              projectId,
+              type: 'editable-pptx',
+              status: 'PROCESSING',
+              filename: data.filename,
+              pageIds: pageIds,
+            });
+            pollExportTask(exportTaskId, projectId, taskId);
+          }
+          show({ message: t('slidePreview.exportEditableReused'), type: 'info' });
+        } else if (taskId) {
+          // Update task with real taskId and start polling
           addTask({
             id: exportTaskId,
             taskId,
             projectId,
             type: 'editable-pptx',
             status: 'PROCESSING',
+            filename: data?.filename,
             pageIds: pageIds,
           });
-          
-          // Start polling in background (non-blocking)
+          show({ message: t('slidePreview.exportStarted'), type: 'success' });
           pollExportTask(exportTaskId, projectId, taskId);
         }
       } else if (type === 'video') {
@@ -1842,6 +1889,7 @@ export const SlidePreview: React.FC = () => {
             projectId,
             type: 'video',
             status: 'PROCESSING',
+            filename: response.data?.filename,
             pageIds: pageIds,
           });
 

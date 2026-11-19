@@ -132,19 +132,36 @@ class Settings(db.Model):
         return list(self.DEFAULT_IMAGE_PROMPT_FIELDS)
 
     def to_dict(self):
-        """Convert to dictionary, enforcing Google Gemini provider and merging .env defaults for None fields."""
+        """Convert to dictionary, supporting Gemini and OpenAI-compatible providers."""
+        from services.ai_providers.openai_compat import parse_provider_format
+        from config import Config
+
         d = Settings._get_config_defaults()
-        raw_provider = (self.ai_provider_format or 'gemini').lower()
-        is_legacy_non_gemini = raw_provider != 'gemini'
-        effective_provider = 'gemini'
+        raw_provider = (self.ai_provider_format or '').strip().lower()
+        parsed_self = parse_provider_format(raw_provider)
+        is_legacy_unsupported = bool(raw_provider) and parsed_self is None
+        effective_provider = parsed_self or parse_provider_format(Config.AI_PROVIDER_FORMAT) or 'gemini'
+
         provider_defaults = Settings._get_api_defaults_for_provider(effective_provider)
-        raw_api_base = None if is_legacy_non_gemini else self.api_base_url
-        raw_api_key = None if is_legacy_non_gemini else self.api_key
+        raw_api_base = None if is_legacy_unsupported else self.api_base_url
+        raw_api_key = None if is_legacy_unsupported else self.api_key
         api_base_url = raw_api_base if raw_api_base is not None else provider_defaults['api_base_url']
         api_key = raw_api_key if raw_api_key is not None else provider_defaults['api_key']
         mineru_token = self._val('mineru_token', d)
         baidu_api_key = self._val('baidu_api_key', d)
         elevenlabs_api_key = self._val('elevenlabs_api_key', d)
+
+        use_env_models = (
+            effective_provider == 'gemini'
+            or parse_provider_format(Config.AI_PROVIDER_FORMAT) == 'openai'
+        )
+        text_model = self.text_model if self.text_model is not None else (d['text_model'] if use_env_models else '')
+        image_model = self.image_model if self.image_model is not None else (d['image_model'] if use_env_models else '')
+        image_caption_model = (
+            self.image_caption_model
+            if self.image_caption_model is not None
+            else (d['image_caption_model'] if use_env_models else '')
+        )
 
         def _key_len(k):
             return len(k) if k and not is_placeholder_api_key(k) else 0
@@ -163,11 +180,11 @@ class Settings(db.Model):
             'image_quality': self._val('image_quality', d) or 'auto',
             'max_description_workers': self._val('max_description_workers', d),
             'max_image_workers': self._val('max_image_workers', d),
-            'text_model': self._val('text_model', d),
-            'image_model': self._val('image_model', d),
+            'text_model': text_model,
+            'image_model': image_model,
             'mineru_api_base': self._val('mineru_api_base', d),
             'mineru_token_length': len(mineru_token) if mineru_token else 0,
-            'image_caption_model': self._val('image_caption_model', d),
+            'image_caption_model': image_caption_model,
             'output_language': self._val('output_language', d),
             'description_generation_mode': self._val('description_generation_mode', d) or 'streaming',
             'description_extra_fields': self.get_description_extra_fields(),
@@ -201,10 +218,11 @@ class Settings(db.Model):
 
     @staticmethod
     def _get_api_defaults_for_provider(provider, prefix=None):
-        """Return Google Gemini API defaults."""
+        """Return API defaults for 'gemini' or 'openai'."""
         from config import Config
+        from services.ai_providers.openai_compat import parse_provider_format
 
-        provider = (provider or '').lower()
+        provider = parse_provider_format(provider)
         if not provider:
             return {
                 'api_base_url': None,
@@ -212,6 +230,11 @@ class Settings(db.Model):
             }
         specific_key = getattr(Config, f'{prefix}_API_KEY', None) if prefix else None
         specific_base = getattr(Config, f'{prefix}_API_BASE', None) if prefix else None
+        if provider == 'openai':
+            return {
+                'api_base_url': specific_base or Config.OPENAI_API_BASE or None,
+                'api_key': specific_key or Config.OPENAI_API_KEY or None,
+            }
         return {
             'api_base_url': specific_base or Config.GOOGLE_API_BASE or None,
             'api_key': specific_key or Config.GOOGLE_API_KEY or None,
@@ -304,13 +327,15 @@ class Settings(db.Model):
 
     @staticmethod
     def _get_config_defaults():
-        """Return a dict of default values from Config/env for settings fields (Google Gemini only)."""
+        """Return a dict of default values from Config/env for settings fields."""
         from config import Config
+        from services.ai_providers.openai_compat import normalize_provider_format
 
+        provider = normalize_provider_format(Config.AI_PROVIDER_FORMAT, default='gemini')
         return {
-            'ai_provider_format': 'gemini',
-            'api_base_url': Config.GOOGLE_API_BASE or None,
-            'api_key': Config.GOOGLE_API_KEY or None,
+            'ai_provider_format': provider,
+            'api_base_url': (Config.OPENAI_API_BASE if provider == 'openai' else Config.GOOGLE_API_BASE) or None,
+            'api_key': (Config.OPENAI_API_KEY if provider == 'openai' else Config.GOOGLE_API_KEY) or None,
             'image_resolution': Config.DEFAULT_RESOLUTION,
             'image_aspect_ratio': Config.DEFAULT_ASPECT_RATIO,
             'image_quality': Config.IMAGE_QUALITY,

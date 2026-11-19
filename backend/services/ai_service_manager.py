@@ -55,27 +55,40 @@ def _hash_secret(val: Optional[str]) -> str:
 
 
 def _get_active_config_signature() -> Tuple:
-    """Compute a lightweight signature of current Gemini credentials, endpoint, and models."""
+    """Compute a lightweight signature of active provider credentials, endpoint, and models."""
     from config import get_config
+    from services.ai_providers.openai_compat import parse_provider_format
     config = get_config()
-    fmt = "gemini"
+    fmt = get_provider_format()
+    use_config_model_defaults = (
+        fmt == "gemini"
+        or parse_provider_format(config.AI_PROVIDER_FORMAT) == "openai"
+    )
+    default_text_model = config.TEXT_MODEL if use_config_model_defaults else ""
+    default_image_model = config.IMAGE_MODEL if use_config_model_defaults else ""
+    default_caption_model = config.IMAGE_CAPTION_MODEL if use_config_model_defaults else ""
+
     text_model = _resolve_setting("TEXT_MODEL") or (
-        current_app.config.get("TEXT_MODEL", config.TEXT_MODEL)
+        current_app.config.get("TEXT_MODEL", default_text_model)
         if has_app_context() and current_app and hasattr(current_app, "config")
-        else config.TEXT_MODEL
-    )
+        else default_text_model
+    ) or ""
     image_model = _resolve_setting("IMAGE_MODEL") or (
-        current_app.config.get("IMAGE_MODEL", config.IMAGE_MODEL)
+        current_app.config.get("IMAGE_MODEL", default_image_model)
         if has_app_context() and current_app and hasattr(current_app, "config")
-        else config.IMAGE_MODEL
-    )
+        else default_image_model
+    ) or ""
     caption_model = _resolve_setting("IMAGE_CAPTION_MODEL") or (
-        current_app.config.get("IMAGE_CAPTION_MODEL", config.IMAGE_CAPTION_MODEL)
+        current_app.config.get("IMAGE_CAPTION_MODEL", default_caption_model)
         if has_app_context() and current_app and hasattr(current_app, "config")
-        else config.IMAGE_CAPTION_MODEL
-    )
-    api_key = _resolve_setting("GOOGLE_API_KEY") or ""
-    api_base = _resolve_setting("GOOGLE_API_BASE") or ""
+        else default_caption_model
+    ) or ""
+    if fmt == "openai":
+        api_key = _resolve_setting("OPENAI_API_KEY") or ""
+        api_base = _resolve_setting("OPENAI_API_BASE") or ""
+    else:
+        api_key = _resolve_setting("GOOGLE_API_KEY") or ""
+        api_base = _resolve_setting("GOOGLE_API_BASE") or ""
     return (
         fmt,
         text_model,

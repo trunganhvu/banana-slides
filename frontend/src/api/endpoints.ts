@@ -705,14 +705,14 @@ export const exportPPTX = async (
     transitionEnabled?: boolean;
     transitionEffects?: string[];
   }
-): Promise<ApiResponse<{ download_url: string; download_url_absolute?: string }>> => {
+): Promise<ApiResponse<{ filename?: string; download_url: string; download_url_absolute?: string }>> => {
   const url = `/api/projects/${projectId}/export/pptx${buildExportQuery({
     page_ids: pageIds,
     transition_enabled: options?.transitionEnabled ? true : undefined,
     transition_effects: options?.transitionEnabled ? options.transitionEffects : undefined,
   })}`;
   const response = await apiClient.get<
-    ApiResponse<{ download_url: string; download_url_absolute?: string }>
+    ApiResponse<{ filename?: string; download_url: string; download_url_absolute?: string }>
   >(url);
   return response.data;
 };
@@ -725,10 +725,10 @@ export const exportPPTX = async (
 export const exportPDF = async (
   projectId: string,
   pageIds?: string[]
-): Promise<ApiResponse<{ download_url: string; download_url_absolute?: string }>> => {
+): Promise<ApiResponse<{ filename?: string; download_url: string; download_url_absolute?: string }>> => {
   const url = `/api/projects/${projectId}/export/pdf${buildPageIdsQuery(pageIds)}`;
   const response = await apiClient.get<
-    ApiResponse<{ download_url: string; download_url_absolute?: string }>
+    ApiResponse<{ filename?: string; download_url: string; download_url_absolute?: string }>
   >(url);
   return response.data;
 };
@@ -739,10 +739,10 @@ export const exportPDF = async (
 export const exportImages = async (
   projectId: string,
   pageIds?: string[]
-): Promise<ApiResponse<{ download_url: string; download_url_absolute?: string }>> => {
+): Promise<ApiResponse<{ filename?: string; download_url: string; download_url_absolute?: string }>> => {
   const url = `/api/projects/${projectId}/export/images${buildPageIdsQuery(pageIds)}`;
   const response = await apiClient.get<
-    ApiResponse<{ download_url: string; download_url_absolute?: string }>
+    ApiResponse<{ filename?: string; download_url: string; download_url_absolute?: string }>
   >(url);
   return response.data;
 };
@@ -758,13 +758,27 @@ export const exportEditablePPTX = async (
   filename?: string,
   pageIds?: string[],
   clientTaskId?: string,
-): Promise<ApiResponse<{ task_id: string }>> => {
+  force?: boolean,
+): Promise<ApiResponse<{
+  task_id: string;
+  filename?: string;
+  download_url?: string;
+  cached?: boolean;
+  reused?: boolean;
+}>> => {
   const response = await apiClient.post<
-    ApiResponse<{ task_id: string }>
+    ApiResponse<{
+      task_id: string;
+      filename?: string;
+      download_url?: string;
+      cached?: boolean;
+      reused?: boolean;
+    }>
   >(`/api/projects/${projectId}/export/editable-pptx`, {
     filename,
     page_ids: pageIds,
     client_task_id: clientTaskId,
+    ...(force ? { force: true } : {}),
   });
   return response.data;
 };
@@ -825,9 +839,9 @@ export const exportVideo = async (
       max_words?: number;
     };
   }
-): Promise<ApiResponse<{ task_id: string }>> => {
+): Promise<ApiResponse<{ task_id: string; filename?: string }>> => {
   const response = await apiClient.post<
-    ApiResponse<{ task_id: string }>
+    ApiResponse<{ task_id: string; filename?: string }>
   >(`/api/projects/${projectId}/export/video`, {
     filename: options?.filename,
     page_ids: options?.pageIds,
@@ -1386,10 +1400,26 @@ export const submitOAuthManualCallback = async (callbackUrl: string): Promise<Ap
 };
 
 /**
- * API API key API
+ * Verify API key
  */
 export const verifyApiKey = async (): Promise<ApiResponse<{ available: boolean; message: string }>> => {
   const response = await apiClient.post<ApiResponse<{ available: boolean; message: string }>>('/api/settings/verify');
+  return response.data;
+};
+
+/**
+ * Discover models from an OpenAI-compatible / self-hosted LLM server
+ */
+export const discoverLocalModels = async (payload: {
+  api_base_url: string;
+  api_key?: string;
+}): Promise<ApiResponse<{
+  models: string[];
+  effective_base_url: string;
+  docker_rewritten: boolean;
+  source: string;
+}>> => {
+  const response = await apiClient.post('/api/settings/discover-models', payload);
   return response.data;
 };
 

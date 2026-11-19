@@ -28,6 +28,8 @@ services:
       - ./uploads:/app/uploads
       # Mount GCP service-account key (Vertex AI only — uncomment if needed)
       # - ./gcp-service-account.json:/app/gcp-sa-key.json:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     healthcheck:
       # Kiểm tra trạng thái hoạt động sử dụng cổng nội bộ cố định 5000 của container

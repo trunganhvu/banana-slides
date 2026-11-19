@@ -6,6 +6,7 @@ import {
   saveClientKeys,
   loadClientKeys,
   getCachedClientConfig,
+  normalizeProviderFormat,
 } from '@/utils/clientKeyStorage';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -503,25 +504,35 @@ const resolveFormBaseUrl = (rawBase: string | null | undefined, effectiveBase: s
 };
 
 const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
-  const wasNonGemini = Boolean(
-    data.ai_provider_format && data.ai_provider_format.toLowerCase() !== 'gemini'
-  );
+  const provider = normalizeProviderFormat(data.ai_provider_format);
   const resolvedBase = resolveFormBaseUrl(data.raw_api_base_url, data.api_base_url);
-  const apiBaseUrl = wasNonGemini || isNonGoogleBaseUrl(resolvedBase) ? '' : resolvedBase;
+  const apiBaseUrl =
+    provider === 'openai'
+      ? (data.raw_api_base_url ?? data.api_base_url ?? '')
+      : (isNonGoogleBaseUrl(resolvedBase) ? '' : resolvedBase);
 
   return {
-    ai_provider_format: 'gemini',
+    ai_provider_format: provider,
     api_base_url: apiBaseUrl,
     api_key: '',
     image_resolution: data.image_resolution || '2K',
     enable_image_quality_control: data.enable_image_quality_control ?? false,
     max_description_workers: data.max_description_workers || 5,
     max_image_workers: data.max_image_workers || 8,
-    text_model: normalizeGoogleModel(data.text_model, 'gemini-3.5-flash-lite'),
-    image_model: normalizeGoogleModel(data.image_model, 'gemini-2.5-flash-image'),
+    text_model:
+      provider === 'openai'
+        ? (data.text_model || '')
+        : normalizeGoogleModel(data.text_model, 'gemini-3.5-flash-lite'),
+    image_model:
+      provider === 'openai'
+        ? (data.image_model || '')
+        : normalizeGoogleModel(data.image_model, 'gemini-2.5-flash-image'),
     mineru_api_base: data.mineru_api_base || '',
     mineru_token: '',
-    image_caption_model: normalizeGoogleModel(data.image_caption_model, 'gemini-3.5-flash-lite'),
+    image_caption_model:
+      provider === 'openai'
+        ? (data.image_caption_model || '')
+        : normalizeGoogleModel(data.image_caption_model, 'gemini-3.5-flash-lite'),
     output_language: (data.output_language as OutputLanguage) || 'vi',
     enable_text_reasoning: data.enable_text_reasoning || false,
     text_max_output_tokens: data.text_max_output_tokens ?? 32768,
@@ -691,11 +702,20 @@ export const Settings: React.FC = () => {
         const form = formDataFromSettings(response.data);
 
         // Restore keys from clientConfig or session cache so inputs are never empty
-        const isClientGemini = !clientConfig?.ai_provider_format || clientConfig.ai_provider_format.toLowerCase() === 'gemini';
+        const activeFormProvider = normalizeProviderFormat(form.ai_provider_format);
         if (clientConfig) {
-          if (isClientGemini && clientConfig.api_key) form.api_key = clientConfig.api_key;
-          if (clientConfig.api_base_url !== undefined && !isNonGoogleBaseUrl(clientConfig.api_base_url)) {
-            form.api_base_url = clientConfig.api_base_url;
+          const clientProvider = normalizeProviderFormat(clientConfig.ai_provider_format);
+          if (clientProvider === activeFormProvider) {
+            if (clientConfig.api_key) form.api_key = clientConfig.api_key;
+            if (
+              clientConfig.api_base_url !== undefined &&
+              (activeFormProvider !== 'gemini' || !isNonGoogleBaseUrl(clientConfig.api_base_url))
+            ) {
+              form.api_base_url = clientConfig.api_base_url;
+            }
+            if (clientConfig.text_model) form.text_model = clientConfig.text_model;
+            if (clientConfig.image_model) form.image_model = clientConfig.image_model;
+            if (clientConfig.image_caption_model) form.image_caption_model = clientConfig.image_caption_model;
           }
           if (clientConfig.mineru_token) form.mineru_token = clientConfig.mineru_token;
           if (clientConfig.baidu_api_key) form.baidu_api_key = clientConfig.baidu_api_key;
@@ -706,10 +726,16 @@ export const Settings: React.FC = () => {
           const sessionSaved = sessionStorage.getItem('banana_saved_keys');
           if (sessionSaved) {
             const parsed = JSON.parse(sessionSaved);
-            const isSessionGemini = !parsed.ai_provider_format || String(parsed.ai_provider_format).toLowerCase() === 'gemini';
-            if (isSessionGemini && !form.api_key && parsed.api_key) form.api_key = parsed.api_key;
-            if (parsed.api_base_url !== undefined && !isNonGoogleBaseUrl(parsed.api_base_url) && !form.api_base_url) {
-              form.api_base_url = parsed.api_base_url;
+            const sessionProvider = normalizeProviderFormat(parsed.ai_provider_format);
+            if (sessionProvider === activeFormProvider) {
+              if (!form.api_key && parsed.api_key) form.api_key = parsed.api_key;
+              if (
+                parsed.api_base_url !== undefined &&
+                !form.api_base_url &&
+                (activeFormProvider !== 'gemini' || !isNonGoogleBaseUrl(parsed.api_base_url))
+              ) {
+                form.api_base_url = parsed.api_base_url;
+              }
             }
             if (!form.mineru_token && parsed.mineru_token) form.mineru_token = parsed.mineru_token;
             if (!form.baidu_api_key && parsed.baidu_api_key) form.baidu_api_key = parsed.baidu_api_key;
@@ -738,40 +764,50 @@ export const Settings: React.FC = () => {
         api_key, mineru_token, baidu_api_key, elevenlabs_api_key,
         ...otherData
       } = formData;
+      const provider = normalizeProviderFormat(otherData.ai_provider_format);
+      const switchedFromDifferentProvider =
+        normalizeProviderFormat(settings?.ai_provider_format) !== provider;
       const payload: Parameters<typeof api.updateSettings>[0] = {
         ...otherData,
-        ai_provider_format: 'gemini',
+        ai_provider_format: provider,
         text_model_source: '',
         image_model_source: '',
         image_caption_model_source: '',
       };
 
-      // Only send sensitive fields if user entered a new value
-      if (api_key) payload.api_key = api_key;
+      // Send api_key when non-empty, or clear old key when switching/saving keyless openai
+      if (api_key) {
+        payload.api_key = api_key;
+      } else if (provider === 'openai' && (switchedFromDifferentProvider || (settings?.api_key_length ?? 0) === 0)) {
+        payload.api_key = '';
+      }
       if (mineru_token) payload.mineru_token = mineru_token;
       if (baidu_api_key) payload.baidu_api_key = baidu_api_key;
       if (elevenlabs_api_key) payload.elevenlabs_api_key = elevenlabs_api_key;
 
       if (storageMode === 'client') {
         const cachedClient = getCachedClientConfig();
-        const effectiveApiKey = api_key || (cachedClient?.api_key ?? '');
+        const sameCachedProvider =
+          cachedClient && normalizeProviderFormat(cachedClient.ai_provider_format) === provider;
+        const effectiveApiKey = api_key || (sameCachedProvider ? (cachedClient?.api_key ?? '') : '');
         const effectiveMineru = mineru_token || cachedClient?.mineru_token;
         const effectiveBaidu = baidu_api_key || cachedClient?.baidu_api_key;
         const effectiveElevenLabs = elevenlabs_api_key || cachedClient?.elevenlabs_api_key;
 
         await saveClientKeys({
-          ai_provider_format: 'gemini',
+          ai_provider_format: provider,
           api_key: effectiveApiKey,
           api_base_url: otherData.api_base_url,
           lazyllm_api_keys: {},
           text_model: otherData.text_model,
           image_model: otherData.image_model,
+          image_caption_model: otherData.image_caption_model,
           mineru_token: effectiveMineru,
           baidu_api_key: effectiveBaidu,
           elevenlabs_api_key: effectiveElevenLabs,
         });
 
-        // Save settings (including entered keys) to backend so both client headers and backend tasks work seamlessly
+        // Save settings to backend so both client headers and backend tasks work seamlessly
         if (effectiveApiKey) payload.api_key = effectiveApiKey;
         const response = await api.updateSettings(payload);
         if (response.data) {
@@ -781,15 +817,15 @@ export const Settings: React.FC = () => {
 
         show({
           message: !i18n.language?.startsWith('en')
-            ? 'Đã lưu API Key!'
-            : 'API Key saved!',
+            ? 'Đã lưu cấu hình AI!'
+            : 'AI settings saved!',
           type: 'success',
         });
 
         // Keep entered keys visible in the inputs!
         setFormData(prev => ({
           ...prev,
-          ai_provider_format: 'gemini',
+          ai_provider_format: provider,
           api_base_url: otherData.api_base_url ?? '',
           api_key: effectiveApiKey,
           mineru_token: effectiveMineru || prev.mineru_token,
@@ -803,15 +839,15 @@ export const Settings: React.FC = () => {
           useApiKeyReminderStore.getState().updateSettings(response.data);
           show({
             message: !i18n.language?.startsWith('en')
-              ? 'Đã lưu API Key!'
-              : 'API Key saved!',
+              ? 'Đã lưu cấu hình AI!'
+              : 'AI settings saved!',
             type: 'success',
           });
 
           // Save keys into session storage so page reload still displays them
           try {
             sessionStorage.setItem('banana_saved_keys', JSON.stringify({
-              ai_provider_format: 'gemini',
+              ai_provider_format: provider,
               api_key: api_key || '',
               api_base_url: otherData.api_base_url ?? '',
               mineru_token: mineru_token || '',
@@ -823,9 +859,9 @@ export const Settings: React.FC = () => {
           // Keep entered keys visible in the inputs!
           setFormData(prev => ({
             ...prev,
-            ai_provider_format: 'gemini',
+            ai_provider_format: provider,
             api_base_url: otherData.api_base_url ?? '',
-            api_key: api_key || prev.api_key,
+            api_key: api_key || (switchedFromDifferentProvider ? '' : prev.api_key),
             mineru_token: mineru_token || prev.mineru_token,
             baidu_api_key: baidu_api_key || prev.baidu_api_key,
             elevenlabs_api_key: elevenlabs_api_key || prev.elevenlabs_api_key,
@@ -889,16 +925,21 @@ export const Settings: React.FC = () => {
   ) => {
     updateServiceTest(key, { status: 'loading' });
     try {
-      // Prepare settings for test (Google Gemini only)
+      // Prepare settings for active provider test
+      const activeProvider = normalizeProviderFormat(formData.ai_provider_format);
       const testSettings: any = {
-        ai_provider_format: 'gemini',
+        ai_provider_format: activeProvider,
         text_model_source: '',
         image_model_source: '',
         image_caption_model_source: '',
       };
 
-      // Only pass non-empty filled values
-      if (formData.api_key) testSettings.api_key = formData.api_key;
+      // Only pass non-empty filled values (except openai explicitly passing '' when empty)
+      if (formData.api_key) {
+        testSettings.api_key = formData.api_key;
+      } else if (activeProvider === 'openai') {
+        testSettings.api_key = '';
+      }
       if (formData.api_base_url) testSettings.api_base_url = formData.api_base_url;
       if (formData.text_model) testSettings.text_model = formData.text_model;
       if (formData.image_model) testSettings.image_model = formData.image_model;

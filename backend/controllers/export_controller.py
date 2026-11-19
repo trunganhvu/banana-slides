@@ -1,7 +1,9 @@
 """
 Export Controller - handles file export endpoints
 """
+import hashlib
 import logging
+import json
 import os
 import io
 import shutil
@@ -19,6 +21,7 @@ from utils import (
     parse_page_ids_from_query, parse_page_ids_from_body, get_filtered_pages
 )
 from utils.client_settings import get_current_client_override, extract_client_settings_from_request
+from utils.filename_utils import build_export_filename
 from services import ExportService, FileService
 from services.ai_service_manager import get_ai_service
 from services.html_slide_service import ensure_html_pages_rendered
@@ -27,6 +30,114 @@ from services.prompts import normalize_narration_generation_config
 logger = logging.getLogger(__name__)
 
 export_bp = Blueprint('export', __name__, url_prefix='/api/projects')
+
+EDITABLE_EXPORT_CACHE_VERSION = 1
+
+
+def _sha256_file(path: Path) -> str:
+    """Return hex SHA-256 digest of a file, or empty string if missing."""
+    try:
+        if not path.is_file():
+            return ''
+        digest = hashlib.sha256()
+        with open(path, 'rb') as f:
+            while True:
+                chunk = f.read(65536)
+                if not chunk:
+                    break
+                digest.update(chunk)
+        return digest.hexdigest()
+    except OSError:
+        return ''
+
+
+def compute_editable_export_cache_key(
+    project,
+    pages,
+    upload_folder: str,
+    *,
+    max_depth: int,
+    export_extractor_method: str,
+    export_inpaint_method: str,
+    enable_icon_subject_extraction: bool,
+    export_allow_partial: bool,
+) -> str:
+    """Compute a deterministic content fingerprint for an editable PPTX export."""
+    upload_root = Path(upload_folder)
+    page_fingerprints = []
+    for page in pages:
+        img_digest = ''
+        if getattr(page, 'generated_image_path', None):
+            raw_img_path = Path(page.generated_image_path)
+            img_path = raw_img_path if raw_img_path.is_absolute() else (upload_root / raw_img_path)
+            img_digest = _sha256_file(img_path)
+
+        html_path = upload_root / project.id / 'pages' / f'{page.id}.html'
+        html_digest = _sha256_file(html_path) if html_path.is_file() else ''
+
+        page_fingerprints.append({
+            'id': page.id,
+            'img': img_digest,
+            'html': html_digest,
+        })
+
+    payload = {
+        'v': EDITABLE_EXPORT_CACHE_VERSION,
+        'max_depth': int(max_depth),
+        'extractor': str(export_extractor_method or 'gemini').lower(),
+        'inpaint': str(export_inpaint_method or 'opencv').lower(),
+        'icon_subject': bool(enable_icon_subject_extraction),
+        'allow_partial': bool(export_allow_partial),
+        'pages': page_fingerprints,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode('utf-8')
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _find_reusable_editable_export_task(project_id: str, cache_key: str, exports_root: Path):
+    """Find a completed cached export file or a live in-flight export matching cache_key."""
+    recent_tasks = (
+        Task.query
+        .filter(
+            Task.project_id == project_id,
+            Task.task_type == 'EXPORT_EDITABLE_PPTX',
+        )
+        .order_by(Task.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    for task in recent_tasks:
+        if task.status != 'COMPLETED':
+            continue
+        progress = task.get_progress() or {}
+        if progress.get('export_cache_key') != cache_key:
+            continue
+        cached_filename = progress.get('filename')
+        if not cached_filename or secure_filename(cached_filename) != cached_filename:
+            continue
+        if exports_root is None:
+            continue
+        file_path = (exports_root / cached_filename).resolve()
+        try:
+            file_path.relative_to(exports_root)
+        except ValueError:
+            continue
+        if file_path.is_file():
+            return 'completed', task, progress
+
+    for task in recent_tasks:
+        if task.status not in ('PENDING', 'PROCESSING', 'RUNNING'):
+            continue
+        progress = task.get_progress() or {}
+        if progress.get('export_cache_key') != cache_key:
+            continue
+        from services.task_watchdog import reconcile_task_for_response
+        reconcile_task_for_response(task)
+        if task.status in ('PENDING', 'PROCESSING', 'RUNNING'):
+            return 'in_flight', task, progress
+
+    return None, None, None
 
 
 def _parse_pptx_transition_effects():
@@ -192,10 +303,13 @@ def export_pptx(project_id):
         # Determine export directory and filename
         exports_dir = file_service._get_exports_dir(project_id)
 
-        # Get filename from query params or use default
-        filename = secure_filename(request.args.get('filename', f'presentation_{project_id}.pptx'))
-        if not filename.endswith('.pptx'):
-            filename += '.pptx'
+        # Build concise friendly filename from project title / content
+        filename = build_export_filename(
+            project,
+            '.pptx',
+            requested_filename=request.args.get('filename'),
+            pages=pages,
+        )
 
         output_path = os.path.join(exports_dir, filename)
 
@@ -218,6 +332,7 @@ def export_pptx(project_id):
 
         return success_response(
             data={
+                "filename": filename,
                 "download_url": download_path,
                 "download_url_absolute": download_url_absolute,
             },
@@ -276,10 +391,13 @@ def export_pdf(project_id):
         # Determine export directory and filename
         exports_dir = file_service._get_exports_dir(project_id)
 
-        # Get filename from query params or use default
-        filename = secure_filename(request.args.get('filename', f'presentation_{project_id}.pdf'))
-        if not filename.endswith('.pdf'):
-            filename += '.pdf'
+        # Build concise friendly filename from project title / content
+        filename = build_export_filename(
+            project,
+            '.pdf',
+            requested_filename=request.args.get('filename'),
+            pages=pages,
+        )
 
         output_path = os.path.join(exports_dir, filename)
 
@@ -293,6 +411,7 @@ def export_pdf(project_id):
 
         return success_response(
             data={
+                "filename": filename,
                 "download_url": download_path,
                 "download_url_absolute": download_url_absolute,
             },
@@ -341,16 +460,28 @@ def export_images(project_id):
             return bad_request("No generated images found for project")
 
         exports_dir = file_service._get_exports_dir(s_project_id)
-        timestamp = int(time.time())
+        requested_img_filename = request.args.get('filename')
 
         if len(image_items) == 1:
             page, path = image_items[0]
             ext = os.path.splitext(path)[1] or '.png'
-            filename = f'slide_{page.id}_{timestamp}{ext}'
+            filename = build_export_filename(
+                project,
+                ext,
+                requested_filename=requested_img_filename,
+                suffix=f'-slide-{page.order_index + 1}',
+                pages=pages,
+            )
             output_path = os.path.join(exports_dir, filename)
             shutil.copy2(path, output_path)
         else:
-            filename = f'slides_{s_project_id}_{timestamp}.zip'
+            filename = build_export_filename(
+                project,
+                '.zip',
+                requested_filename=requested_img_filename,
+                suffix='-slides',
+                pages=pages,
+            )
             output_path = os.path.join(exports_dir, filename)
             with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf:
                 for page, path in image_items:
@@ -362,6 +493,7 @@ def export_images(project_id):
 
         return success_response(
             data={
+                "filename": filename,
                 "download_url": download_path,
                 "download_url_absolute": f"{base_url}{download_path}",
             },
@@ -458,24 +590,97 @@ def export_editable_pptx(project_id):
         if not has_images:
             return bad_request("No generated images found for project")
         
-        # Get parameters from request body
-        data = request.get_json() or {}
-        filename = data.get('filename', f'presentation_editable_{project_id}.pptx')
-        if not filename.endswith('.pptx'):
-            filename += '.pptx'
+        # Get parameters from already-parsed request body
+        filename = build_export_filename(
+            project,
+            '.pptx',
+            requested_filename=data.get('filename'),
+            suffix='-editable',
+            pages=pages,
+        )
         
-        # Backend logic
-        # Backend logic
-        max_depth = data.get('max_depth', 1)  # Backend logic
+        max_depth = data.get('max_depth', 1)
         max_workers = data.get('max_workers', 4)
+        force = bool(data.get('force', False))
         
         # Validate parameters
-        # Backend logic
         if not isinstance(max_depth, int) or max_depth < 1 or max_depth > 5:
             return bad_request("max_depth must be an integer between 1 and 5")
         
         if not isinstance(max_workers, int) or max_workers < 1 or max_workers > 16:
             return bad_request("max_workers must be an integer between 1 and 16")
+
+        export_extractor_method = project.export_extractor_method or 'gemini'
+        export_inpaint_method = project.export_inpaint_method or 'opencv'
+        enable_icon_subject_extraction = (
+            True if project.enable_icon_subject_extraction is None
+            else bool(project.enable_icon_subject_extraction)
+        )
+        export_allow_partial = bool(getattr(project, 'export_allow_partial', False))
+
+        cache_key = compute_editable_export_cache_key(
+            project,
+            pages,
+            current_app.config['UPLOAD_FOLDER'],
+            max_depth=max_depth,
+            export_extractor_method=export_extractor_method,
+            export_inpaint_method=export_inpaint_method,
+            enable_icon_subject_extraction=enable_icon_subject_extraction,
+            export_allow_partial=export_allow_partial,
+        )
+
+        if not force:
+            exports_root = _resolve_exports_root(project_id)
+            hit_kind, cached_task, cached_progress = _find_reusable_editable_export_task(
+                project_id,
+                cache_key,
+                exports_root,
+            )
+            if hit_kind == 'completed':
+                cached_filename = cached_progress.get('filename') or filename
+                cached_download_url = (
+                    cached_progress.get('download_url')
+                    or f"/files/{project_id}/exports/{cached_filename}"
+                )
+                logger.info(
+                    "Reused cached editable PPTX for project %s (task=%s, file=%s, cache_key=%s)",
+                    project_id,
+                    cached_task.id,
+                    cached_filename,
+                    cache_key[:12],
+                )
+                return success_response(
+                    data={
+                        "task_id": cached_task.id,
+                        "filename": cached_filename,
+                        "download_url": cached_download_url,
+                        "method": "recursive_analysis",
+                        "max_depth": max_depth,
+                        "max_workers": max_workers,
+                        "cached": True,
+                        "reused": True,
+                    },
+                    message="Reused previously exported editable PPTX (no AI calls)",
+                )
+            if hit_kind == 'in_flight':
+                logger.info(
+                    "Reused in-flight editable PPTX task for project %s (task=%s, cache_key=%s)",
+                    project_id,
+                    cached_task.id,
+                    cache_key[:12],
+                )
+                return success_response(
+                    data={
+                        "task_id": cached_task.id,
+                        "filename": cached_progress.get('filename') or filename,
+                        "method": "recursive_analysis",
+                        "max_depth": max_depth,
+                        "max_workers": max_workers,
+                        "cached": False,
+                        "reused": True,
+                    },
+                    message="Existing in-flight export task returned",
+                )
 
         # Check AI configuration (Google API Key is required for Gemini Vision)
         client_override = get_current_client_override() or extract_client_settings_from_request()
@@ -486,17 +691,17 @@ def export_editable_pptx(project_id):
         if not api_key:
             from models import Settings
             settings = Settings.get_settings()
-            if settings and settings.google_api_key:
-                api_key = settings.google_api_key
+            if settings and getattr(settings, 'ai_provider_format', 'gemini') == 'gemini' and settings.api_key:
+                api_key = settings.api_key
 
         if not api_key:
             return error_response(
                 'CONFIGURATION_MISSING',
-                'Vui lòng cấu hình Google API Key trong phần Cài đặt để sử dụng tính năng xuất PPTX có thể chỉnh sửa.',
+                'Vui lòng cấu hình Google API Key trong phần Cài đặt để sử dụng tính năng xuất PPTX có thể chỉnh sửa từ ảnh slide.',
                 400,
             )
 
-        # Create task record
+        # Create task record and stamp cache key before commit so concurrent requests deduplicate
         task_kwargs = {
             'project_id': project_id,
             'task_type': 'EXPORT_EDITABLE_PPTX',
@@ -505,6 +710,15 @@ def export_editable_pptx(project_id):
         if client_task_id:
             task_kwargs['id'] = client_task_id
         task = Task(**task_kwargs)
+        task.set_progress({
+            'total': 100,
+            'completed': 0,
+            'failed': 0,
+            'current_step': 'Đang xếp hàng...',
+            'percent': 0,
+            'filename': filename,
+            'export_cache_key': cache_key,
+        })
         db.session.add(task)
         db.session.commit()
         
@@ -520,20 +734,13 @@ def export_editable_pptx(project_id):
             # Get Flask app instance for background task
             app = current_app._get_current_object()
 
-            # Backend logic
-            export_extractor_method = project.export_extractor_method or 'gemini'
-            export_inpaint_method = project.export_inpaint_method or 'opencv'
-            enable_icon_subject_extraction = (
-                True if project.enable_icon_subject_extraction is None
-                else bool(project.enable_icon_subject_extraction)
-            )
             logger.info(
                 f"Export settings: extractor={export_extractor_method}, "
                 f"inpaint={export_inpaint_method}, "
                 f"icon_subject_extraction={enable_icon_subject_extraction}"
             )
 
-            # Backend logic
+            # Submit background task
             task_manager.submit_task(
                 task.id,
                 export_editable_pptx_with_recursive_analysis_task,
@@ -546,6 +753,7 @@ def export_editable_pptx(project_id):
                 export_extractor_method=export_extractor_method,
                 export_inpaint_method=export_inpaint_method,
                 enable_icon_subject_extraction=enable_icon_subject_extraction,
+                cache_key=cache_key,
                 app=app
             )
         except Exception as submission_error:
@@ -579,9 +787,12 @@ def export_editable_pptx(project_id):
         return success_response(
             data={
                 "task_id": task.id,
+                "filename": filename,
                 "method": "recursive_analysis",
                 "max_depth": max_depth,
-                "max_workers": max_workers
+                "max_workers": max_workers,
+                "cached": False,
+                "reused": False,
             },
             message="Export task created (using recursive analysis)"
         )
@@ -618,14 +829,7 @@ def export_video(project_id):
             return not_found('Project')
 
         data = request.get_json() or {}
-
-        # Backend logic
-        raw_filename = data.get('filename', f'narration_{project_id}.mp4')
-        filename = secure_filename(raw_filename)
-        if not filename:
-            filename = f'narration_{project_id}.mp4'
-        if not filename.endswith('.mp4'):
-            filename += '.mp4'
+        requested_filename = data.get('filename')
 
         voice = data.get('voice', current_app.config.get('TTS_DEFAULT_VOICE_ZH', 'zh-CN-XiaoxiaoNeural'))
         rate = data.get('rate', current_app.config.get('TTS_DEFAULT_RATE', '+0%'))
@@ -651,6 +855,14 @@ def export_video(project_id):
 
         if not pages:
             return bad_request("No pages found for project")
+
+        filename = build_export_filename(
+            project,
+            '.mp4',
+            requested_filename=requested_filename,
+            suffix='-video',
+            pages=pages,
+        )
 
         has_images = any(page.generated_image_path for page in pages)
         if not has_images and not include_no_image_pages:
@@ -700,6 +912,7 @@ def export_video(project_id):
         return success_response(
             data={
                 "task_id": task.id,
+                "filename": filename,
                 "voice": voice,
                 "generate_narration": generate_narration,
                 "enable_ken_burns": enable_ken_burns,

@@ -3,25 +3,34 @@ OpenAI SDK implementation for text generation
 """
 import base64
 import logging
-from typing import Generator
-from openai import OpenAI
+import mimetypes
+from typing import Generator, Optional
+from openai import BadRequestError, OpenAI
 from .base import get_text_output_limit, TextProvider, strip_think_tags
-from config import get_config
+from ..openai_compat import is_local_or_private_base_url
+from config import Config, get_config
 
 logger = logging.getLogger(__name__)
 
 
 class OpenAITextProvider(TextProvider):
-    """Text generation using OpenAI SDK (compatible with Gemini via proxy)"""
+    """Text generation using OpenAI SDK (compatible with Gemini proxies and self-hosted local LLMs)"""
     
-    def __init__(self, api_key: str, api_base: str = None, model: str = "gemini-3-flash-preview"):
+    def __init__(
+        self,
+        api_key: str,
+        api_base: str = None,
+        model: str = "gemini-3-flash-preview",
+        is_local: Optional[bool] = None,
+    ):
         """
         Initialize OpenAI text provider
         
         Args:
             api_key: API key
-            api_base: API base URL (e.g., https://api.inferera.com/v1)
+            api_base: API base URL (e.g., http://localhost:11434/v1)
             model: Model name to use
+            is_local: Whether endpoint is a local/self-hosted runner
         """
         config = get_config()
         self.client = OpenAI(
@@ -31,15 +40,51 @@ class OpenAITextProvider(TextProvider):
             max_retries=config.OPENAI_MAX_RETRIES  # set max retries from config
         )
         self.model = model
+        self.is_local = is_local if is_local is not None else is_local_or_private_base_url(api_base)
         self.request_timeout_seconds = config.OPENAI_TIMEOUT
         self.max_attempts = config.OPENAI_MAX_RETRIES + 1
     
     def _output_limit_params(self) -> dict:
         # OpenAI reasoning families use max_completion_tokens; compatible
         # Claude/Gemini and older chat models use max_tokens.
+        limit = get_text_output_limit()
+        if self.is_local and limit == Config.TEXT_MAX_OUTPUT_TOKENS:
+            return {}
         model = self.model.lower().rsplit('/', 1)[-1]
         key = 'max_completion_tokens' if model.startswith(('gpt-5', 'o1', 'o3', 'o4')) else 'max_tokens'
-        return {key: get_text_output_limit()}
+        return {key: limit}
+
+    @staticmethod
+    def _is_output_limit_error(exc: Exception) -> bool:
+        status_code = getattr(exc, 'status_code', None)
+        if not isinstance(exc, BadRequestError) and status_code != 400:
+            return False
+        msg = str(exc).lower()
+        return any(token in msg for token in ('max_tokens', 'max_completion_tokens', 'context'))
+
+    def _create_chat_completion(self, *, messages: list, stream: bool):
+        limit_params = self._output_limit_params()
+        try:
+            return self.client.chat.completions.create(
+                model=self.model,
+                **limit_params,
+                messages=messages,
+                stream=stream,
+            )
+        except Exception as exc:
+            if limit_params and self._is_output_limit_error(exc):
+                logger.warning(
+                    "Model %s rejected %s; retrying without output token cap: %s",
+                    self.model,
+                    list(limit_params.keys())[0],
+                    exc,
+                )
+                return self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    stream=stream,
+                )
+            raise
 
     def generate_text(self, prompt: str, thinking_budget: int = 0) -> str:
         """
@@ -52,21 +97,15 @@ class OpenAITextProvider(TextProvider):
         Returns:
             Generated text
         """
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self._output_limit_params(),
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
+        response = self._create_chat_completion(
+            messages=[{"role": "user", "content": prompt}],
             stream=False,
         )
-        return strip_think_tags(response.choices[0].message.content)
+        return strip_think_tags(response.choices[0].message.content or "")
 
     def generate_text_stream(self, prompt: str, thinking_budget: int = 0) -> Generator[str, None, None]:
         """Stream text using OpenAI SDK with stream=True."""
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self._output_limit_params(),
+        response = self._create_chat_completion(
             messages=[{"role": "user", "content": prompt}],
             stream=True,
         )
@@ -79,10 +118,9 @@ class OpenAITextProvider(TextProvider):
         """Generate text with image input using OpenAI-compatible chat completions."""
         with open(image_path, "rb") as image_file:
             encoded = base64.b64encode(image_file.read()).decode("ascii")
+        mime_type = mimetypes.guess_type(image_path)[0] or "image/png"
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self._output_limit_params(),
+        response = self._create_chat_completion(
             messages=[
                 {
                     "role": "user",
@@ -90,7 +128,7 @@ class OpenAITextProvider(TextProvider):
                         {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/png;base64,{encoded}"},
+                            "image_url": {"url": f"data:{mime_type};base64,{encoded}"},
                         },
                     ],
                 }
@@ -100,7 +138,7 @@ class OpenAITextProvider(TextProvider):
 
         message_content = response.choices[0].message.content
         if isinstance(message_content, str):
-            return strip_think_tags(message_content)
+            return strip_think_tags(message_content or "")
 
         parts = []
         for item in message_content or []:

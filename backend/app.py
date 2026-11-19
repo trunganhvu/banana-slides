@@ -274,22 +274,17 @@ def _load_settings_to_config(app):
     try:
         settings = Settings.get_settings()
         
-        # Load AI provider format (always sync, has default value)
-        if settings.ai_provider_format:
-            app.config['AI_PROVIDER_FORMAT'] = settings.ai_provider_format
-            logging.info(f"Loaded AI_PROVIDER_FORMAT from settings: {settings.ai_provider_format}")
-        
-        # Load API configuration
-        # Note: We load even if value is None/empty to allow clearing settings
-        # But we only log if there's an actual value
-        # Backend logic
-        # Backend logic
-        # Backend logic
-        active_format = (settings.ai_provider_format or Config.AI_PROVIDER_FORMAT or '').lower()
+        from services.ai_providers.openai_compat import normalize_provider_format, parse_provider_format
+        active_format = normalize_provider_format(
+            settings.ai_provider_format or Config.AI_PROVIDER_FORMAT or 'gemini',
+            default='gemini',
+        )
+        app.config['AI_PROVIDER_FORMAT'] = active_format
+        logging.info(f"Loaded AI_PROVIDER_FORMAT from settings: {active_format}")
+
         active_api_keys = {
             'gemini': ('GOOGLE_API_KEY', 'GOOGLE_API_BASE'),
             'openai': ('OPENAI_API_KEY', 'OPENAI_API_BASE'),
-            'volcengine': ('VOLCENGINE_API_KEY', 'VOLCENGINE_API_BASE'),
         }.get(active_format)
 
         if settings.api_base_url is not None:
@@ -326,14 +321,19 @@ def _load_settings_to_config(app):
         sync_resource_limits(desc_workers, img_workers)
         logging.info(f"Loaded worker settings: desc={desc_workers}, img={img_workers}")
 
-        # Load model settings (FIX for Issue #136: these were missing before)
+        # Load model settings (do not leak Gemini defaults into OpenAI-compatible self-hosted mode)
+        env_is_openai = parse_provider_format(Config.AI_PROVIDER_FORMAT) == 'openai'
         if settings.text_model:
             app.config['TEXT_MODEL'] = settings.text_model
             logging.info(f"Loaded TEXT_MODEL from settings: {settings.text_model}")
-        
+        elif active_format == 'openai' and not env_is_openai:
+            app.config['TEXT_MODEL'] = ''
+
         if settings.image_model:
             app.config['IMAGE_MODEL'] = settings.image_model
             logging.info(f"Loaded IMAGE_MODEL from settings: {settings.image_model}")
+        elif active_format == 'openai' and not env_is_openai:
+            app.config['IMAGE_MODEL'] = ''
 
         # Backend logic
         # Backend logic
@@ -354,6 +354,8 @@ def _load_settings_to_config(app):
         if settings.image_caption_model:
             app.config['IMAGE_CAPTION_MODEL'] = settings.image_caption_model
             logging.info(f"Loaded IMAGE_CAPTION_MODEL from settings: {settings.image_caption_model}")
+        elif active_format == 'openai' and not env_is_openai:
+            app.config['IMAGE_CAPTION_MODEL'] = ''
         
         # Load output language
         if settings.output_language:

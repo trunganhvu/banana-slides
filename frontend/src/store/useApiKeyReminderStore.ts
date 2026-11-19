@@ -15,7 +15,14 @@ export function isAiKeyConfigured(settings: Settings | null | undefined): boolea
 
   if (!settings) return false;
 
-  // Google Gemini only
+  const provider = (settings.ai_provider_format || 'gemini').trim().toLowerCase();
+  if (provider === 'openai') {
+    return (
+      Boolean(settings.api_base_url && settings.api_base_url.trim().length > 0) ||
+      (settings.api_key_length ?? 0) > 0
+    );
+  }
+
   return (settings.api_key_length ?? 0) > 0 || (settings.text_api_key_length ?? 0) > 0;
 }
 

@@ -2094,6 +2094,7 @@ def export_editable_pptx_with_recursive_analysis_task(
     export_extractor_method: str = 'gemini',
     export_inpaint_method: str = 'opencv',
     enable_icon_subject_extraction: bool = True,
+    cache_key: str = None,
     app=None
 ):
     """
@@ -2197,6 +2198,22 @@ def export_editable_pptx_with_recursive_analysis_task(
                 db_session=db.session,
             )
 
+            effective_cache_key = cache_key
+            try:
+                from controllers.export_controller import compute_editable_export_cache_key
+                effective_cache_key = compute_editable_export_cache_key(
+                    project,
+                    pages,
+                    app.config['UPLOAD_FOLDER'],
+                    max_depth=max_depth,
+                    export_extractor_method=export_extractor_method,
+                    export_inpaint_method=export_inpaint_method,
+                    enable_icon_subject_extraction=enable_icon_subject_extraction,
+                    export_allow_partial=export_allow_partial,
+                )
+            except Exception as key_err:
+                logger.warning(f"Failed to recompute editable export cache key: {key_err}")
+
             image_paths = []
             for page in pages:
                 if page.generated_image_path:
@@ -2211,14 +2228,18 @@ def export_editable_pptx_with_recursive_analysis_task(
             
             # Backend logic
             task = Task.query.get(task_id)
-            task.set_progress({
-                "total": 100,  # Backend logic
+            initial_progress = {
+                "total": 100,
                 "completed": 0,
                 "failed": 0,
                 "current_step": "Đang chuẩn bị...",
                 "percent": 0,
-                "messages": ["Bắt đầu xuất bản có thể chỉnh sửaPPTX..."], # Nhật ký thông báo
-            })
+                "filename": filename,
+                "messages": ["Bắt đầu xuất bản có thể chỉnh sửaPPTX..."],
+            }
+            if effective_cache_key:
+                initial_progress["export_cache_key"] = effective_cache_key
+            task.set_progress(initial_progress)
             db.session.commit()
             
             # Backend logic
@@ -2243,14 +2264,18 @@ def export_editable_pptx_with_recursive_analysis_task(
                     # Backend logic
                     task = Task.query.get(task_id)
                     if task:
-                        task.set_progress({
+                        progress_payload = {
                             "total": 100,
                             "completed": percent,
                             "failed": 0,
                             "current_step": message,
                             "percent": percent,
+                            "filename": filename,
                             "messages": progress_messages.copy(),
-                        })
+                        }
+                        if effective_cache_key:
+                            progress_payload["export_cache_key"] = effective_cache_key
+                        task.set_progress(progress_payload)
                         db.session.commit()
                 except Exception as e:
                     logger.warning(f"Cập nhật tiến độ thất bại: {e}")
@@ -2335,7 +2360,7 @@ def export_editable_pptx_with_recursive_analysis_task(
                 task.status = 'COMPLETED'
                 task.completed_at = datetime.utcnow()
                 touch_task(task_id, "Hoàn tất")
-                task.set_progress({
+                completed_progress = {
                     "total": 100,
                     "completed": 100,
                     "failed": 0,
@@ -2346,9 +2371,12 @@ def export_editable_pptx_with_recursive_analysis_task(
                     "filename": filename,
                     "method": "recursive_analysis",
                     "max_depth": max_depth,
-                    "warnings": warning_messages,  # Backend logic
-                    "warning_details": export_warnings.to_dict() if export_warnings else {}  # Backend logic
-                })
+                    "warnings": warning_messages,
+                    "warning_details": export_warnings.to_dict() if export_warnings else {},
+                }
+                if effective_cache_key:
+                    completed_progress["export_cache_key"] = effective_cache_key
+                task.set_progress(completed_progress)
                 db.session.commit()
                 if task.status == 'COMPLETED':
                     logger.info(f"✓ Tác vụ {task_id} Hoàn tất - Xuất phân tích đệ quy thành công (độ sâu={max_depth}) ")

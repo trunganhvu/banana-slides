@@ -81,7 +81,7 @@ class Config:
     
     # Backend logic
     OPENAI_API_KEY = _clean_env_key('OPENAI_API_KEY')  # Backend logic
-    OPENAI_API_BASE = os.getenv('OPENAI_API_BASE') or 'https://api.inferera.com/v1'
+    OPENAI_API_BASE = os.getenv('OPENAI_API_BASE') or ''
     OPENAI_TIMEOUT = float(os.getenv('OPENAI_TIMEOUT', '480.0'))  # Backend logic
     OPENAI_MAX_RETRIES = int(os.getenv('OPENAI_MAX_RETRIES', '2'))  # Backend logic
 

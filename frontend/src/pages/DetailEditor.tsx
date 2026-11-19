@@ -612,7 +612,8 @@ export const DetailEditor: React.FC = () => {
       const res = format === 'pptx' ? await exportPPTX(projectId) : await exportPDF(projectId);
       const url = res.data?.download_url || res.data?.file_url;
       if (url) {
-        triggerDownload(url);
+        const downloadFilename = res.data?.filename || url.split(/[?#]/)[0].split('/').pop();
+        triggerDownload(url, downloadFilename);
         show({ message: t('detail.messages.exportSuccess'), type: 'success' });
       } else {
         show({ message: t('common.unknownError'), type: 'error' });

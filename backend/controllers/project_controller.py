@@ -1,9 +1,11 @@
 """
 Project Controller - handles project-related endpoints
 """
+import html as html_lib
 import json
 import logging
 import os
+import re
 import subprocess
 import traceback
 from datetime import datetime
@@ -1572,6 +1574,18 @@ def create_ppt_renovation_project():
             if not slides:
                 raise ValueError("No slides detected in HTML file")
 
+            if not project.project_title:
+                title_match = re.search(r'<title[^>]*>(.*?)</title>', html_content, re.IGNORECASE | re.DOTALL)
+                html_doc_title = ''
+                if title_match:
+                    raw_title = re.sub(r'<[^>]+>', '', title_match.group(1))
+                    html_doc_title = re.sub(r'\s+', ' ', html_lib.unescape(raw_title)).strip()
+                first_slide_title = str(slides[0].get('title') or '').strip() if slides else ''
+                file_stem = Path(file.filename).stem.strip()
+                candidate_title = html_doc_title or first_slide_title or file_stem
+                if candidate_title:
+                    project.project_title = candidate_title[:255]
+
             pages_dir = project_dir / "pages"
             pages_dir.mkdir(parents=True, exist_ok=True)
             split_dir = project_dir / "split_pages"
@@ -1726,6 +1740,11 @@ def create_ppt_renovation_project():
                 img.close()
 
                 pages_list.append(page)
+
+            if not project.project_title:
+                file_stem = Path(file.filename).stem.strip()
+                if file_stem:
+                    project.project_title = file_stem[:255]
 
             db.session.commit()
 

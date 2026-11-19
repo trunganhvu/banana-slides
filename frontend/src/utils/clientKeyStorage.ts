@@ -13,6 +13,7 @@ export interface ClientKeysConfig {
   lazyllm_api_keys: Record<string, string>;
   text_model?: string;
   image_model?: string;
+  image_caption_model?: string;
   mineru_token?: string;
   baidu_api_key?: string;
   elevenlabs_api_key?: string;
@@ -170,6 +171,27 @@ async function decryptData(cipherString: string): Promise<string | null> {
   }
 }
 
+export function normalizeProviderFormat(raw?: string | null): 'gemini' | 'openai' {
+  const normalized = (raw || '').trim().toLowerCase();
+  if (
+    normalized === 'openai' ||
+    normalized === 'local' ||
+    normalized === 'self_hosted' ||
+    normalized === 'self-hosted' ||
+    normalized === 'openai_compatible' ||
+    normalized === 'openai-compatible'
+  ) {
+    return 'openai';
+  }
+  return 'gemini';
+}
+
+function isSupportedClientProvider(raw?: string | null): boolean {
+  const normalized = (raw || '').trim().toLowerCase();
+  if (!normalized) return true;
+  return normalized === 'gemini' || normalizeProviderFormat(normalized) === 'openai';
+}
+
 function updateCachedHeaders(config: ClientKeysConfig | null) {
   inMemoryConfig = config;
   if (!config || config.storageMode !== 'client') {
@@ -177,9 +199,10 @@ function updateCachedHeaders(config: ClientKeysConfig | null) {
     return;
   }
 
+  const provider = normalizeProviderFormat(config.ai_provider_format);
   const headers: Record<string, string> = {
     'X-Client-Storage-Mode': 'client',
-    'X-Client-Provider': 'gemini',
+    'X-Client-Provider': provider,
   };
 
   if (config.api_key) {
@@ -231,20 +254,18 @@ export async function initClientKeyStorage(): Promise<ClientKeysConfig | null> {
     }
 
     const parsed: ClientKeysConfig = JSON.parse(plain);
-    const isNonGemini = Boolean(
-      parsed.ai_provider_format && parsed.ai_provider_format.toLowerCase() !== 'gemini'
-    );
-    const normalized: ClientKeysConfig = isNonGemini
+    const supported = isSupportedClientProvider(parsed.ai_provider_format);
+    const normalized: ClientKeysConfig = supported
       ? {
+          ...parsed,
+          ai_provider_format: normalizeProviderFormat(parsed.ai_provider_format),
+        }
+      : {
           ...parsed,
           ai_provider_format: 'gemini',
           api_key: '',
           api_base_url: '',
           lazyllm_api_keys: {},
-        }
-      : {
-          ...parsed,
-          ai_provider_format: 'gemini',
         };
     updateCachedHeaders(normalized);
     isInitialized = true;
@@ -268,10 +289,11 @@ export async function saveClientKeys(config: Partial<ClientKeysConfig>): Promise
     lazyllm_api_keys: {},
   };
 
+  const targetProvider = normalizeProviderFormat(config.ai_provider_format ?? current.ai_provider_format);
   const updated: ClientKeysConfig = {
     ...current,
     ...config,
-    ai_provider_format: 'gemini',
+    ai_provider_format: targetProvider,
     lazyllm_api_keys: {},
     storageMode: 'client',
     updatedAt: Date.now(),
@@ -331,6 +353,13 @@ export function hasClientKeyConfigured(): boolean {
 
   if (inMemoryConfig.storageMode !== 'client') {
     return false;
+  }
+
+  if (normalizeProviderFormat(inMemoryConfig.ai_provider_format) === 'openai') {
+    return (
+      Boolean(inMemoryConfig.api_base_url && inMemoryConfig.api_base_url.trim().length > 0) ||
+      Boolean(inMemoryConfig.api_key && inMemoryConfig.api_key.trim().length > 0)
+    );
   }
 
   return Boolean(inMemoryConfig.api_key && inMemoryConfig.api_key.trim().length > 0);
