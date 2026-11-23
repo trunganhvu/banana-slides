@@ -5,6 +5,8 @@ from sqlalchemy import inspect as sqlalchemy_inspect, text
 
 def repair_desktop_settings_schema(db):
     """Repair columns for desktop databases created by older builds."""
+    if db.engine.dialect.name != 'sqlite':
+        return
     repair_specs = {
         'settings': {
             'ai_provider_format': 'VARCHAR(20)',

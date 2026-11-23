@@ -30,7 +30,7 @@ load_dotenv(dotenv_path=_env_file, override=not os.getenv('DATABASE_PATH'))
 from flask import Flask
 from flask_cors import CORS
 from models import db
-from config import Config, DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_PORT
+from config import Config, DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_PORT, normalize_database_url, build_engine_options
 from controllers.material_controller import material_bp, material_global_bp
 from controllers.reference_file_controller import reference_file_bp
 from controllers.settings_controller import settings_bp
@@ -74,7 +74,7 @@ def create_app():
     # Allow DATABASE_URL env var to override config at runtime (supports test isolation)
     database_url_env = os.getenv('DATABASE_URL')
     if database_url_env and not db_path_env:
-        app.config['SQLALCHEMY_DATABASE_URI'] = database_url_env
+        app.config['SQLALCHEMY_DATABASE_URI'] = normalize_database_url(database_url_env)
 
     # Ensure instance directory exists for the default SQLite path in Config
     backend_dir = os.path.dirname(os.path.abspath(__file__))
@@ -136,6 +136,14 @@ def create_app():
     except (ValueError, TypeError):
         werkzeug_logger.setLevel(logging.INFO)
     logging.getLogger('volcenginesdkarkruntime').setLevel(logging.WARNING)
+
+    # Ensure SQLAlchemy URI and engine options match the active database backend
+    app.config['SQLALCHEMY_DATABASE_URI'] = normalize_database_url(
+        app.config['SQLALCHEMY_DATABASE_URI']
+    )
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = build_engine_options(
+        app.config['SQLALCHEMY_DATABASE_URI']
+    )
 
     # Initialize extensions
     db.init_app(app)

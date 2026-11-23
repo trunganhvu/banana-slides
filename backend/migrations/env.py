@@ -41,11 +41,15 @@ def get_url() -> str:
     """
     override = (config.get_main_option("sqlalchemy.url") or "").strip()
     if override:
+        if override.startswith("postgres://"):
+            override = "postgresql://" + override[len("postgres://"):]
         _ensure_sqlite_dir(override)
         return override
 
     env_url = (os.getenv("DATABASE_URL") or "").strip()
     if env_url:
+        if env_url.startswith("postgres://"):
+            env_url = "postgresql://" + env_url[len("postgres://"):]
         _ensure_sqlite_dir(env_url)
         return env_url
 

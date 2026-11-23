@@ -34,6 +34,40 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR)
 DEFAULT_FRONTEND_PORT = 3011
 DEFAULT_BACKEND_PORT = 5011
 
+def normalize_database_url(url: Optional[str]) -> str:
+    """Normalize postgres:// URLs for SQLAlchemy 2.x compatibility."""
+    if not url:
+        return ''
+    cleaned = url.strip()
+    if cleaned.startswith('postgres://'):
+        return 'postgresql://' + cleaned[len('postgres://'):]
+    return cleaned
+
+
+def build_engine_options(database_uri: Optional[str]) -> dict:
+    """Return SQLAlchemy engine options tailored to SQLite or PostgreSQL."""
+    uri = normalize_database_url(database_uri)
+    if not uri or uri.startswith('sqlite'):
+        return {
+            'connect_args': {
+                'check_same_thread': False,
+                'timeout': 30,
+            },
+            'pool_pre_ping': True,
+            'pool_recycle': 3600,
+        }
+    return {
+        'connect_args': {
+            'connect_timeout': 15,
+        },
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 5,
+        'max_overflow': 10,
+        'pool_timeout': 30,
+    }
+
+
 # Backend logic
 class Config:
     """Base configuration"""
@@ -42,21 +76,13 @@ class Config:
     # Backend logic
     # Use absolute path to avoid WSL path issues
     db_path = os.path.join(BASE_DIR, 'instance', 'database.db')
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL', 
-        f'sqlite:///{db_path}'
+    SQLALCHEMY_DATABASE_URI = normalize_database_url(
+        os.getenv('DATABASE_URL', f'sqlite:///{db_path}')
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Backend logic
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'connect_args': {
-            'check_same_thread': False,  # Backend logic
-            'timeout': 30  # Backend logic
-        },
-        'pool_pre_ping': True,  # Backend logic
-        'pool_recycle': 3600,  # Backend logic
-    }
+    SQLALCHEMY_ENGINE_OPTIONS = build_engine_options(SQLALCHEMY_DATABASE_URI)
     
     # Backend logic
     UPLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'uploads')

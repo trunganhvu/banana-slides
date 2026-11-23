@@ -1,20 +1,8 @@
 """Database models package"""
 from flask_sqlalchemy import SQLAlchemy
 
-# Backend logic
-db = SQLAlchemy(
-    engine_options={
-        'connect_args': {
-            'check_same_thread': False,  # Backend logic
-            'timeout': 30,  # Backend logic
-        },
-        'pool_pre_ping': True,  # Backend logic
-        'pool_recycle': 3600,  # Backend logic
-        'pool_size': 10,
-        'max_overflow': 50,
-        'pool_timeout': 30,  # Backend logic
-    }
-)
+# Engine options are configured dynamically per database URI via app.config
+db = SQLAlchemy()
 
 from .project import Project
 from .user import User

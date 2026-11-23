@@ -6,9 +6,30 @@ from utils import error_response, not_found
 from utils.path_utils import find_file_with_prefix
 import os
 from pathlib import Path
+from typing import Optional
 from werkzeug.utils import secure_filename
 
 file_bp = Blueprint('files', __name__, url_prefix='/files')
+
+
+def _is_safe_path_segment(segment: str) -> bool:
+    """Validate a single URL path segment against traversal or separator injection."""
+    if not segment or segment in ('.', '..'):
+        return False
+    return '/' not in segment and '\\' not in segment and '\x00' not in segment
+
+
+def _resolve_contained_path(base_dir: Path, *parts: str) -> Optional[Path]:
+    """Resolve a path under base_dir and verify strict directory containment."""
+    try:
+        resolved_base = base_dir.resolve()
+        resolved_target = base_dir.joinpath(*parts).resolve()
+        resolved_target.relative_to(resolved_base)
+    except (ValueError, OSError):
+        return None
+    if resolved_target == resolved_base:
+        return None
+    return resolved_target
 
 
 @file_bp.route('/<project_id>/<file_type>/<filename>', methods=['GET'])
@@ -24,27 +45,27 @@ def serve_file(project_id, file_type, filename):
     try:
         if file_type not in ['template', 'pages', 'materials', 'exports']:
             return not_found('File')
-        
-        # Construct file path
-        file_dir = os.path.join(
-            current_app.config['UPLOAD_FOLDER'],
-            project_id,
-            file_type
-        )
-        
-        # Check if directory exists
-        if not os.path.exists(file_dir):
+
+        if not _is_safe_path_segment(project_id) or not _is_safe_path_segment(filename):
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+
+        upload_root = Path(current_app.config['UPLOAD_FOLDER'])
+        file_dir = _resolve_contained_path(upload_root, project_id, file_type)
+        if file_dir is None:
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+        if not file_dir.exists() or not file_dir.is_dir():
             return not_found('File')
-        
-        # Check if file exists
-        file_path = os.path.join(file_dir, filename)
-        if not os.path.exists(file_path):
+
+        file_path = _resolve_contained_path(file_dir, filename)
+        if file_path is None:
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+        if not file_path.exists() or not file_path.is_file():
             return not_found('File')
-        
+
         # Exports should be downloaded rather than opened in browser for better UX and
         # to keep E2E download assertions stable.
         as_attachment = file_type == 'exports'
-        return send_from_directory(file_dir, filename, as_attachment=as_attachment)
+        return send_from_directory(str(file_dir), file_path.name, as_attachment=as_attachment)
     
     except Exception as e:
         return error_response('SERVER_ERROR', str(e), 500)
@@ -96,24 +117,24 @@ def serve_user_template(template_id, filename):
         filename: File name
     """
     try:
-        # Construct file path
-        file_dir = os.path.join(
-            current_app.config['UPLOAD_FOLDER'],
-            'user-templates',
-            template_id
-        )
-        
-        # Check if directory exists
-        if not os.path.exists(file_dir):
+        if not _is_safe_path_segment(template_id) or not _is_safe_path_segment(filename):
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+
+        user_templates_root = Path(current_app.config['UPLOAD_FOLDER']) / 'user-templates'
+        file_dir = _resolve_contained_path(user_templates_root, template_id)
+        if file_dir is None:
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+        if not file_dir.exists() or not file_dir.is_dir():
             return not_found('File')
-        
-        # Check if file exists
-        file_path = os.path.join(file_dir, filename)
-        if not os.path.exists(file_path):
+
+        file_path = _resolve_contained_path(file_dir, filename)
+        if file_path is None:
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+        if not file_path.exists() or not file_path.is_file():
             return not_found('File')
-        
+
         # Serve file
-        return send_from_directory(file_dir, filename)
+        return send_from_directory(str(file_dir), file_path.name)
     
     except Exception as e:
         return error_response('SERVER_ERROR', str(e), 500)
@@ -129,23 +150,21 @@ def serve_global_material(filename):
     """
     try:
         safe_filename = secure_filename(filename)
-        # Construct file path
-        file_dir = os.path.join(
-            current_app.config['UPLOAD_FOLDER'],
-            'materials'
-        )
-        
-        # Check if directory exists
-        if not os.path.exists(file_dir):
+        if not safe_filename:
             return not_found('File')
-        
-        # Check if file exists
-        file_path = os.path.join(file_dir, safe_filename)
-        if not os.path.exists(file_path):
+
+        materials_dir = Path(current_app.config['UPLOAD_FOLDER']) / 'materials'
+        if not materials_dir.exists() or not materials_dir.is_dir():
             return not_found('File')
-        
+
+        file_path = _resolve_contained_path(materials_dir, safe_filename)
+        if file_path is None:
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+        if not file_path.exists() or not file_path.is_file():
+            return not_found('File')
+
         # Serve file
-        return send_from_directory(file_dir, safe_filename)
+        return send_from_directory(str(materials_dir.resolve()), file_path.name)
     
     except Exception as e:
         return error_response('SERVER_ERROR', str(e), 500)
@@ -161,38 +180,37 @@ def serve_mineru_file(extract_id, filepath):
         filepath: Relative file path within the extract
     """
     try:
-        root_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'mineru_files', extract_id)
-        full_path = Path(root_dir) / filepath
+        if not _is_safe_path_segment(extract_id):
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
 
-        # This prevents path traversal attacks
-        resolved_root_dir = Path(root_dir).resolve()
-        
+        mineru_root = Path(current_app.config['UPLOAD_FOLDER']) / 'mineru_files'
+        resolved_root_dir = _resolve_contained_path(mineru_root, extract_id)
+        if resolved_root_dir is None:
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+
+        full_path = resolved_root_dir / filepath
         try:
-            # Check if the path is trying to escape the root directory
+            # Verify strict containment inside extract_id directory (prevents sibling-prefix escape)
             resolved_full_path = full_path.resolve()
-            if not str(resolved_full_path).startswith(str(resolved_root_dir)):
-                return error_response('INVALID_PATH', 'Invalid file path', 403)
+            resolved_full_path.relative_to(resolved_root_dir)
         except Exception:
-            # If we can't resolve the path at all, it's invalid
+            return error_response('INVALID_PATH', 'Invalid file path', 403)
+        if resolved_full_path == resolved_root_dir:
             return error_response('INVALID_PATH', 'Invalid file path', 403)
 
         # Try to find file with prefix matching
-        matched_path = find_file_with_prefix(full_path)
-        
+        matched_path = find_file_with_prefix(resolved_full_path)
+
         if matched_path is not None:
-            # Additional security check for matched path
             try:
                 resolved_matched_path = matched_path.resolve(strict=True)
-                
-                # Verify the matched file is still within the root directory
-                if not str(resolved_matched_path).startswith(str(resolved_root_dir)):
-                    return error_response('INVALID_PATH', 'Invalid file path', 403)
+                resolved_matched_path.relative_to(resolved_root_dir)
             except FileNotFoundError:
                 return not_found('File')
             except Exception:
                 return error_response('INVALID_PATH', 'Invalid file path', 403)
-            
-            return send_from_directory(str(matched_path.parent), matched_path.name)
+
+            return send_from_directory(str(resolved_matched_path.parent), resolved_matched_path.name)
 
         return not_found('File')
     except Exception as e:

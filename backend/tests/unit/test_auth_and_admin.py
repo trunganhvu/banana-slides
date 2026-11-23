@@ -2,6 +2,7 @@
 Unit tests for Google SSO, user model, project isolation, and admin metrics.
 """
 import pytest
+from unittest.mock import MagicMock, patch
 from sqlalchemy.pool import StaticPool
 from app import create_app
 from models import db, User, Project
@@ -133,3 +134,134 @@ def test_admin_stats_and_users(client, app):
     emails = [u['email'] for u in users]
     assert 'admin@example.com' in emails
     assert 'member@example.com' in emails
+
+
+def test_dev_login_disabled_in_production_by_default(client, app, monkeypatch):
+    monkeypatch.setitem(app.config, 'TESTING', False)
+    monkeypatch.delenv('ENABLE_DEV_LOGIN', raising=False)
+
+    res = client.post('/api/auth/dev-login', json={'email': 'admin@example.com'})
+    assert res.status_code == 403
+    assert res.get_json()['code'] == 'DEV_LOGIN_DISABLED'
+
+
+def test_dev_login_allowed_when_explicitly_enabled(client, app, monkeypatch):
+    monkeypatch.setitem(app.config, 'TESTING', False)
+    monkeypatch.setenv('ENABLE_DEV_LOGIN', 'true')
+
+    res = client.post('/api/auth/dev-login', json={'email': 'admin@example.com'})
+    assert res.status_code == 200
+    assert res.get_json()['data']['user']['role'] == 'admin'
+
+
+def test_empty_admin_emails_only_bootstraps_first_user(client, app, monkeypatch):
+    monkeypatch.delenv('ADMIN_EMAILS', raising=False)
+    monkeypatch.setenv('GOOGLE_CLIENT_ID', 'test-client-id.apps.googleusercontent.com')
+
+    first_resp = MagicMock(status_code=200)
+    first_resp.json.return_value = {
+        'aud': 'test-client-id.apps.googleusercontent.com',
+        'iss': 'https://accounts.google.com',
+        'email_verified': 'true',
+        'email': 'first@example.com',
+        'name': 'First User',
+        'sub': 'sub-1',
+    }
+    second_resp = MagicMock(status_code=200)
+    second_resp.json.return_value = {
+        'aud': 'test-client-id.apps.googleusercontent.com',
+        'iss': 'https://accounts.google.com',
+        'email_verified': 'true',
+        'email': 'second@example.com',
+        'name': 'Second User',
+        'sub': 'sub-2',
+    }
+
+    with patch('controllers.auth_controller.requests.get', side_effect=[first_resp, second_resp]):
+        res1 = client.post('/api/auth/google', json={'credential': 'token-1'})
+        assert res1.status_code == 200
+        assert res1.get_json()['data']['user']['role'] == 'admin'
+
+        res2 = client.post('/api/auth/google', json={'credential': 'token-2'})
+        assert res2.status_code == 200
+        assert res2.get_json()['data']['user']['role'] == 'user'
+
+
+def test_google_sso_rejects_unconfigured_client_id(client, monkeypatch):
+    monkeypatch.delenv('GOOGLE_CLIENT_ID', raising=False)
+
+    res = client.post('/api/auth/google', json={'credential': 'token-any'})
+    assert res.status_code == 503
+    assert res.get_json()['code'] == 'AUTH_NOT_CONFIGURED'
+
+
+def test_google_sso_rejects_wrong_audience_issuer_and_unverified_email(client, monkeypatch):
+    monkeypatch.setenv('GOOGLE_CLIENT_ID', 'expected-client-id')
+
+    wrong_aud = MagicMock(status_code=200)
+    wrong_aud.json.return_value = {
+        'aud': 'other-app-client-id',
+        'iss': 'https://accounts.google.com',
+        'email_verified': 'true',
+        'email': 'user@example.com',
+    }
+
+    wrong_iss = MagicMock(status_code=200)
+    wrong_iss.json.return_value = {
+        'aud': 'expected-client-id',
+        'iss': 'https://evil.example.com',
+        'email_verified': 'true',
+        'email': 'user@example.com',
+    }
+
+    unverified_email = MagicMock(status_code=200)
+    unverified_email.json.return_value = {
+        'aud': 'expected-client-id',
+        'iss': 'https://accounts.google.com',
+        'email_verified': 'false',
+        'email': 'user@example.com',
+    }
+
+    with patch('controllers.auth_controller.requests.get', side_effect=[wrong_aud, wrong_iss, unverified_email]):
+        res_aud = client.post('/api/auth/google', json={'credential': 't1'})
+        assert res_aud.status_code == 401
+        assert res_aud.get_json()['code'] == 'INVALID_TOKEN_AUDIENCE'
+
+        res_iss = client.post('/api/auth/google', json={'credential': 't2'})
+        assert res_iss.status_code == 401
+        assert res_iss.get_json()['code'] == 'INVALID_TOKEN_ISSUER'
+
+        res_verified = client.post('/api/auth/google', json={'credential': 't3'})
+        assert res_verified.status_code == 401
+        assert res_verified.get_json()['code'] == 'EMAIL_NOT_VERIFIED'
+
+
+def test_google_sso_valid_token_issues_jwt_and_checks_params(client, monkeypatch):
+    monkeypatch.setenv('GOOGLE_CLIENT_ID', 'expected-client-id')
+    monkeypatch.setenv('ADMIN_EMAILS', 'owner@example.com')
+
+    valid_resp = MagicMock(status_code=200)
+    valid_resp.json.return_value = {
+        'aud': 'expected-client-id',
+        'iss': 'https://accounts.google.com',
+        'email_verified': 'true',
+        'email': 'owner@example.com',
+        'name': 'Owner',
+        'sub': 'google-sub-123',
+    }
+
+    with patch('controllers.auth_controller.requests.get', return_value=valid_resp) as mock_get:
+        res = client.post('/api/auth/google', json={'credential': 'valid-id-token'})
+
+    assert res.status_code == 200
+    body = res.get_json()['data']
+    assert body['user']['email'] == 'owner@example.com'
+    assert body['user']['role'] == 'admin'
+    decoded = decode_token(body['token'])
+    assert decoded is not None
+    assert decoded['email'] == 'owner@example.com'
+    mock_get.assert_called_once_with(
+        'https://oauth2.googleapis.com/tokeninfo',
+        params={'id_token': 'valid-id-token'},
+        timeout=10,
+    )

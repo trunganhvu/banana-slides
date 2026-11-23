@@ -1,0 +1,25 @@
+# Cấu hình biến môi trường / Secrets cho Cloudflare Container Backend
+# Dùng cho local dev (`wrangler dev`) hoặc nạp lên production bằng `npx wrangler secret put <TEN_BIEN>`
+#
+# Lưu ý: Với Supabase + Cloudflare Containers, hãy dùng Session Pooler URI (cổng 5432, hỗ trợ IPv4):
+# Lấy tại Supabase Dashboard -> Project Settings -> Database -> Connection string -> Session pooler
+DATABASE_URL=postgresql://postgres.qipdhbuxrxnjnmcdruwu:[YOUR-DB-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
+
+# Khóa bí mật ký JWT phiên đăng nhập (tạo chuỗi ngẫu nhiên >= 32 ký tự)
+SECRET_KEY=replace-with-strong-random-secret-key
+
+# Google OAuth Client ID và danh sách email Admin
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+ADMIN_EMAILS=vutrunganh1@gmail.com
+
+# Origin Frontend được phép gọi CORS (URL Cloudflare Pages / domain chính thức)
+CORS_ORIGINS=https://banana-slides-4h7.pages.dev
+
+# Khóa API AI mặc định (hoặc để trống nếu người dùng tự nhập key trên trình duyệt)
+AI_PROVIDER_FORMAT=gemini
+GOOGLE_API_KEY=your-gemini-api-key
+
+# Cloudflare R2 API Token (S3-compatible) để mount bucket banana-slides-storage vào /app/uploads
+# Tạo tại: Cloudflare Dashboard -> R2 -> Manage R2 API Tokens (quyền Object Read & Write)
+AWS_ACCESS_KEY_ID=your-r2-access-key-id
+AWS_SECRET_ACCESS_KEY=your-r2-secret-access-key

@@ -5,7 +5,7 @@ import os
 import logging
 from datetime import datetime
 import requests
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g, current_app
 from models import db, User, Project
 from utils.auth_middleware import generate_token, get_current_user, login_required
 
@@ -19,8 +19,15 @@ def _is_admin_email(email: str) -> bool:
     raw = os.getenv('ADMIN_EMAILS', '')
     admin_emails = [e.strip().lower() for e in raw.split(',') if e.strip()]
     if not admin_emails:
-        return True
+        return False
     return email.strip().lower() in admin_emails
+
+
+def _is_dev_login_enabled() -> bool:
+    """Allow dev login only in testing mode or when explicitly enabled."""
+    if current_app.config.get('TESTING'):
+        return True
+    return os.getenv('ENABLE_DEV_LOGIN', '').strip().lower() in ('1', 'true', 'yes')
 
 
 @auth_bp.route('/config', methods=['GET'])
@@ -50,9 +57,19 @@ def google_sso_login():
             'error': 'Thiếu Google credential'
         }), 400
 
+    expected_client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+    if not expected_client_id:
+        return jsonify({
+            'code': 'AUTH_NOT_CONFIGURED',
+            'error': 'Chưa cấu hình GOOGLE_CLIENT_ID trên máy chủ'
+        }), 503
+
     try:
-        verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}"
-        resp = requests.get(verify_url, timeout=10)
+        resp = requests.get(
+            "https://oauth2.googleapis.com/tokeninfo",
+            params={'id_token': credential},
+            timeout=10,
+        )
         if resp.status_code != 200:
             logger.warning(f"Google token verification failed with status {resp.status_code}: {resp.text}")
             return jsonify({
@@ -61,6 +78,27 @@ def google_sso_login():
             }), 401
 
         payload = resp.json()
+        if payload.get('aud') != expected_client_id:
+            logger.warning("Google token audience mismatch: %s", payload.get('aud'))
+            return jsonify({
+                'code': 'INVALID_TOKEN_AUDIENCE',
+                'error': 'Google token không hợp lệ cho ứng dụng này'
+            }), 401
+
+        issuer = payload.get('iss')
+        if issuer and issuer not in ('accounts.google.com', 'https://accounts.google.com'):
+            logger.warning("Google token issuer mismatch: %s", issuer)
+            return jsonify({
+                'code': 'INVALID_TOKEN_ISSUER',
+                'error': 'Nguồn xác thực Google token không hợp lệ'
+            }), 401
+
+        if str(payload.get('email_verified', '')).lower() != 'true':
+            return jsonify({
+                'code': 'EMAIL_NOT_VERIFIED',
+                'error': 'Email Google chưa được xác minh'
+            }), 401
+
         email = payload.get('email')
         if not email:
             return jsonify({
@@ -133,6 +171,12 @@ def google_sso_login():
 @auth_bp.route('/dev-login', methods=['POST'])
 def dev_login():
     """Fast login endpoint for local testing or dev fallback."""
+    if not _is_dev_login_enabled():
+        return jsonify({
+            'code': 'DEV_LOGIN_DISABLED',
+            'error': 'Dev login bị tắt trong môi trường production'
+        }), 403
+
     raw_admin = os.getenv('ADMIN_EMAILS', '')
     admin_emails = [e.strip() for e in raw_admin.split(',') if e.strip()]
     default_email = admin_emails[0] if admin_emails else 'admin@example.com'

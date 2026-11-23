@@ -52,7 +52,7 @@ def upgrade():
         sa.Column('analysis_notes', sa.Text(), nullable=True),
         sa.Column('analysis_error', sa.Text(), nullable=True),
         sa.Column('user_label', sa.String(length=200), nullable=True),
-        sa.Column('user_edited_analysis', sa.Boolean(), nullable=False, server_default=sa.text('0')),
+        sa.Column('user_edited_analysis', sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column('sort_order', sa.Integer(), nullable=False, server_default='0'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),

@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "banana-slides-backend",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-23",
+  "observability": {
+    "enabled": true
+  },
+  "containers": [
+    {
+      "class_name": "BananaSlidesContainer",
+      "image": "./Dockerfile",
+      "image_build_context": "..",
+      "instance_type": "basic",
+      "max_instances": 1
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "BANANA_CONTAINER",
+        "class_name": "BananaSlidesContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "BananaSlidesContainer"
+      ]
+    }
+  ],
+  "vars": {
+    "R2_ACCOUNT_ID": "4644ee642eed5fdba3acd252904dea25",
+    "R2_BUCKET_NAME": "banana-slides-storage",
+    "FLASK_ENV": "production",
+    "OUTPUT_LANGUAGE": "vi"
+  }
+}
