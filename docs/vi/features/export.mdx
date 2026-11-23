@@ -1,0 +1,91 @@
+---
+title: "Tùy chọn Xuất bản"
+description: "Xuất bài thuyết trình sang PPTX, Editable PPTX, PDF, Bộ ảnh hoặc Video thuyết minh"
+---
+
+## Các định dạng hỗ trợ
+
+| Định dạng | Mô tả |
+|-----------|-------|
+| **PPTX** | Đóng gói các ảnh slide vào tệp PowerPoint chuẩn để trình chiếu và sắp xếp thứ tự |
+| **Editable PPTX (Beta)** | Trích xuất chữ thành hộp văn bản thật, xóa chữ trên ảnh nền và tách icon nền trong suốt để chỉnh sửa tự do trong PowerPoint / Google Slides |
+| **PDF** | Tệp PDF sắc nét đúng từng điểm ảnh, sẵn sàng in ấn hoặc gửi đối tác |
+| **Bộ ảnh (Images)** | Tải về tệp ảnh chất lượng cao cho từng trang slide |
+| **Video thuyết minh (MP4)** | Ghép hình ảnh slide cùng giọng đọc AI thành video MP4, có tùy chọn phụ đề và hiệu ứng chuyển động camera |
+
+<Note>
+  Bản triển khai Docker đã cài sẵn FFmpeg phục vụ xuất Video thuyết minh. Nếu chạy trực tiếp từ mã nguồn, hãy cài đặt FFmpeg có hỗ trợ `libass` / bộ lọc phụ đề `ass` trước (trên Ubuntu/Debian: `sudo apt-get update && sudo apt-get install -y ffmpeg libass9`).
+</Note>
+
+## Bảng cấu hình Xuất PPTX
+
+Khi xuất PPTX thông thường, hộp thoại cho phép bật **hiệu ứng chuyển slide** (Fade, Page Turn, Push, Wipe, Split, Blinds, Checkerboard, Clock). Nếu chọn nhiều hiệu ứng, hệ thống tự động phân bổ ngẫu nhiên cho từng trang.
+
+## Lịch sử Tác vụ Xuất & Tệp đã xuất
+
+Bảng tác vụ xuất trên màn hình Xem trước Slide liệt kê toàn bộ các tệp đã tạo xong trên máy chủ cho dự án hiện tại. Bạn có thể tải lại PPTX, PDF, file ZIP ảnh, Video MP4 hoặc xóa bớt các tệp cũ để giải phóng dung lượng lưu trữ.
+
+Lịch sử tác vụ được tách riêng theo từng dự án. Nếu trạng thái tác vụ bị gián đoạn khi kiểm tra tiến độ, giao diện sẽ báo rõ và cung cấp nút **Kiểm tra lại** thay vì vội kết luận thất bại.
+
+## Chiến lược Thuyết minh Video
+
+Khi nhấn **Xuất Video thuyết minh**, hệ thống tải cấu hình ngôn ngữ đầu ra và ElevenLabs rồi mở bảng tinh chỉnh:
+
+- Chọn **vai trò người thuyết trình**, **khán giả mục tiêu**, **giọng điệu** và **chủ đề trọng tâm**
+- Chọn độ dài lời thoại cho từng slide (ngắn gọn hoặc phân tích sâu)
+- Tự động viết lời thoại còn thiếu đảm bảo mạch dẫn tự nhiên giữa các trang
+
+## Tỷ lệ khung hình (Aspect Ratio)
+
+Mặc định là `16:9`. Bạn có thể chọn `16:9`, `4:3`, `21:9`, `1:1`, `9:16` khi tạo dự án hoặc trong **Cài đặt dự án** tại màn hình Xem trước (cần sinh lại ảnh sau khi đổi tỷ lệ).
+
+## Xuất Editable PPTX (Beta)
+
+Quá trình bóc tách giữ lại cỡ chữ, màu chữ, độ đậm, tọa độ khung chữ và cấu trúc bảng biểu. Khi gặp lỗi ở bước trích xuất phong cách hoặc mạng chập chờn, bảng tác vụ tự động thử lại và hiển thị mã chẩn đoán cụ thể:
+
+- `EXPORT_STYLE_MODEL_UNSUPPORTED`: Chuyển cấu hình nhận diện ảnh sang mô hình hỗ trợ Vision.
+- `EXPORT_STYLE_AUTHENTICATION`: Kiểm tra lại API key, phiên OAuth hoặc quyền truy cập dịch vụ.
+- `EXPORT_STYLE_RATE_LIMIT`: Đợi một lát rồi thử lại hoặc chọn xuất ít trang hơn trong một lần.
+- `EXPORT_STYLE_TIMEOUT` / `EXPORT_STYLE_NETWORK`: Kiểm tra kết nối mạng, proxy và thử lại.
+- `EXPORT_CONFIGURATION_MISSING`: Cấu hình đầy đủ nhà cung cấp, mô hình và API key cho bước nhận diện ảnh trước khi xuất.
+
+<Note>
+  Để đạt độ chính xác tách chữ OCR cao nhất, cấu hình thêm `BAIDU_API_KEY` trong môi trường chạy. Xem [Cấu hình](/vi/configuration#baidu-api-key).
+</Note>
+
+### Xử lý tác vụ bị ngắt hoặc treo
+
+Nếu máy chủ khởi động lại hoặc một luồng xử lý ngưng ghi tiến độ quá 30 phút (`TASK_STALL_TIMEOUT_SECONDS=1800`), watchdog tự động đánh dấu tác vụ là `TASK_INTERRUPTED` hoặc `TASK_STALLED` kèm tiến độ thực tế đạt được để bạn bấm xuất lại phiên mới sạch sẽ.
+
+## Tách nền trong suốt cho Biểu tượng (Icon Transparent Background)
+
+Trong **Cài đặt dự án → Cài đặt xuất file**, tùy chọn **Tách nền trong suốt cho Icon** được bật mặc định. Khi xuất Editable PPTX, các thành phần được phân loại là biểu tượng/icon sẽ đi qua mô hình **RMBG-2.0** cục bộ để chuyển thành PNG nền trong suốt trước khi đặt vào PowerPoint.
+
+<Note>
+  Mô hình RMBG-2.0 ONNX (~512MB) tự động tải về ở lần đầu sử dụng tại `~/.cache/banana-slides/models/` (hoặc đặt `RMBG_MODEL_PATH` trỏ tới tệp cục bộ). Ảnh chụp và hình minh họa lớn giữ nguyên khung chữ nhật để tránh cắt nhầm chi tiết.
+</Note>
+
+## Xuất theo trang tự chọn
+
+Bật **Chọn nhiều** trên màn hình Xem trước Slide, tích các trang hoàn chỉnh muốn xuất rồi nhấn **Xuất**. Các trang nháp chưa sinh ảnh nằm ngoài vùng chọn sẽ không chặn việc xuất các trang đã hoàn tất.
+
+## Video thuyết minh (Narration Video)
+
+Ghép ảnh slide với giọng đọc AI thành video MP4 có phụ đề:
+
+1. Mở dự án tại màn hình **Xem trước Slide**
+2. Nhấn **Xuất → Video thuyết minh**
+3. Cấu hình phong cách người nói, khán giả, tông giọng, giọng đọc TTS và hiệu ứng **Ken Burns** (thu phóng nhẹ)
+4. Nhấn **Bắt đầu xuất** và theo dõi tiến độ tại bảng Tác vụ xuất
+
+### Lựa chọn giọng đọc
+
+- **Mặc định (`edge-tts`)**: Giọng đọc miễn phí từ Microsoft Edge, không cần API key; hỗ trợ đầy đủ Tiếng Việt (`vi-VN-HoaiMyNeural`, `vi-VN-NamMinhNeural`), Tiếng Anh (`Jenny`, `Guy`), Tiếng Nhật (`Nanami`, `Keita`)...
+- **ElevenLabs**: Giọng đọc tự nhiên chất lượng studio (xem [Cấu hình ElevenLabs](/vi/configuration#elevenlabs-giọng-đọc-video-thuyết-minh)).
+
+## Cho phép kết quả một phần (Allow Partial Results)
+
+Tùy chọn **Cho phép kết quả một phần** trong **Cài đặt dự án → Cài đặt xuất file**:
+
+- **Khi tắt**: Dừng và báo lỗi ngay nếu một trang gặp lỗi nghiêm trọng (thiếu lời thoại, lỗi trích xuất PPTX...).
+- **Khi bật**: Hệ thống cố gắng hoàn tất tối đa các trang hợp lệ còn lại (ví dụ ghép khung hình im lặng cho trang thiếu âm thanh khi xuất video).

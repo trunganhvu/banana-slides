@@ -1,0 +1,90 @@
+---
+title: "Câu hỏi thường gặp (FAQ)"
+description: "Giải đáp các thắc mắc phổ biến khi sử dụng và triển khai Banana Slides"
+---
+
+## Chữ sinh ra trên ảnh slide bị lỗi hoặc mờ
+
+- Kiểm tra xem bạn có đang để độ phân giải 1K không. Chuyển sang **2K hoặc 4K** trong **Cài đặt dự án → Cài đặt chung** để cải thiện rõ rệt độ sắc nét của chữ. *(Lưu ý: một số dịch vụ trung gian chuẩn OpenAI không hỗ trợ độ phân giải cao; hãy ưu tiên định dạng Gemini.)*
+- Ghi cụ thể nội dung văn bản cần hiển thị vào phần **Nội dung trang** — AI sẽ vẽ chữ chính xác hơn khi có văn bản tường minh.
+
+## Xuất Editable PPTX bị đè chữ hoặc mất định dạng
+
+Thường do cấu hình trích xuất văn bản/OCR chưa phù hợp. Kiểm tra lại `BAIDU_API_KEY` trong [Cấu hình](/vi/configuration#baidu-api-key).
+
+Bạn cũng có thể đổi phương thức trích xuất văn bản trong **Cài đặt dự án → Cài đặt xuất file** (OCR / Mô hình Vision / Kết hợp Hybrid) tùy theo bố cục slide.
+
+## Xuất PPTX thông thường không sửa được chữ trong PowerPoint
+
+Định dạng PPTX thông thường nhúng mỗi trang slide dưới dạng hình ảnh. Hãy dùng chế độ **Xuất PPTX có thể chỉnh sửa (Beta)** nếu cần biên tập từng hộp văn bản và hình khối trực tiếp trong PowerPoint.
+
+## Gemini API gói miễn phí có dùng được không?
+
+Gói miễn phí dùng được cho sinh văn bản (dàn ý, mô tả trang), nhưng tính năng **sinh hình ảnh** yêu cầu gói trả phí của Gemini (hoặc nhà cung cấp tạo ảnh khác).
+
+## Gặp lỗi 503 hoặc thử lại thất bại nhiều lần
+
+Thường do cấu hình mô hình hoặc endpoint API chưa khớp. Hãy chạy **Kiểm tra dịch vụ** ở cuối trang Cài đặt để xác định đúng bước bị lỗi.
+
+Kiểm tra nhật ký Backend nếu chạy Docker:
+```bash
+docker logs --tail 200 banana-slides-backend
+```
+
+## Thay đổi biến môi trường chưa có hiệu lực
+
+- Khi triển khai Docker, cần khởi động lại container sau khi sửa `.env`.
+- Nếu bạn đã từng lưu thiết lập trên giao diện web **Cài đặt**, các giá trị trong cơ sở dữ liệu sẽ ưu tiên ghi đè `.env`. Hãy nhấn **Đặt lại mặc định** trong Cài đặt để xóa ghi đè.
+
+## Tính năng Làm mới PPT (PPT Renovation) đọc file bị lệch bố cục
+
+- Nên xuất file PowerPoint sang **PDF** trước khi tải lên để đạt độ ổn định cao nhất. Tải trực tiếp `.pptx` đòi hỏi máy chủ phải chuyển đổi qua LibreOffice, dễ lệch bố cục nếu thiếu font (Arial, Calibri...).
+- Nếu chạy Docker và cần hỗ trợ `.pptx` trực tiếp trong container:
+  ```bash
+  docker exec -it banana-slides-backend bash -c "apt-get update && apt-get install -y libreoffice-impress"
+  ```
+
+## Cách đổi tỷ lệ khung hình (Aspect Ratio)
+
+Chọn tỷ lệ ở trang chủ trước khi tạo dự án, hoặc đổi trong **Cài đặt dự án** tại màn hình Xem trước slide. Sau khi đổi tỷ lệ, cần sinh lại ảnh để áp dụng.
+
+Lưu ý: một số mô hình sinh ảnh không hỗ trợ các tỷ lệ quá hẹp/quá dài; nếu gặp lỗi hãy chuyển về `16:9`.
+
+## Tốc độ tạo slide chậm
+
+- Tăng **Số luồng xử lý mô tả tối đa** và **Số luồng xử lý ảnh tối đa** trong Cài đặt để chạy song song nhiều trang hơn.
+- Nếu dùng API gói miễn phí, nhà cung cấp thường giới hạn tốc độ (rate limit); hãy cân nhắc nâng cấp gói hoặc chuyển sang mô hình/endpoint có hạn mức cao hơn.
+
+## Cách tạo lại ảnh cho chỉ một trang slide
+
+Tại trang Xem trước slide, nhấn nút **Chỉnh sửa** trên thẻ slide; thanh nhập lệnh sẽ mở ngay bên dưới (hoặc hộp thoại trên màn hình nhỏ). Nhập hướng dẫn chỉnh sửa và nhấn **Sinh ảnh** để vẽ lại riêng trang đó. Bạn cũng có thể chọn nhiều trang bằng **Chọn nhiều** để tạo lại theo nhóm.
+
+## Có vẽ được biểu đồ cột, biểu đồ đường hay sơ đồ cây trong slide không?
+
+Có 2 cách hiệu quả:
+
+**Cách 1: Mô tả chi tiết số liệu bằng văn bản (khuyên dùng)**
+Ghi rõ nội dung biểu đồ và số liệu trong phần mô tả trang, kèm phong cách trình bày ở **Yêu cầu bổ sung** hoặc **Bố cục & Trọng tâm**:
+```text
+Bên phải trang hiển thị biểu đồ cột doanh thu 5 năm: 2020: 1.2M USD, 2021: 1.8M USD, 2022: 2.4M USD, 2023: 3.1M USD, 2024: 4.2M USD. Cột màu xanh dương gradient, nền trắng.
+```
+
+**Cách 2: Dán sẵn hình biểu đồ làm ảnh tham chiếu**
+Tạo biểu đồ từ Excel hoặc Python (`matplotlib`), sau đó dán trực tiếp (`Ctrl+V`) vào thẻ mô tả trang để AI vẽ theo đúng hình và số liệu đó.
+
+## Làm sao giữ phong cách biểu đồ đồng nhất xuyên suốt bài thuyết trình?
+
+Hãy dùng **mô tả phong cách bằng văn bản** (nhất quán hơn so với chỉ đưa ảnh mẫu). Ghi rõ quy tắc vào **Yêu cầu bổ sung** hoặc **Mô tả phong cách**, ví dụ:
+- `Tất cả biểu đồ dùng bảng màu xanh dương (#2563EB làm chủ đạo), nền trắng, không viền`
+- `Font chữ biểu đồ dùng sans-serif, nhãn số liệu luôn hiển thị phía trên cột`
+- `Biểu đồ đường dùng điểm đánh dấu tròn, nét vẽ 2px`
+
+## Thanh nhập lệnh AI để sửa dàn ý và mô tả nằm ở đâu?
+
+Nằm ngay trên **thanh điều hướng phía trên** ở màn hình Biên tập Dàn ý và Biên tập Mô tả — nhập yêu cầu tự nhiên và nhấn **Ctrl+Enter** (ví dụ: `Thêm mục phân tích tình huống thực tế sau trang 3`).
+
+## Triển khai Cloud: Lần truy cập đầu báo lỗi 1101 hoặc lỗi đăng nhập Google
+
+- **Lỗi `1101` sau khi không có người dùng truy cập:** Trên Cloudflare Containers, container tự ngủ sau 15 phút nhàn rỗi và cần khoảng 25–45 giây để khởi động lại R2 FUSE cùng máy chủ Python. Hãy tải lại trang sau vài giây; Worker đã được cấu hình chờ tối đa 60 giây (`STARTUP_WAIT_ATTEMPTS = 120`).
+- **Nút Đăng nhập Google không hiện hoặc báo lỗi:** Kiểm tra đã cấu hình `GOOGLE_CLIENT_ID` cho Worker Backend và đã thêm đường dẫn Frontend (ví dụ `https://banana-slides-4h7.pages.dev` hoặc tên miền riêng) vào **Authorized JavaScript origins** trên Google Cloud Console.
+- **Lỗi `403 DEV_LOGIN_DISABLED`:** Đây là cơ chế bảo mật bắt buộc trên production. Hãy đăng nhập bằng Google SSO (chỉ bật `ENABLE_DEV_LOGIN=true` khi kiểm thử cục bộ).

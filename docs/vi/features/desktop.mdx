@@ -1,0 +1,84 @@
+---
+title: "Ứng dụng Desktop"
+description: "Cài đặt ứng dụng Desktop, tự đóng gói cục bộ và kiểm thử bản phát hành"
+---
+
+Ứng dụng Desktop sử dụng Electron cho giao diện và backend Python đóng gói qua PyInstaller để chạy cục bộ hoàn toàn: không cần tự mở riêng server frontend/backend và không cần Docker khi sử dụng.
+
+<Note>
+  Ứng dụng Desktop vẫn cần thông tin xác thực của nhà cung cấp AI. Ở lần mở đầu tiên, vào **Cài đặt** để điền nhà cung cấp, tên mô hình và API Key (lưu ngay tại thư mục dữ liệu ứng dụng cục bộ).
+</Note>
+
+## Cài đặt bản phát hành sẵn
+
+Tải bộ cài đặt phù hợp hệ điều hành tại trang [GitHub Releases](https://github.com/Anionex/banana-slides/releases):
+
+| Hệ điều hành | Tệp cài đặt | Cách cài |
+|--------------|-------------|----------|
+| Windows | `BananaSlides-<version>-Setup.exe` | Chạy bộ cài NSIS và làm theo hướng dẫn |
+| macOS | `BananaSlides-<version>.dmg` | Mở file DMG và kéo Banana Slides vào Applications |
+| Linux | `BananaSlides-<version>.AppImage` / `BananaSlides-<version>.deb` | Cấp quyền thực thi cho AppImage hoặc cài gói `.deb` |
+
+Ứng dụng lưu cơ sở dữ liệu, tệp tải lên, tư liệu và file xuất vào thư mục dữ liệu có quyền ghi của người dùng. Hãy sao lưu thư mục dự án trước khi nâng cấp phiên bản lớn.
+
+## Vị trí lưu trữ dữ liệu (Data Storage Location)
+
+Trên Windows, trình cài đặt hiển thị tách biệt **Thư mục cài đặt ứng dụng** và **Thư mục lưu dữ liệu**. macOS và Linux mặc định dùng thư mục App Data của hệ thống ở lần chạy đầu tiên.
+
+Trên mọi nền tảng Desktop, bạn có thể xem và đổi thư mục lưu dữ liệu ngay trong trang **Cài đặt** -> nhấn **Lưu và khởi động lại** để áp dụng. *(Tùy chọn này chỉ có trên bản Desktop, không hiển thị trên bản Web.)*
+
+<Warning>
+  Banana Slides chỉ xác thực và chuyển đường dẫn đích, không tự động sao chép hay xóa dữ liệu cũ. Nếu thư mục mới chưa có tệp cơ sở dữ liệu, ứng dụng sẽ cảnh báo rõ trước khi khởi tạo thư mục dữ liệu mới.
+</Warning>
+
+### Di chuyển dữ liệu sang ổ đĩa khác
+
+1. Vào **Cài đặt → Vị trí lưu dữ liệu**, nhấn **Mở thư mục hiện tại** để ghi lại đường dẫn cũ.
+2. Chọn **Thoát (Quit)** từ biểu tượng khay hệ thống (nút đóng cửa sổ chỉ thu gọn xuống khay, backend vẫn có thể đang ghi DB).
+3. Sao chép đầy đủ 3 thư mục `data/`, `uploads/` và `exports/` từ vị trí cũ sang vị trí mới.
+4. Mở lại Banana Slides, chọn đường dẫn mới trong Cài đặt và nhấn **Lưu và khởi động lại**.
+5. Sau khi kiểm tra dự án cũ, ảnh và tư liệu hiển thị bình thường mới xóa bản sao cũ.
+
+## Yêu cầu đóng gói từ mã nguồn (Local Packaging)
+
+- Node.js 20+
+- Python 3.11
+- `uv`
+- PyInstaller
+- Thư viện Electron trong `desktop/`
+
+<Note>
+  `desktop/electron-builder.yml` mặc định nhắm tới Windows x64 NSIS, macOS arm64 DMG và Linux x64 AppImage/deb. Nên đóng gói trên đúng hệ điều hành mục tiêu hoặc qua GitHub Actions runners.
+</Note>
+
+```bash
+# 1. Build Frontend
+cd frontend
+npm ci
+npm run build
+
+# 2. Đóng gói Backend với PyInstaller
+cd ../backend
+uv sync
+uv pip install pyinstaller
+uv run pyinstaller banana-slides.spec --noconfirm
+
+# 3. Đóng gói Electron (chọn build:mac / build:win / build:linux tương ứng)
+cd ../desktop
+npm ci
+npm run build:mac
+```
+
+Bộ cài đầu ra nằm trong `desktop/dist/`.
+
+## Giới hạn ký số & Phân phối
+
+- **Windows:** Bộ cài chưa ký số có thể hiện cảnh báo SmartScreen; bản phân phối chính thức cần ký bằng chứng chỉ Code Signing.
+- **macOS:** Tệp DMG/App chưa có chữ ký Apple Developer ID và notarization sẽ bị Gatekeeper chặn khi tải từ Internet.
+- **Tự động cập nhật:** Phiên bản hiện tại kiểm tra GitHub Releases và thông báo người dùng tải bản cài mới, chưa tự động cập nhật âm thầm.
+
+## Xử lý sự cố bản Desktop
+
+- **Ứng dụng báo Backend không khả dụng:** Kiểm tra gói cài có chứa `desktop/backend/`, kiểm tra phần mềm diệt virus có chặn tiến trình con hoặc đảm bảo PyInstaller đã tạo `backend/dist/banana-backend/`.
+- **Đã cấu hình Gemini nhưng vẫn hiện nhà cung cấp khác:** Nhà cung cấp chọn riêng cho từng loại mô hình (Văn bản / Hình ảnh / Nhận diện ảnh) luôn ưu tiên hơn cấu hình chung. Đổi dropdown mô hình về **Cấu hình mặc định** và chạy lại **Kiểm tra dịch vụ**.
+- **Không thấy tệp sau khi chọn nơi lưu xuất file:** Kiểm tra lại quyền ghi tại thư mục đích hoặc mở bảng **Tác vụ xuất** ở màn hình Xem trước để tải lại sang thư mục khác.

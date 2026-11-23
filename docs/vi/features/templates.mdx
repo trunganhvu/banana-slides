@@ -1,0 +1,69 @@
+---
+title: "Mẫu thiết kế theo từng trang (Per-Page Templates)"
+description: "Áp dụng một phong cách đồng nhất cho cả bộ slide hoặc chọn mẫu riêng cho từng trang"
+---
+
+Template giúp mọi slide tạo ra đều khớp đúng nhận diện thị giác bạn mong muốn. Banana Slides hỗ trợ hai chế độ: **Mẫu thống nhất** (một mẫu dùng chung cho toàn bộ bài) và **Mẫu theo từng trang** (mỗi trang chọn một mẫu riêng).
+
+## So sánh hai chế độ
+
+| Chế độ | Ý nghĩa | Phù hợp cho |
+|--------|---------|-------------|
+| Mẫu thống nhất (Unified) | Toàn bộ các trang dùng chung một template | Báo cáo định kỳ, bài giảng đồng bộ nhanh |
+| Mẫu theo từng trang (Per-page) | Mỗi trang gắn được một template khác nhau | Bộ slide chuyên sâu (trang bìa, trang số liệu, trang cảm ơn dùng bố cục riêng) |
+
+<Note>
+  **Cách lưu dữ liệu bên dưới**: Bất kể chọn chế độ nào, từng trang đều lưu liên kết template riêng. Chế độ "Mẫu thống nhất" thực chất chỉ là trạng thái mọi trang đang cùng trỏ về một mẫu — nên bạn có thể chuyển đổi qua lại giữa hai chế độ bất kỳ lúc nào mà không làm mất dữ liệu cấu trúc.
+</Note>
+
+## Mẫu thống nhất: Chọn một lần khi tạo dự án
+
+Khi tạo dự án mới ở trang chủ, chọn **Mẫu thống nhất** rồi chọn hoặc tải lên một mẫu ở khu vực template. Sau khi tạo, mẫu đó tự động gắn cho tất cả các trang và bạn đi thẳng vào trình Biên tập Dàn ý.
+
+## Mẫu theo từng trang: Thư viện mẫu của dự án
+
+Khi tạo dự án với chế độ **Mẫu theo từng trang**, bạn hoàn thành bước dàn ý và mô tả trước; khi nhấn **Tiếp theo**, hệ thống mở trang **Thiết lập Template** (sau này vẫn có thể quay lại bất kỳ lúc nào từ nút **Thiết lập Template** ở phía trên màn hình Xem trước). Tại đây bạn quản lý **thư viện mẫu riêng của dự án**:
+
+### Tải lên mẫu
+
+- **Tải ảnh mẫu**: Thêm trực tiếp một hình ảnh mẫu vào thư viện dự án.
+- **Tải PDF mẫu**: Tải lên một file PDF nhiều trang (như bộ brand guideline hoặc slide mẫu cũ); hệ thống tự động tách từng trang PDF thành ảnh mẫu riêng lẻ đưa vào thư viện.
+
+### AI tự động phân tích template
+
+Mỗi khi tải lên một template, AI tự động đọc đặc trưng thị giác (bảng màu, cấu trúc bố cục, vùng chứa chữ, vùng chứa ảnh...) để phục vụ bước ghép mẫu thông minh.
+
+- Tiến độ phân tích cập nhật tự động trên thẻ mẫu; khi xong bạn có thể **sửa nội dung phân tích** và đặt **nhãn tên** cho mẫu.
+- Nếu một mẫu gặp lỗi khi phân tích, bạn vẫn **chọn thủ công** mẫu đó bình thường — chỉ là mẫu chưa tham gia vào nhóm tự động ghép thông minh.
+
+### Tự động ghép mẫu chỉ với 1 cú nhấp (Auto-match)
+
+Nhấn **Tự động ghép mẫu**, AI sẽ đối chiếu tiêu đề và mô tả của từng trang slide với phong cách của tất cả các mẫu trong thư viện, từ đó đề xuất mẫu phù hợp nhất kèm lý do và điểm tin cậy (confidence score):
+
+- Nút Tự động ghép sẽ tạm khóa (kèm lý do rõ) nếu còn trang chưa có mô tả hoặc mẫu vẫn đang trong quá trình phân tích, giúp tránh ghép sai khi dữ liệu chưa sẵn sàng.
+- Các trang đã ghép hiển thị rõ nguồn đề xuất và lý do.
+- Những trang AI chưa chắc chắn sẽ giữ trạng thái **Chưa xác nhận** để bạn tự chọn thủ công.
+
+### Gắn mẫu riêng cho từng trang
+
+Trên mỗi thẻ trang, bạn luôn có thể tự **chọn lại template** để ghi đè kết quả tự động ghép, hoặc gán thêm **Template dạng văn bản** (mô tả phong cách bằng chữ cho riêng trang đó).
+
+## Chuyển đổi qua lại giữa hai chế độ
+
+Bạn có thể đổi chế độ theo cả hai chiều ở bất kỳ giai đoạn nào mà không làm mất các ảnh slide đã tạo trước đó:
+
+- **Từ Từng trang → Thống nhất**: Nhấn **Chuyển sang mẫu thống nhất**, hộp thoại sẽ yêu cầu chọn một mẫu từ thư viện hiện có (hoặc tải mới) làm mẫu chung cho toàn bộ trang.
+- **Từ Thống nhất → Từng trang**: Nhấn **Chuyển sang mẫu từng trang** để mở khóa thư viện mẫu; ban đầu mọi trang kế thừa mẫu đang dùng, sau đó bạn tùy biến từng trang tự do.
+
+<Warning>
+  Khi chuyển sang Mẫu thống nhất, liên kết mẫu riêng của từng trang trước đó sẽ bị ghi đè bằng mẫu chung mới chọn. Ảnh đã sinh trước đây vẫn được giữ nguyên, nhưng khi sinh lại trang sẽ áp dụng mẫu chung mới.
+</Warning>
+
+## Khi xóa một template
+
+Xóa một template khỏi thư viện sẽ đưa các trang đang dùng mẫu đó về trạng thái **Chưa xác nhận**; bạn cần gán mẫu mới cho các trang đó trước khi sinh ảnh lại.
+
+## Câu hỏi nhanh
+
+- **Hệ thống báo cần chọn mẫu hoặc mô tả phong cách**: Hãy đảm bảo trang cần sinh đã gắn một template hoặc đã nhập mô tả phong cách trong Cài đặt dự án.
+- **Auto-match gán cùng một mẫu cho nhiều trang**: Đây là hành vi bình thường khi các trang có nội dung tương đồng — bạn có thể chọn lại thủ công bất kỳ trang nào muốn khác biệt.

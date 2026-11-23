@@ -1,0 +1,122 @@
+---
+title: "Cloud Deployment"
+description: "Deploy Banana Slides publicly on Cloudflare (Pages, Containers, R2) and Supabase PostgreSQL for ~$5/month"
+---
+
+Deploy Banana Slides publicly with minimal cost, scale-to-zero Python execution, persistent S3-compatible file storage, and managed PostgreSQL.
+
+## Architecture & Cost Overview
+
+| Layer | Service | Monthly Cost | Role |
+|-------|---------|--------------|------|
+| Frontend & Reverse Proxy | **Cloudflare Pages + Functions** | `$0` | Serves `frontend/dist`, SEO/GEO assets (`llms.txt`, `sitemap.xml`), and proxies `/api/*`, `/files/*`, `/health` to `BACKEND_ORIGIN` |
+| Python Backend | **Cloudflare Containers + Durable Objects** | `$5` (Workers Paid) | Runs Flask + `ThreadPoolExecutor` + `ffmpeg` + `opencv` + `onnxruntime` (`basic` instance, auto-sleeps after 15 min idle) |
+| Persistent File Storage | **Cloudflare R2** (`tigrisfs` FUSE) | `$0` (10 GB free, `$0` egress) | Mounted read-write at `/app/uploads` so slides, templates, and PPTX exports survive container restarts |
+| Relational Database | **Supabase PostgreSQL** (Free Tier) | `$0` (500 MB free) | Stores users, projects, pages, tasks, and settings via IPv4 Session Pooler (`ap-southeast-1`) |
+
+<Note>
+  Container disks on Cloudflare Containers are ephemeral when an instance sleeps. Never keep SQLite or uploaded files on container-local disk in production — always use `DATABASE_URL` (PostgreSQL) and R2 FUSE mounting (`/app/uploads`).
+</Note>
+
+---
+
+## First-Time Setup
+
+<Steps>
+  <Step title="Provision Supabase PostgreSQL (Singapore)">
+    1. Create a Supabase project in `ap-southeast-1` and set an alphanumeric database password (avoid `@`, `#`, `%`, `&` so URI parsing stays clean).
+    2. Create the 11 application tables + `alembic_version` (stamped to the current Alembic `head`) and enable **Row Level Security (RLS)** on every table in `public`.
+    3. Revoke Data API access from `anon` and `authenticated` roles since only the Flask backend connects via Postgres:
+       ```sql
+       REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+       ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
+       ```
+    4. Copy the **Session pooler** URI (port `5432`, IPv4-compatible) from **Connect → Session pooler**.
+  </Step>
+
+  <Step title="Enable Cloudflare R2 & Create S3 API Token">
+    1. Enable **R2 Object Storage** in the Cloudflare Dashboard and create a bucket (e.g. `banana-slides-storage` in `APAC`).
+    2. Go to **R2 → Manage API Tokens → Create Account API token**, grant **Object Read & Write** scoped to that bucket, and save the **Access Key ID** and **Secret Access Key**.
+  </Step>
+
+  <Step title="Enable Workers Paid & Google OAuth">
+    1. Upgrade Cloudflare Workers to **Workers Paid ($5/month)** to unlock **Cloudflare Containers** and **Durable Objects**.
+    2. In Google Cloud Console, add your Cloudflare Pages URL (and any custom domain) under **Authorized JavaScript origins** for your OAuth 2.0 Client ID.
+  </Step>
+
+  <Step title="Deploy the Backend Container">
+    Ensure **Docker Desktop** is running locally, then deploy from `cloudflare-backend/`:
+
+    ```powershell
+    cd cloudflare-backend
+    npm install
+    npx wrangler login
+    npx wrangler deploy
+    ```
+
+    <Note>
+      `cloudflare-backend/package.json` pins `wrangler@4.85.0` so it works on Node.js 20.18+. If your machine runs Node.js 22.12+, you may use newer Wrangler 4 releases.
+    </Note>
+
+    Upload runtime secrets to the Worker (pass the variable **name** in the command, and paste the **value** at the prompt):
+
+    ```powershell
+    npx wrangler secret put DATABASE_URL
+    npx wrangler secret put SECRET_KEY
+    npx wrangler secret put GOOGLE_CLIENT_ID
+    npx wrangler secret put ADMIN_EMAILS
+    npx wrangler secret put CORS_ORIGINS
+    npx wrangler secret put AWS_ACCESS_KEY_ID
+    npx wrangler secret put AWS_SECRET_ACCESS_KEY
+    # Optional if you want a default server-side Gemini key for all users:
+    # npx wrangler secret put GOOGLE_API_KEY
+    ```
+  </Step>
+
+  <Step title="Connect Cloudflare Pages (Frontend)">
+    1. Create a Cloudflare Pages project linked to your GitHub repository:
+       - **Production branch**: `main`
+       - **Root directory**: `frontend`
+       - **Build command**: `npm run build:web`
+       - **Build output directory**: `dist`
+    2. Under **Settings → Variables and secrets** (both **Production** and **Preview**), set `BACKEND_ORIGIN` to your Worker URL (`https://banana-slides-backend.<subdomain>.workers.dev`).
+    3. Verify GitHub App repository permissions so pushes to `main` trigger automatic builds.
+  </Step>
+</Steps>
+
+---
+
+## Day-2 Updates & Redeployment
+
+Use the automated helper script from the repository root whenever you update backend Python code or container configuration:
+
+```powershell
+.\scripts\deploy-cloudflare.ps1 -BackendUrl "https://banana-slides-backend.<subdomain>.workers.dev"
+```
+
+The script automatically verifies:
+1. Docker Desktop is running.
+2. `cloudflare-backend/entrypoint.sh` uses Unix **LF** line endings (required for Linux containers).
+3. `npm --prefix cloudflare-backend run typecheck` passes with 0 errors.
+4. `npx wrangler deploy` pushes any container/Worker changes.
+5. Public endpoints (`/`, `/health`, `/api/auth/config`, `/api/output-language`, `/llms.txt`, `/robots.txt`) return `HTTP 200`, and `POST /api/auth/dev-login` returns `403`.
+
+To run live endpoint checks only without rebuilding:
+
+```powershell
+.\scripts\deploy-cloudflare.ps1 -VerifyOnly -FrontendUrl "https://banana-slides-4h7.pages.dev"
+```
+
+<Accordion title="Adding a Custom Domain & AI Search Checklist">
+
+1. Add your domain under **Cloudflare Pages → Custom domains**.
+2. Add `https://yourdomain.com` to Google Cloud Console **Authorized JavaScript origins**.
+3. Update the `CORS_ORIGINS` Worker secret (`npx wrangler secret put CORS_ORIGINS`) to include `https://yourdomain.com`.
+4. Replace `yourdomain.com` in `frontend/public/sitemap.xml` and push to `main`.
+5. In Cloudflare Dashboard **Security → Bots**, ensure search & AI crawlers (`Googlebot`, `OAI-SearchBot`, `GPTBot`, `PerplexityBot`, `ClaudeBot`) are not blocked.
+
+</Accordion>
+
+## Detailed Reference
+
+For full architecture notes, Alembic PostgreSQL migration guidelines, and troubleshooting (`error 1101` cold-start tuning, CRLF guard, IPv4 pooler, `DEV_LOGIN_DISABLED`), see [docs/deploy-cloudflare-supabase.md](https://github.com/trunganhvu/banana-slides/blob/main/docs/deploy-cloudflare-supabase.md).

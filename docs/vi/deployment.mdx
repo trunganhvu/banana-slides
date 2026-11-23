@@ -1,0 +1,122 @@
+---
+title: "Triển khai Cloud (Cloudflare + Supabase)"
+description: "Triển khai Banana Slides công khai trên Cloudflare Pages, Containers, R2 và Supabase PostgreSQL với chi phí ~$5/tháng"
+---
+
+Kiến trúc này cho phép bạn đưa Banana Slides lên web công khai với chi phí tối thiểu, tự động ngủ khi vắng khách, lưu trữ tệp bền vững không tốn phí băng thông tải ra và quản lý cơ sở dữ liệu bằng PostgreSQL.
+
+## Kiến trúc & Chi phí dự kiến
+
+| Thành phần | Dịch vụ sử dụng | Chi phí / tháng | Vai trò |
+|------------|-----------------|-----------------|---------|
+| Frontend & Proxy | **Cloudflare Pages + Functions** | `$0` | Phục vụ `frontend/dist`, bộ SEO/GEO (`llms.txt`, `sitemap.xml`) và proxy `/api/*`, `/files/*`, `/health` tới `BACKEND_ORIGIN` |
+| Backend Python | **Cloudflare Containers + Durable Objects** | `$5` (Workers Paid) | Chạy Flask + `ThreadPoolExecutor` + `ffmpeg` + `opencv` + `onnxruntime` (gói `basic`, tự ngủ sau 15 phút nhàn rỗi) |
+| Lưu trữ tệp | **Cloudflare R2** (`tigrisfs` FUSE) | `$0` (10 GB free, `$0` egress) | Gắn đọc-ghi tại `/app/uploads` giúp ảnh slide, mẫu template và tệp PPTX không bị mất khi container ngủ |
+| Cơ sở dữ liệu | **Supabase PostgreSQL** (Free Tier) | `$0` (500 MB free) | Lưu người dùng, dự án, trang slide, tác vụ và cài đặt qua Session Pooler IPv4 (`ap-southeast-1`) |
+
+<Note>
+  Ổ đĩa mặc định của Cloudflare Containers sẽ bị đặt lại mỗi khi container ngủ. Khi chạy production trên cloud, luôn cấu hình `DATABASE_URL` (PostgreSQL) và thông số R2 để gắn `/app/uploads`.
+</Note>
+
+---
+
+## Thiết lập lần đầu
+
+<Steps>
+  <Step title="Tạo Supabase PostgreSQL (Singapore)">
+    1. Tạo project Supabase tại vùng `ap-southeast-1` và đặt mật khẩu cơ sở dữ liệu **chỉ gồm chữ và số** (tránh `@`, `#`, `%`, `&` để không phải mã hóa URL).
+    2. Khởi tạo 11 bảng ứng dụng cùng bảng `alembic_version` (đặt revision `head` hiện tại), bật **Row Level Security (RLS)** trên toàn bộ bảng trong schema `public`.
+    3. Thu hồi quyền Data API của `anon` và `authenticated` để chỉ Backend Flask kết nối trực tiếp qua Postgres:
+       ```sql
+       REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+       ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
+       ```
+    4. Mở **Connect → Session pooler → URI** (cổng `5432`, hỗ trợ IPv4 cho container) để lấy chuỗi `DATABASE_URL`.
+  </Step>
+
+  <Step title="Kích hoạt Cloudflare R2 & Tạo S3 API Token">
+    1. Bật **R2 Object Storage** trên Cloudflare Dashboard và tạo bucket (ví dụ `banana-slides-storage` tại vùng `APAC`).
+    2. Vào **R2 → Manage API Tokens → Create Account API token**, chọn quyền **Object Read & Write** chỉ định cho bucket vừa tạo, sau đó lưu lại **Access Key ID** và **Secret Access Key**.
+  </Step>
+
+  <Step title="Bật gói Workers Paid & Google OAuth">
+    1. Nâng cấp gói **Workers Paid ($5/tháng)** trên Cloudflare Dashboard để mở khóa **Cloudflare Containers** và **Durable Objects**.
+    2. Tại Google Cloud Console, thêm đường dẫn Cloudflare Pages (`https://<ten-project>.pages.dev`) và tên miền riêng vào mục **Authorized JavaScript origins** của OAuth 2.0 Client ID.
+  </Step>
+
+  <Step title="Deploy Backend Container & Nạp Secrets">
+    Bật **Docker Desktop** trên máy, sau đó chạy trong thư mục `cloudflare-backend/`:
+
+    ```powershell
+    cd cloudflare-backend
+    npm install
+    npx wrangler login
+    npx wrangler deploy
+    ```
+
+    <Note>
+      Tệp `cloudflare-backend/package.json` ghim `wrangler@4.85.0` để tương thích với Node.js `v20.18+`. Nếu máy sử dụng Node.js `>= 22.12`, bạn có thể nâng cấp Wrangler lên phiên bản mới hơn.
+    </Note>
+
+    Nạp lần lượt các biến bí mật lên Worker (truyền **tên biến** ở dòng lệnh, dán **giá trị** khi được hỏi):
+
+    ```powershell
+    npx wrangler secret put DATABASE_URL
+    npx wrangler secret put SECRET_KEY
+    npx wrangler secret put GOOGLE_CLIENT_ID
+    npx wrangler secret put ADMIN_EMAILS
+    npx wrangler secret put CORS_ORIGINS
+    npx wrangler secret put AWS_ACCESS_KEY_ID
+    npx wrangler secret put AWS_SECRET_ACCESS_KEY
+    # Tùy chọn nếu muốn cấp sẵn Gemini API Key mặc định cho mọi người dùng:
+    # npx wrangler secret put GOOGLE_API_KEY
+    ```
+  </Step>
+
+  <Step title="Kết nối Cloudflare Pages (Frontend)">
+    1. Tạo dự án Cloudflare Pages liên kết tới repo GitHub:
+       - **Production branch**: `main`
+       - **Root directory**: `frontend`
+       - **Build command**: `npm run build:web`
+       - **Build output directory**: `dist`
+    2. Tại **Settings → Variables and secrets** (cho cả **Production** và **Preview**), đặt `BACKEND_ORIGIN` = URL Worker Backend (`https://banana-slides-backend.<subdomain>.workers.dev`).
+    3. Kiểm tra quyền truy cập repository trong Cloudflare Pages GitHub App để tự động deploy mỗi khi push code mới.
+  </Step>
+</Steps>
+
+---
+
+## Quy trình cập nhật & Nghiệm thu sau này
+
+Mỗi khi cập nhật mã nguồn Backend hoặc cấu hình Container, chạy script tự động từ thư mục gốc repository:
+
+```powershell
+.\scripts\deploy-cloudflare.ps1 -BackendUrl "https://banana-slides-backend.<subdomain>.workers.dev"
+```
+
+Script tự động kiểm tra tuần tự:
+1. Docker Desktop đang chạy.
+2. `cloudflare-backend/entrypoint.sh` giữ chuẩn xuống dòng **LF** (không có `\r`).
+3. `npm --prefix cloudflare-backend run typecheck` đạt 0 lỗi.
+4. Thực thi `npx wrangler deploy`.
+5. Kiểm tra trực tiếp các endpoint (`/`, `/health`, `/api/auth/config`, `/api/output-language`, `/llms.txt`, `/robots.txt`) trả về `HTTP 200`, và `POST /api/auth/dev-login` trả về `403`.
+
+Để chỉ kiểm tra nhanh tình trạng live mà không build lại:
+
+```powershell
+.\scripts\deploy-cloudflare.ps1 -VerifyOnly -FrontendUrl "https://banana-slides-4h7.pages.dev"
+```
+
+<Accordion title="Checklist gắn Tên miền riêng (Custom Domain) & Tối ưu AI Search">
+
+1. Gắn tên miền tại **Cloudflare Pages → Custom domains**.
+2. Thêm `https://yourdomain.com` vào **Authorized JavaScript origins** trên Google Cloud Console.
+3. Cập nhật secret `CORS_ORIGINS` (`npx wrangler secret put CORS_ORIGINS`) bao gồm `https://yourdomain.com`.
+4. Thay `yourdomain.com` trong `frontend/public/sitemap.xml` và đẩy thay đổi lên `main`.
+5. Trong Cloudflare Dashboard mục **Security → Bots**, đảm bảo không chặn các bot tìm kiếm Google và AI (`Googlebot`, `OAI-SearchBot`, `GPTBot`, `PerplexityBot`, `ClaudeBot`).
+
+</Accordion>
+
+## Tài liệu tham chiếu kỹ thuật đầy đủ
+
+Xem hướng dẫn chi tiết về Alembic migration cho PostgreSQL, xoay vòng secret và bảng xử lý sự cố (`error 1101`, `CRLF`, IPv4 pooler, `DEV_LOGIN_DISABLED`) tại [docs/deploy-cloudflare-supabase.md](https://github.com/trunganhvu/banana-slides/blob/main/docs/deploy-cloudflare-supabase.md).

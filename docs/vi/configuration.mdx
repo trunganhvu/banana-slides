@@ -1,0 +1,210 @@
+---
+title: "Cấu hình"
+description: "Biến môi trường và thiết lập nhà cung cấp AI"
+---
+
+## Nhà cung cấp AI (AI Provider)
+
+Thiết lập `AI_PROVIDER_FORMAT` trong `.env` để chọn nhà cung cấp mặc định:
+
+| Định dạng | Mô tả |
+|-----------|-------|
+| `gemini` | Google Gemini API (mặc định) |
+| `openai` | API tương thích chuẩn OpenAI |
+| `volcengine` | Volcengine ModelArk AgentPlans (tương thích OpenAI) |
+| `vertex` | Google Cloud Vertex AI |
+| `lazyllm` | Điều tuyến đa nhà cung cấp qua LazyLLM |
+
+## Giới hạn token đầu ra văn bản
+
+Tại **Cài đặt → Cài đặt nâng cao → Cấu hình hiệu năng**, thiết lập **Số token đầu ra tối đa** (mặc định **32768**). Đây là giới hạn toàn cục cho sinh văn bản và nhận diện hình ảnh, bao gồm cả luồng streaming dàn ý và mô tả trang. Lưu sẽ có hiệu lực ở các yêu cầu tiếp theo; đặt lại sẽ khôi phục giá trị từ biến môi trường.
+
+Đặt `TEXT_MAX_OUTPUT_TOKENS=32768` trong `.env` để thay đổi giá trị mặc định. Biến `ANTHROPIC_MAX_TOKENS` cũ vẫn được giữ làm dự phòng khi `TEXT_MAX_OUTPUT_TOKENS` chưa được thiết lập. Giá trị lưu trong giao diện luôn được ưu tiên hơn.
+
+Các lời gọi chuẩn OpenAI dùng `max_tokens` (riêng dòng GPT-5 và o1/o3/o4 dùng `max_completion_tokens`), Anthropic và LazyLLM dùng `max_tokens`, còn Gemini/Vertex dùng `max_output_tokens`. Codex OAuth giữ nguyên giới hạn phía máy chủ. Giá trị này là trần tối đa (vẫn tuân theo giới hạn của mô hình/nhà cung cấp). Nếu mô tả dài bị cắt ngang, hãy tăng giá trị này.
+
+## Gemini (Mặc định)
+
+```env
+AI_PROVIDER_FORMAT=gemini
+GOOGLE_API_KEY=your-api-key
+GOOGLE_API_BASE=https://generativelanguage.googleapis.com
+```
+
+<Warning>
+  Gói miễn phí của Gemini API chỉ hỗ trợ sinh văn bản, không hỗ trợ sinh hình ảnh.
+</Warning>
+
+## Chuẩn OpenAI (OpenAI-Compatible)
+
+```env
+AI_PROVIDER_FORMAT=openai
+OPENAI_API_KEY=your-api-key
+OPENAI_API_BASE=https://api.openai.com/v1
+```
+
+### Mức chất lượng ảnh (GPT Image)
+
+Khi mô hình tạo ảnh dùng API chuẩn OpenAI, chọn mức chất lượng tại **Cài đặt → Mô hình tạo ảnh → Chất lượng ảnh**. Tùy chọn này xuất hiện khi nhà cung cấp ảnh là OpenAI, Volcengine Agent Plan hoặc Codex (OpenAI OAuth) *và* mô hình thuộc dòng GPT Image (`gpt-image-*`, `chatgpt-image-*`); DALL·E, Seedream và các mô hình khác sẽ ẩn tùy chọn này.
+
+| Mức chất lượng | Ý nghĩa |
+|----------------|---------|
+| `auto` | Mặc định; mô hình tự quyết định |
+| `low` / `medium` | Bản nháp chi phí thấp hơn |
+| `high` | Mức cao nhất của các thế hệ GPT Image trước |
+| `xhigh` / `max` | Dành riêng cho `gpt-image-2.5` trở lên; sắc nét hơn, thời gian xử lý lâu hơn |
+
+Lưu ý:
+
+- `gpt-image-2.5-flare` và `gpt-image-2.5-sunburst` hỗ trợ đủ 6 mức. `gpt-image-2`, `gpt-image-1.5`, `gpt-image-1` và `chatgpt-image-*` dừng ở mức `high`; nếu chọn `xhigh` / `max` hệ thống tự hạ về `high` và ghi cảnh báo.
+- Codex (OpenAI OAuth) đọc cùng thiết lập này: `auto` giữ mức `high` mặc định của Codex, trong khi `low` / `medium` / `high` và `xhigh` / `max` (bản 2.5) được chuyển tới công cụ `image_generation` của Codex.
+- `dall-e-3` luôn dùng `standard`; `dall-e-2` và Volcengine Seedream không nhận tham số chất lượng.
+- Về chi phí: các mức của dòng 2.5 rẻ hơn thế hệ 2.0 tương ứng (`2.5 high` xấp xỉ `gpt-image-2 medium`). Để giữ chất lượng tương đương `high` cũ, hãy chọn `max`.
+- Tên mô hình được nhận diện theo tiền tố `gpt-image` / `chatgpt-image` (bao gồm các snapshot có ngày tháng như `gpt-image-2.5-flare-2026-09-08`).
+- Có thể đặt mặc định qua biến môi trường: `IMAGE_QUALITY=high` (`auto` / `low` / `medium` / `high` / `xhigh` / `max`). Giá trị đã lưu trong Cài đặt luôn được ưu tiên khi khởi động lại.
+
+## SenseNova / SenseTime (Chuẩn OpenAI)
+
+Nhà cung cấp LazyLLM SenseNova cũ vẫn được duy trì. Các mô hình ảnh SenseNova U1 nên sử dụng đường dẫn chuẩn OpenAI: Banana Slides tự nhận diện tiền tố `sensenova-u1*` và chuyển sang endpoint JSON gốc của SenseNova (`/images/generations` và `/images/edits`).
+
+Giữ Gemini cho văn bản và chỉ định tuyến tạo ảnh qua SenseNova:
+
+```env
+AI_PROVIDER_FORMAT=gemini
+IMAGE_MODEL_SOURCE=openai
+IMAGE_API_KEY=your-sensenova-api-key
+IMAGE_API_BASE=https://token.sensenova.cn/v1
+IMAGE_MODEL=sensenova-u1.5-lite
+```
+
+Hoặc dùng chuẩn OpenAI cho toàn bộ ứng dụng:
+
+```env
+AI_PROVIDER_FORMAT=openai
+OPENAI_API_KEY=your-sensenova-api-key
+OPENAI_API_BASE=https://token.sensenova.cn/v1
+IMAGE_MODEL=sensenova-u1.5-lite
+```
+
+Lưu ý:
+
+- Dùng `https://token.sensenova.cn/v1`; endpoint cũ `https://api.sensenova.cn/compatible-mode/v1` không còn khả dụng.
+- `sensenova-u1.5-lite` hỗ trợ tạo ảnh từ văn bản và chỉnh sửa theo ảnh tham chiếu ở độ phân giải `1K / 2K / 4K`.
+- `sensenova-u1`, `sensenova-u1-fast` và `sensenova-u1.5-fast` dùng kích thước cố định và chưa hỗ trợ chỉnh sửa ảnh tham chiếu.
+
+## Volcengine AgentPlans
+
+Volcengine ModelArk AgentPlans hoạt động qua endpoint tương thích OpenAI. Chọn "Volcengine AgentPlans" trong Cài đặt hoặc cấu hình trong `.env`:
+
+```env
+AI_PROVIDER_FORMAT=volcengine
+VOLCENGINE_API_KEY=your-volcengine-api-key
+VOLCENGINE_API_BASE=https://ark.cn-beijing.volces.com/api/plan/v3
+```
+
+Lưu ý:
+
+- **Agent Plans yêu cầu khóa riêng**: khóa `ark-...` tạo trong Agent Plans console chỉ dùng cho endpoint `api/plan/v3`.
+- **Dùng đúng tên mô hình Agent Plans** (ví dụ `doubao-seed-2.1-turbo`, `kimi-k2.6`) và `doubao-seedream-5.0-lite` cho tạo ảnh.
+- Người dùng ModelArk tiêu chuẩn hãy chọn luồng Doubao với `api/v3`.
+
+## Vertex AI
+
+```env
+AI_PROVIDER_FORMAT=vertex
+VERTEX_PROJECT_ID=your-gcp-project-id
+VERTEX_LOCATION=global
+GOOGLE_APPLICATION_CREDENTIALS=./gcp-service-account.json
+```
+
+<Tip>
+  Dòng mô hình `gemini-3-*` yêu cầu đặt `VERTEX_LOCATION=global`.
+</Tip>
+
+## LazyLLM (Đa nhà cung cấp)
+
+Điều tuyến riêng biệt cho văn bản, hình ảnh và nhận diện ảnh:
+
+```env
+AI_PROVIDER_FORMAT=lazyllm
+TEXT_MODEL_SOURCE=deepseek
+IMAGE_MODEL_SOURCE=doubao
+IMAGE_CAPTION_MODEL_SOURCE=qwen
+```
+
+Khai báo API key tương ứng cho các nhà cung cấp bạn sử dụng:
+
+```env
+DOUBAO_API_KEY=your-key       # Volcengine
+DEEPSEEK_API_KEY=your-key     # DeepSeek
+QWEN_API_KEY=your-key         # Alibaba Qwen
+GLM_API_KEY=your-key          # Zhipu GLM
+SILICONFLOW_API_KEY=your-key  # SiliconFlow
+SENSENOVA_API_KEY=your-key    # SenseNova
+MINIMAX_API_KEY=your-key      # MiniMax
+KIMI_API_KEY=your-key         # Moonshot Kimi
+PPIO_API_KEY=your-key         # PPIO
+AIPING_API_KEY=your-key       # AIPing
+```
+
+Banana Slides đóng gói sẵn các SDK nhà cung cấp trực tuyến (`volcengine-python-sdk[ark]`, `dashscope`, `zhipuai`) và đăng ký tường minh trong bản đóng gói Desktop PyInstaller để tránh lỗi thiếu module động.
+
+## Biến môi trường Bảo mật, Cơ sở dữ liệu & Lưu trữ Production
+
+Khi triển khai công khai (ví dụ theo [hướng dẫn Cloudflare + Supabase](/vi/deployment)), cần cấu hình thêm nhóm biến dưới đây:
+
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `DATABASE_URL` | Tùy chọn (mặc định SQLite) | Chuỗi kết nối PostgreSQL (`postgresql://...`). Dùng **Session pooler** (cổng `5432`) trên Supabase cho môi trường container IPv4. |
+| `SECRET_KEY` | Có (production) | Khóa bí mật ký phiên JWT người dùng (chuỗi ngẫu nhiên >= 32 ký tự). |
+| `GOOGLE_CLIENT_ID` | Có (production) | OAuth 2.0 Client ID phục vụ đăng nhập Google SSO. |
+| `ADMIN_EMAILS` | Khuyến nghị | Danh sách email quản trị viên cách nhau bằng dấu phẩy. Nếu để trống, chỉ tài khoản đầu tiên đăng ký được cấp quyền admin. |
+| `ENABLE_DEV_LOGIN` | Tắt ở production | Giữ trống hoặc `false` để `/api/auth/dev-login` trả `403 DEV_LOGIN_DISABLED`. |
+| `CORS_ORIGINS` | Có (production) | Danh sách origin Frontend được phép gọi API (VD: `https://banana-slides-4h7.pages.dev`). |
+| `R2_ACCOUNT_ID` / `R2_BUCKET_NAME` | Khi dùng R2 | Account ID và tên bucket Cloudflare R2 mount vào `/app/uploads`. |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Khi dùng R2 | Thông tin R2 Account API Token quyền **Object Read & Write**. |
+
+## MinerU (Phân tích PDF)
+
+[MinerU](https://mineru.net) giúp trích xuất nội dung và hình ảnh PDF độ chính xác cao cho tài liệu tham khảo. Đăng ký token tại [mineru.net/apiManage/token](https://mineru.net/apiManage/token):
+
+```env
+MINERU_API_BASE=https://mineru.net
+MINERU_TOKEN=your-mineru-token
+```
+
+## Baidu API Key
+
+Để tăng chất lượng trích xuất chữ bằng OCR khi xuất Editable PPTX, tạo [IAM API Key](https://console.bce.baidu.com/iam/#/iam/apikey/list) tại Baidu Cloud:
+
+```env
+BAIDU_API_KEY=your-baidu-api-key
+```
+
+## ElevenLabs (Giọng đọc Video thuyết minh)
+
+Mặc định tính năng xuất Video thuyết minh dùng [edge-tts](https://github.com/rany2/edge-tts) (giọng Microsoft Edge miễn phí, không cần API key). Bạn có thể chuyển sang [ElevenLabs](https://elevenlabs.io) nếu muốn giọng đọc tự nhiên hơn.
+
+**Cách lấy API key:**
+
+1. Đăng ký tài khoản tại [elevenlabs.io](https://elevenlabs.io) (có gói miễn phí 10.000 ký tự/tháng).
+2. Vào **Profile → API Keys** ([elevenlabs.io/app/settings/api-keys](https://elevenlabs.io/app/settings/api-keys)).
+3. Nhấn **Create API Key** và sao chép khóa.
+
+**Cấu hình qua giao diện Cài đặt (khuyên dùng):**
+
+Mở **Cài đặt → ElevenLabs Text-to-Speech**, bật công tắc và dán API key (không cần khởi động lại).
+
+**Hoặc cấu hình qua `.env`:**
+
+```env
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+```
+
+<Note>
+  Gói miễn phí cấp 10.000 ký tự/tháng. Mỗi trang thuyết minh trung bình khoảng 200–500 ký tự (bộ 10 trang tốn ~2.000–5.000 ký tự/lần xuất).
+</Note>
+
+## Ghi đè cấu hình khi chạy (Runtime Settings Override)
+
+Toàn bộ cấu hình AI ở trên đều có thể chỉnh ngay trong trang **Cài đặt** trên giao diện web. Cấu hình lưu trong cơ sở dữ liệu sẽ ghi đè giá trị `.env`; nhấn **Đặt lại mặc định** để khôi phục theo `.env`.

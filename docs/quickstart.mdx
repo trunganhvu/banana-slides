@@ -3,13 +3,17 @@ title: "Quick Start"
 description: "Try the demo or deploy Banana Slides locally"
 ---
 
-## Online Demo
+## Live Web App
 
-No installation needed — try it instantly: [bananaslides.online](https://bananaslides.online/)
+No installation needed — try the live app at [banana-slides-4h7.pages.dev](https://banana-slides-4h7.pages.dev/).
+
+<Tip>
+  Want to host your own public instance for ~$5/month with Serverless Frontend, Python Docker Containers, R2 Object Storage, and managed PostgreSQL? Follow the [Cloud Deployment Guide](/deployment).
+</Tip>
 
 ---
 
-## Self-Hosting
+## Self-Hosting (Docker)
 
 ### Step 1: Install Docker
 
@@ -30,8 +34,8 @@ Create a new directory, enter it, and run the following command to download the 
 
 ```bash
 mkdir banana-slides && cd banana-slides && \
-curl -O https://raw.githubusercontent.com/Anionex/banana-slides/main/docker-compose.prod.yml && \
-curl -O https://raw.githubusercontent.com/Anionex/banana-slides/main/.env.example && \
+curl -O https://raw.githubusercontent.com/trunganhvu/banana-slides/main/docker-compose.prod.yml && \
+curl -O https://raw.githubusercontent.com/trunganhvu/banana-slides/main/.env.example && \
 cp .env.example .env
 ```
 
@@ -41,9 +45,9 @@ Edit the `.env` file to fill in your API key (see [Configuration](/configuration
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-<Tip>
-  [AIHubMix](https://api.inferera.com/?aff=17EC) is recommended for API keys — it supports both Gemini and OpenAI formats and handles high-concurrency image generation reliably.
-</Tip>
+<Note>
+  Both Gemini and OpenAI-compatible formats are supported. Configure your API key and preferred text/image models in `.env` or directly in **Settings** inside the web UI.
+</Note>
 
 ### Step 3: Open the App
 
@@ -85,7 +89,7 @@ docker logs -f --tail 100 banana-slides-backend
 ### Backend
 
 ```bash
-git clone https://github.com/Anionex/banana-slides
+git clone https://github.com/trunganhvu/banana-slides
 cd banana-slides
 cp .env.example .env  # Edit .env and add your API key
 cd backend

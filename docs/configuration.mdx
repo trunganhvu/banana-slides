@@ -65,7 +65,7 @@ Notes:
 
 ## SenseNova / SenseTime (OpenAI-Compatible)
 
-The legacy `SenseNova ()` LazyLLM provider remains available, and the default provider is unchanged. SenseNova U1 image models should use the OpenAI-compatible path: Banana Slides recognizes `sensenova-u1*` model names and switches to SenseNova's native JSON endpoints (`/images/generations` and `/images/edits`) instead of the OpenAI SDK's multipart `images.edit` request.
+The legacy `SenseNova` LazyLLM provider remains available, and the default provider is unchanged. SenseNova U1 image models should use the OpenAI-compatible path: Banana Slides recognizes `sensenova-u1*` model names and switches to SenseNova's native JSON endpoints (`/images/generations` and `/images/edits`) instead of the OpenAI SDK's multipart `images.edit` request.
 
 Keep Gemini for text and route only image generation through SenseNova:
 
@@ -107,7 +107,7 @@ Notes:
 
 - **Agent Plans requires a dedicated API key**: the `ark-...` key created in the Agent Plans console only works against the `api/plan/v3` endpoint; a standard ModelArk key and the `api/v3` endpoint are not interchangeable.
 - **Use Agent Plans model names** (e.g. `doubao-seed-2.1-turbo`, `kimi-k2.6`) and `doubao-seedream-5.0-lite` for image generation; standard ModelArk endpoint IDs (e.g. `doubao-seed-2-1-pro-260628`) do not exist on Agent Plans.
-- Selecting "Volcengine AgentPlans" in Settings prefills the Agent Plans base URL and recommended models; standard ModelArk users should use the "Doubao ()" path with `api/v3`.
+- Selecting "Volcengine AgentPlans" in Settings prefills the Agent Plans base URL and recommended models; standard ModelArk users should use the "Doubao" path with `api/v3`.
 
 The generic API Key field in Settings can still override the API key, while the Base URL is managed automatically.
 
@@ -156,17 +156,20 @@ LazyLLM source provides `lazyllm install online-advanced`, but the current PyPI 
 
 Desktop builds (PyInstaller) explicitly collect and register every LazyLLM online vendor (qwen, doubao, deepseek, glm, kimi, minimax, sensenova, siliconflow, ppio, aiping, openai). LazyLLM discovers suppliers dynamically via `pkgutil.iter_modules`, which can fail inside a packaged runtime and cause `Unsupported source: xxx`; Banana Slides imports every supplier module explicitly when a provider is constructed and validates the configured vendor name (bundling the vendor SDKs - dashscope, zhipuai, volcenginesdkarkruntime, PyJWT - as well), so no extra configuration is needed.
 
-## AIHubMix (Recommended Proxy)
+## Production Auth, Database & Storage Variables
 
-[AIHubMix](https://api.inferera.com/?aff=17EC) is a recommended API proxy that supports both Gemini and OpenAI API formats, with stable high-concurrency performance for text-to-image generation. [Apply for an AIHubMix API key here](https://api.inferera.com/?aff=17EC).
+When deploying Banana Slides publicly (for example via [Cloudflare + Supabase](/deployment)), configure these security and persistence variables:
 
-To get an API key, open AIHubMix and sign in or create an account. Go to **Console** and first choose **Account → Top Up** in the left sidebar to add credits. After topping up, choose **Develop → API Keys**, click **Add key**, then copy the generated key into the Settings page or `.env`.
-
-```env
-AI_PROVIDER_FORMAT=openai
-OPENAI_API_KEY=your-aihubmix-key
-OPENAI_API_BASE=https://api.inferera.com/v1
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Optional (SQLite by default) | PostgreSQL connection string (`postgresql://...`). Use Supabase **Session pooler** (port `5432`) for IPv4 containers. |
+| `SECRET_KEY` | Yes in prod | Secret key used to sign user JWT sessions. Generate a random 64-char hex string. |
+| `GOOGLE_CLIENT_ID` | Yes in prod | Google OAuth 2.0 Client ID for Google Sign-In SSO. |
+| `ADMIN_EMAILS` | Recommended | Comma-separated allowlist of admin emails. When empty, only the first registered user receives admin access. |
+| `ENABLE_DEV_LOGIN` | Keep unset/false | Leave disabled in production so `/api/auth/dev-login` returns `403 DEV_LOGIN_DISABLED`. |
+| `CORS_ORIGINS` | Yes in prod | Allowed frontend origins (e.g. `https://banana-slides-4h7.pages.dev,https://yourdomain.com`). |
+| `R2_ACCOUNT_ID` / `R2_BUCKET_NAME` | Container R2 | Cloudflare R2 account ID and bucket name mounted to `/app/uploads` via `tigrisfs`. |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Container R2 | Cloudflare R2 S3-compatible token credentials with Object Read & Write access. |
 
 ## MinerU (PDF Parsing)
 

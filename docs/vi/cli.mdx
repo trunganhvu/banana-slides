@@ -1,0 +1,188 @@
+---
+title: "Công cụ dòng lệnh (CLI)"
+description: "Sử dụng banana-cli để tự động hóa mọi thao tác trên Banana Slides từ terminal"
+---
+
+## Tổng quan
+
+`banana-cli` là công cụ dòng lệnh của Banana Slides, giao tiếp trực tiếp qua REST API của Backend. Rất phù hợp cho:
+
+- **Tạo hàng loạt (Batch generation)**: Sinh nhiều bộ slide từ tệp JSONL/CSV.
+- **Pipeline tự động hóa**: Tích hợp vào CI/CD hoặc script nội bộ.
+- **Điều phối bởi AI Agent**: Dùng làm giao diện công cụ cho các AI Agent.
+
+## Cài đặt
+
+Tại thư mục gốc dự án:
+
+```bash
+uv sync                    # Cài đặt phụ thuộc
+uv run banana-cli --help   # Kiểm tra hoạt động
+```
+
+## Cài đặt Agent Skill
+
+Nếu bạn dùng AI Agent (như Claude Code), cài skill `banana-cli` để agent tự biết cú pháp sử dụng:
+
+```bash
+# Cài toàn cục (khuyên dùng)
+npx skills add Anionex/banana-slides -g
+
+# Hoặc cài riêng cho dự án hiện tại
+npx skills add Anionex/banana-slides
+```
+
+## Tùy chọn toàn cục (Global Options)
+
+```bash
+banana-cli [global-options] <command-group> <subcommand> [options]
+```
+
+| Tùy chọn | Mô tả | Mặc định |
+|----------|-------|----------|
+| `--base-url` | Địa chỉ Backend | `http://localhost:5011` |
+| `--access-code` | Mã truy cập (`X-Access-Code`) | Không |
+| `--poll-interval` | Chu kỳ kiểm tra tiến độ (giây) | `3` |
+| `--request-timeout` | Thời gian chờ request (giây) | `60` |
+| `--config` | Đường dẫn tệp cấu hình TOML | `~/.config/banana-slides/cli.toml` |
+| `--json` | Xuất kết quả dạng JSON | Tắt |
+| `--verbose` | In nhật ký chi tiết | Tắt |
+
+### Thứ tự ưu tiên cấu hình
+
+Tham số CLI > Biến môi trường (`BANANA_CLI_*`) > Tệp cấu hình TOML > Giá trị mặc định
+
+```bash
+BANANA_CLI_BASE_URL=http://localhost:5011
+BANANA_CLI_ACCESS_CODE=your-code
+BANANA_CLI_POLL_INTERVAL=3
+BANANA_CLI_REQUEST_TIMEOUT=60
+BANANA_CLI_CONTINUE_ON_ERROR=true
+```
+
+---
+
+## Tra cứu nhanh theo tiền tố ID ngắn
+
+Tất cả tham số `--project-id` và `--page-id` đều hỗ trợ nhập vài ký tự đầu của UUID (tương tự short hash trong Git):
+
+```bash
+banana-cli projects get a1b2
+banana-cli pages edit-image --page-id b9c8 --instruction "Đổi tiêu đề sang màu đỏ"
+```
+
+## Ngữ cảnh dự án làm việc (Working Project Context)
+
+Đặt một dự án mặc định để không phải gõ lại `--project-id` ở các lệnh tiếp theo:
+
+```bash
+banana-cli projects use a1b2     # Đặt dự án làm việc
+banana-cli workflows outline     # Tự dùng dự án đang chọn
+banana-cli projects use          # Xem dự án đang chọn
+banana-cli projects unuse        # Bỏ chọn
+```
+
+---
+
+## Tham chiếu lệnh chính
+
+### `projects` — Quản lý dự án
+
+```bash
+banana-cli projects list --limit 50 --offset 0
+banana-cli projects get <project_id>
+banana-cli projects create --creation-type idea --idea-prompt "Xu hướng công nghệ AI 2026"
+banana-cli projects update <project_id> --template-style "Phong cách doanh nghiệp nền tối"
+banana-cli projects delete <project_id>
+```
+
+### `workflows` — Luồng tạo slide hoàn chỉnh
+
+```bash
+# Tạo dàn ý (kèm gợi ý số trang)
+banana-cli workflows outline --project-id <id> --pages 8
+
+# Tinh chỉnh dàn ý bằng ngôn ngữ tự nhiên
+banana-cli workflows outline --project-id <id> --refine "Thêm trang phân tích thị trường"
+
+# Tạo mô tả và tạo ảnh (mặc định đợi đến khi xong; thêm --no-wait để chạy bất đồng bộ)
+banana-cli workflows descriptions --project-id <id>
+banana-cli workflows images --project-id <id> --use-template
+
+# Chạy trọn bộ: dàn ý -> mô tả -> ảnh
+banana-cli workflows full --project-id <id> --language vi --pages 10
+```
+
+### `pages` — Thao tác từng trang
+
+```bash
+banana-cli pages create --project-id <id> --order-index 0
+banana-cli pages set-outline --project-id <id> --page-id <pid> --outline-json '{"title": "Chương 1"}'
+banana-cli pages gen-description --project-id <id> --page-id <pid>
+banana-cli pages gen-image --project-id <id> --page-id <pid> --use-template
+banana-cli pages edit-image --project-id <id> --page-id <pid> --instruction "Đổi tiêu đề sang màu đỏ"
+banana-cli pages versions --project-id <id> --page-id <pid>
+banana-cli pages set-current --project-id <id> --page-id <pid> --version-id <vid>
+```
+
+### `exports` — Xuất bản
+
+```bash
+banana-cli exports pptx --project-id <id> --output ./slides.pptx
+banana-cli exports pdf --project-id <id> --output ./slides.pdf
+banana-cli exports images --project-id <id>
+banana-cli exports editable-pptx --project-id <id> --output ./editable.pptx --max-depth 2
+```
+
+### `materials`, `refs`, `templates`, `renovation`, `settings`, `tasks`, `files`
+
+```bash
+# Tư liệu & Tài liệu tham khảo
+banana-cli materials upload --file /path/to/image.png --project-id <id>
+banana-cli materials generate --prompt "Nền công nghệ tối giản" --project-id <id> --wait
+banana-cli refs upload --file /path/to/document.pdf --project-id <id>
+banana-cli refs parse --file-id <fid>
+
+# Mẫu template & Làm mới PPT
+banana-cli templates upload --project-id <id> --file /path/to/template.png
+banana-cli renovation create --file /path/to/old.pptx --wait --language vi
+
+# Cài đặt & Kiểm tra tác vụ
+banana-cli settings get
+banana-cli settings verify
+banana-cli tasks wait --project-id <id> --task-id <tid> --timeout-sec 600
+banana-cli files fetch --url /files/project-id/exports/slides.pptx --output ./slides.pptx
+```
+
+---
+
+## Chạy hàng loạt (Batch Jobs)
+
+Hỗ trợ định dạng JSONL và CSV; mỗi dòng tương ứng với một tác vụ tạo bộ slide:
+
+```json
+{"job_id":"job-1","job_type":"full_generation","creation_type":"idea","idea_prompt":"Giới thiệu AI cho doanh nghiệp","language":"vi","export":{"formats":["pptx"]}}
+{"job_id":"job-2","job_type":"full_generation","creation_type":"idea","idea_prompt":"Thực hành Machine Learning","language":"vi","export":{"formats":["pptx","pdf"]}}
+```
+
+Chạy danh sách công việc và theo dõi trạng thái:
+
+```bash
+banana-cli run jobs \
+  --file jobs.jsonl \
+  --report report.json \
+  --continue-on-error \
+  --timeout-sec 3600 \
+  --state-file state.json \
+  --done-marker-file done.json
+
+# Theo dõi tiến độ trực tiếp
+banana-cli run monitor --state-file state.json --watch --interval 30
+```
+
+## Lưu ý sử dụng
+
+1. **Backend phải đang chạy** trước khi gọi `banana-cli`.
+2. **Đường dẫn tệp phải là đường dẫn tuyệt đối** cho các tham số `--file`, `--image`.
+3. **Ngắt và nối lại an toàn**: Có thể nhấn `Ctrl+C` khi đang chờ (`--wait` hoặc `tasks wait`) mà không làm hỏng tác vụ ngầm trên server.
+4. **Thân thiện với AI Agent**: Khi stdout được pipe (non-TTY), `--help` tự động xuất văn bản thuần không kèm định dạng Rich.

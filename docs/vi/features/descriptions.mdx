@@ -1,0 +1,102 @@
+---
+title: "Viết Mô tả từng trang"
+description: "Tạo hoặc biên tập mô tả trực quan chi tiết cho từng slide"
+---
+
+Trình Biên tập Mô tả là bước thứ ba. Mô tả của mỗi trang được chia thành các trường chuyên biệt với vai trò rõ ràng, giúp AI hiểu chính xác cần vẽ và sắp xếp slide như thế nào. Mô tả càng cụ thể thì ảnh slide tạo ra càng sắc nét và đúng ý.
+
+## Cách phân chia vai trò giữa các trường
+
+Mỗi trường trả lời một câu hỏi khác nhau. Tránh lặp lại cùng một nội dung ở nhiều trường để các chỉ dẫn không xung đột làm giảm chất lượng sinh ảnh.
+
+| Trường | Trả lời cho câu hỏi | Cách hệ thống sử dụng |
+|--------|---------------------|----------------------|
+| **Nội dung trang (Page Text)** | Trang này **nói gì** | **Hiển thị nguyên văn lên slide** — chữ bạn viết sẽ được AI vẽ trực tiếp lên hình |
+| **Hình ảnh & Tư liệu** | Trang này **hiển thị gì** | Vẽ biểu đồ/minh họa theo mô tả hoặc lấy ảnh tư liệu đính kèm làm tham chiếu |
+| **Bố cục & Trọng tâm** | Trang này **sắp xếp ra sao** | Chỉ dẫn thiết kế cho AI — không bị vẽ thành văn bản thừa trên slide |
+| **Ghi chú thuyết trình** | Người trình bày **nói gì** | Không hiển thị lên ảnh slide và mặc định không đưa vào prompt sinh ảnh |
+
+<Warning>
+  Mọi nội dung đặt trong **Nội dung trang** đều được AI hiểu là chữ cần in lên slide. Các chỉ dẫn thiết kế (như "căn giữa tiêu đề", "dùng nền xanh đậm") phải đặt vào **Bố cục & Trọng tâm** — nếu đặt nhầm vào Nội dung trang, AI có thể vẽ nguyên câu chỉ dẫn đó thành chữ lên slide.
+</Warning>
+
+**Gợi ý cách viết từng trường:**
+
+- **Hình ảnh & Tư liệu**: Nêu rõ loại biểu đồ và thông điệp cần truyền tải, ví dụ `Biểu đồ đường: tăng trưởng doanh thu 2020-2025, làm nổi bật điểm bùng nổ năm 2023`. Khi dẫn ảnh từ thư viện tư liệu, dùng cú pháp Markdown `![chú thích](/files/xxx/image.png)` (khuyên dùng tối đa 3 mục trên một trang).
+- **Bố cục & Trọng tâm**: Câu đầu mô tả cấu trúc chia vùng (ví dụ `tiêu đề phía trên, hai cột nội dung bên dưới`, `chữ bên trái, biểu đồ bên phải`, `dòng thời gian ngang`); câu thứ hai chỉ rõ điểm nhấn thị giác chính mà người xem cần thấy đầu tiên. Viết gọn tối đa 2 câu.
+
+## Tùy biến các trường mở rộng
+
+Nút **Cài đặt mô tả** trên thanh công cụ cho phép bật/tắt, kéo thả sắp xếp lại thứ tự hoặc tự định nghĩa thêm trường mới (ví dụ "Quy chuẩn thương hiệu"). Biểu tượng trên từng nhãn trường cho biết trường đó có được đưa vào prompt sinh ảnh hay không (`Ghi chú thuyết trình` mặc định tắt).
+
+<Note>
+  Các trường tên cũ trong dự án cũ vẫn được giữ tương thích và hiển thị/đưa vào luồng sinh ảnh bình thường mà không cần chuyển đổi thủ công.
+</Note>
+
+## Tạo hàng loạt mô tả cho toàn bộ trang
+
+Nhấn **Tạo hàng loạt mô tả** — AI tự động viết mô tả chi tiết cho toàn bộ các trang song song. Sau khi xong, bạn có thể rà soát và sửa từng thẻ trang.
+
+**Điều chỉnh mức độ chi tiết trước khi tạo** (menu thả xuống cạnh nút tạo):
+
+| Mức độ | Phù hợp cho |
+|--------|-------------|
+| Ngắn gọn (Concise) | Làm bản nháp nhanh, ưu tiên tốc độ |
+| Mặc định (Default) | Cân bằng giữa tốc độ và độ chi tiết |
+| Chi tiết (Detailed) | Tinh chỉnh kỹ, ưu tiên chất lượng bố cục cao nhất |
+
+<Tip>
+  Ghi rõ tiêu đề chính và các con số cụ thể trong phần nội dung mô tả — điều này giúp AI vẽ chữ chính xác và ít lỗi chính tả hơn hẳn.
+</Tip>
+
+## Tinh chỉnh toàn bộ bằng AI
+
+Thanh nhập lệnh phía trên cho phép sửa đồng loạt mô tả của tất cả các trang. Nhập yêu cầu và nhấn **Ctrl+Enter**.
+
+**Ví dụ câu lệnh:**
+- `Viết chi tiết hơn cho toàn bộ mô tả với số liệu cụ thể`
+- `Chuyển toàn bộ phong cách sang tông công nghệ xanh đậm`
+- `Thêm bảng so sánh số liệu vào mô tả trang 3`
+- `Bỏ cụm từ "nền chuyển sắc" khỏi tất cả các mô tả`
+
+## Tạo lại mô tả cho một trang
+
+Mỗi thẻ mô tả đều có nút **Tạo lại** (🔄) ở góc trên bên phải:
+
+1. Nhấn biểu tượng tạo lại trên thẻ trang cần sửa
+2. Xác nhận trong hộp thoại
+3. AI chỉ tạo lại mô tả cho riêng trang đó
+
+## Sửa thủ công từng trang
+
+Nhấn trực tiếp vào văn bản trong thẻ để sửa ngay tại chỗ. Hệ thống tự động lưu khi bạn nhấp chuột ra ngoài.
+
+## Thiết lập Yêu cầu sinh mô tả
+
+Mở rộng **Yêu cầu sinh mô tả** trên thanh công cụ để thêm quy chuẩn chung áp dụng cho mọi lần sinh mới.
+
+**Ví dụ:**
+- `Mỗi mô tả dưới 100 chữ`
+- `Ưu tiên dùng bảng biểu và số liệu thay cho đoạn văn dài`
+- `Duy trì phong cách tối giản thanh lịch`
+
+Nhấn **Tùy chỉnh** để lưu các yêu cầu hay dùng thành preset trên trình duyệt hiện tại.
+
+## Thêm ảnh tham chiếu riêng cho một trang
+
+Ở phần dưới cùng của mỗi thẻ mô tả:
+
+1. Mở mục **Tải ảnh lên**
+2. Tải ảnh từ máy hoặc chọn ảnh từ Trung tâm Tư liệu
+3. Nhập ghi chú chỉnh sửa (nếu cần), sau đó ảnh sẽ được đưa vào làm tham chiếu khi sinh hình slide
+
+## Nhập / Xuất (Import / Export)
+
+Nhấn **Nhập/Xuất**:
+- **Xuất Mô tả**: Chỉ xuất phần mô tả từng trang
+- **Xuất Dàn ý & Mô tả**: Xuất đầy đủ cả dàn ý lẫn mô tả chi tiết
+- **Nhập (Import)**: Nạp từ tệp Markdown và nối thêm vào danh sách hiện có
+
+## Bước tiếp theo
+
+Khi tất cả các trang đã có mô tả, nút **Tiếp theo →** sẽ sáng lên. Nhấn vào để sang màn hình [Xem trước & Sinh ảnh Slide](/vi/features/images).

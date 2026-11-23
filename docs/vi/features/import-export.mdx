@@ -1,0 +1,145 @@
+---
+title: "Định dạng Nhập & Xuất Markdown"
+description: "Quy chuẩn tệp Markdown để nhập và xuất dàn ý cùng mô tả chi tiết từng trang"
+---
+
+Banana Slides sử dụng tệp Markdown (`.md` / `.markdown` / `.txt`) để nhập và xuất dàn ý cũng như mô tả trang. Định dạng này dễ đọc và chỉnh sửa bằng mọi trình soạn thảo văn bản.
+
+## Cấu trúc tệp chuẩn
+
+```markdown
+# Tiêu đề Dự án
+
+> Thời gian tạo: 2026/11/23 12:00:00
+
+---
+
+## Trang 1: Trang bìa
+
+> Chương: Mở đầu
+
+Trang bìa giới thiệu chủ đề bài thuyết trình, tên công ty và thời gian báo cáo.
+
+**Mô tả trang:**
+--- Nội dung trang ---
+
+### Báo cáo Chiến lược Sản phẩm 2026
+
+Công ty Công nghệ ABC
+
+Tháng 11 năm 2026
+
+--- Nội dung trang ---
+
+Bố cục & Trọng tâm: tiêu đề lớn căn giữa, phụ đề và ngày tháng bên dưới; tên báo cáo là điểm nhấn chính
+
+---
+
+## Trang 2: Tổng quan thị trường
+
+> Chương: Phân tích
+
+Trang này tổng hợp tốc độ tăng trưởng ngành, phân khúc mục tiêu và cơ hội trọng tâm.
+
+**Mô tả trang:**
+--- Nội dung trang ---
+
+### Tổng quan Thị trường
+
+- Quy mô ngành duy trì đà tăng trưởng ổn định
+- Nhu cầu doanh nghiệp tăng tốc mạnh hơn nhóm cá nhân
+- Nhiều phân khúc ngách vẫn chưa được khai thác tốt
+
+--- Nội dung trang ---
+
+Hình ảnh & Tư liệu: biểu đồ cột tăng trưởng, các thẻ chỉ số chính, sơ đồ phân khúc thị trường
+
+---
+```
+
+## Bảng quy chuẩn các trường
+
+| Trường | Cú pháp | Bắt buộc |
+|--------|---------|----------|
+| Tiêu đề trang | `## Trang N: Tiêu đề` hoặc `## Page N: Title` | Có |
+| Chương mục | `> Chương: Tên` hoặc `> Chapter: Name` | Không |
+| Tóm tắt dàn ý | Một câu ngắn ngay sau dòng tiêu đề trang | Không |
+| Mô tả trang | `**Mô tả trang:**` hoặc `**Page Description:**`, phần chữ trên slide bọc giữa cặp `--- Nội dung trang ---` (hoặc `--- Page Content ---`) | Không |
+
+Nếu cuối phần mô tả có các dòng trường mở rộng như `Hình ảnh & Tư liệu: ...`, `Bố cục & Trọng tâm: ...` hoặc `Ghi chú thuyết trình: ...`, Banana Slides sẽ tự động nhận diện và giữ nguyên khi nhập (vẫn hỗ trợ tương thích các tên trường tiếng Anh `Visuals & Assets`, `Layout & Emphasis`, `Speaker Notes`).
+
+Các trang được ngăn cách nhau bởi dấu `---`.
+
+## Tùy chọn Xuất (Export)
+
+Bạn có thể xuất file Markdown từ cả hai màn hình:
+
+| Nguồn xuất | Nội dung |
+|------------|----------|
+| Biên tập Dàn ý | Tiêu đề trang và tóm tắt dàn ý |
+| Biên tập Mô tả | Chỉ xuất mô tả trang, hoặc xuất trọn bộ Dàn ý + Mô tả |
+
+## Hành vi khi Nhập (Import)
+
+- Sau khi dán văn bản hoặc tải tệp Markdown, hộp thoại hiển thị trước số lượng trang nhận diện được. Nút Nhập chỉ bật khi nhận diện được ít nhất 1 trang hợp lệ.
+- Các trang nhập vào được **nối thêm theo đúng thứ tự trong tệp** vào sau các trang hiện có, không ghi đè trang cũ.
+- Thẻ HTML lẫn trong văn bản nhập vào sẽ được tự động loại bỏ để đảm bảo an toàn.
+- Chấp nhận định dạng `.md`, `.markdown`, `.txt`; các tệp nhị phân như PDF, Word, hình ảnh sẽ bị từ chối rõ ràng trước khi đọc.
+
+## Ví dụ tối giản
+
+Một tệp nhập hợp lệ tối giản có thể chỉ cần như sau:
+
+```markdown
+## Trang 1: Giới thiệu
+
+Slide giới thiệu chủ đề, mục lục trình bày và diễn giả.
+
+## Trang 2: Tổng kết
+
+Slide đúc kết các kết luận chính và kế hoạch hành động tiếp theo.
+```
+
+## Dùng AI bên ngoài tạo tệp Import chuẩn
+
+Nếu muốn soạn khung nội dung trước bằng ChatGPT hoặc Claude rồi nhập thẳng vào Banana Slides, bạn có thể dùng mẫu prompt bên dưới:
+
+<Tip>
+  Đây chỉ là mẫu hỗ trợ khi bạn muốn chuẩn bị dữ liệu bên ngoài. Trong hầu hết trường hợp, nhập ý tưởng trực tiếp vào Banana Slides để AI tích hợp sẵn xử lý sẽ nhanh và đồng bộ hơn.
+</Tip>
+
+<Tip>
+  Phần nội dung đặt dưới `**Mô tả trang:**` (nằm giữa cặp `--- Nội dung trang ---`) là chữ thật sẽ hiển thị lên slide, còn các dòng ngắn cuối trang như `Hình ảnh & Tư liệu:` hoặc `Bố cục & Trọng tâm:` đóng vai trò chỉ dẫn thiết kế cho AI.
+</Tip>
+
+<Accordion title="Mẫu Prompt tạo file Markdown cho AI bên ngoài">
+
+```text
+Hãy tạo nội dung bài thuyết trình theo đúng định dạng Markdown dưới đây để nhập trực tiếp vào Banana Slides.
+
+Chủ đề: [CHỦ ĐỀ CỦA BẠN]
+Số trang: [SỐ LƯỢNG, VD: 8]
+Ngôn ngữ: [Tiếng Việt / English]
+Phong cách mong muốn: [VD: "chuyên nghiệp, giàu số liệu" hoặc "trực quan, súc tích"]
+
+Quy tắc bắt buộc:
+1. Mỗi trang bắt đầu bằng "## Page N: Tiêu đề" (hoặc "## Trang N: Tiêu đề")
+2. Nhóm các trang vào chương bằng "> Chapter: Tên chương"
+3. Ngay sau tiêu đề trang, viết 1 câu tóm tắt ngắn gọn thông điệp chính của trang; không tạo khối "**Outline Points:**" rời
+4. Dưới "**Page Description:**", viết nội dung Markdown thật sẽ hiển thị trên slide (heading, gạch đầu dòng, số liệu, bảng biểu nếu phù hợp)
+5. Phần nội dung hiển thị trên slide phải bọc trong cặp:
+   ---  ---
+   [nội dung slide dạng Markdown]
+   ---  ---
+6. Nếu cần, thêm các trường thiết kế ngắn gọn ở cuối trang:
+   Visuals & Assets: ...
+   Layout & Emphasis: ...
+   Speaker Notes: ...
+7. Ngăn cách giữa các trang bằng "---"
+8. Trang đầu tiên là trang bìa, trang cuối cùng là trang kết luận/cảm ơn
+9. Chỉ xuất thuần nội dung Markdown, không viết lời mở đầu, giải thích hay bọc trong code fence
+
+Chỉ trả về đúng văn bản Markdown.
+```
+
+</Accordion>

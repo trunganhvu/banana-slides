@@ -8,43 +8,65 @@
     "dark": "#D97706"
   },
   "favicon": "/logo/banana.svg",
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/trunganhvu/banana-slides"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Mở Ứng Dụng",
+      "href": "https://banana-slides-4h7.pages.dev"
+    }
+  },
   "navigation": {
     "languages": [
       {
-        "language": "zh",
+        "language": "vi",
+        "default": true,
         "groups": [
           {
-            "group": "",
-            "pages": ["zh/index", "zh/quickstart", "zh/configuration", "zh/features/desktop"]
-          },
-          {
-            "group": "",
+            "group": "Bắt đầu",
             "pages": [
-              "zh/features/creation",
-              "zh/features/outline",
-              "zh/features/descriptions",
-              "zh/features/templates",
-              "zh/features/images"
+              "vi/index",
+              "vi/quickstart",
+              "vi/deployment",
+              "vi/configuration",
+              "vi/features/desktop"
             ]
           },
           {
-            "group": "",
+            "group": "Quy trình tạo slide",
             "pages": [
-              "zh/features/materials",
-              "zh/features/export",
-              "zh/features/import-export"
+              "vi/features/creation",
+              "vi/features/outline",
+              "vi/features/descriptions",
+              "vi/features/templates",
+              "vi/features/images"
             ]
           },
           {
-            "group": "",
-            "pages": ["zh/cli"]
+            "group": "Tư liệu & Xuất bản",
+            "pages": [
+              "vi/features/materials",
+              "vi/features/export",
+              "vi/features/import-export"
+            ]
           },
           {
-            "group": "",
+            "group": "Nhà phát triển",
             "pages": [
-              "zh/history",
-              "zh/features/overview",
-              "zh/faq"
+              "vi/cli"
+            ]
+          },
+          {
+            "group": "Khác",
+            "pages": [
+              "vi/history",
+              "vi/features/overview",
+              "vi/faq"
             ]
           }
         ]
@@ -54,7 +76,13 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["index", "quickstart", "configuration", "features/desktop"]
+            "pages": [
+              "index",
+              "quickstart",
+              "deployment",
+              "configuration",
+              "features/desktop"
+            ]
           },
           {
             "group": "Creation Flow",
@@ -76,7 +104,9 @@
           },
           {
             "group": "Developer",
-            "pages": ["cli"]
+            "pages": [
+              "cli"
+            ]
           },
           {
             "group": "More",

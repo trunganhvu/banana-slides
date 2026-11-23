@@ -53,7 +53,7 @@ Note: some image generation models don't support certain aspect ratios. If gener
 ## Generation is slow
 
 - Increase **Max description workers** and **Max image workers** in Settings to speed up parallel generation.
-- If you're on a free API tier, rate limits may apply. Consider upgrading or using a relay service like [AIHubMix](https://api.inferera.com/?aff=17EC).
+- If you're on a free API tier, rate limits may apply. Consider upgrading your provider plan or switching to another supported OpenAI/Gemini-compatible endpoint.
 
 ## How do I regenerate just one page?
 
@@ -86,3 +86,9 @@ The more specific the constraints, the more consistent the output across pages. 
 ## Where is the AI input bar for editing outlines and descriptions?
 
 It's in the **top navigation bar** of the Outline Editor and Description Editor — fill in your instruction and press **Ctrl+Enter**. Example: `Add a case study section after page 3`.
+
+## Cloud Deployment: First request returns error 1101 or Google Sign-In fails
+
+- **Error `1101` after inactivity**: On Cloudflare Containers, instances sleep after 15 minutes of idle time and need ~25–45 seconds to cold-start `tigrisfs` R2 FUSE and the Python backend. Refresh once after a few seconds; `STARTUP_WAIT_ATTEMPTS` is configured for up to 60 seconds in `cloudflare-backend/src/index.ts`.
+- **Google Sign-In button missing or failing**: Ensure `GOOGLE_CLIENT_ID` is set on the backend Worker and your live frontend origin (e.g. `https://banana-slides-4h7.pages.dev` or your custom domain) is listed under **Authorized JavaScript origins** in Google Cloud Console.
+- **`403 DEV_LOGIN_DISABLED`**: Expected on production deployments. Sign in using Google SSO unless `ENABLE_DEV_LOGIN=true` is explicitly set for local testing.

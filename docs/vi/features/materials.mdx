@@ -1,0 +1,103 @@
+---
+title: "Tư liệu & Tài liệu tham khảo"
+description: "Tải lên tài liệu tham khảo, dán ảnh trực tiếp hoặc tạo tư liệu riêng bằng AI"
+---
+
+## Tài liệu tham khảo (Reference Files)
+
+Tải lên tài liệu gốc để AI trích xuất nội dung làm dữ liệu tham chiếu khi lập dàn ý, viết mô tả và vẽ slide.
+
+Khi tài liệu có chứa hình ảnh nhúng bên trong, các hình đó cũng tự động được trích xuất và đưa vào thư viện tư liệu của dự án để bạn tái sử dụng nhanh.
+
+### Định dạng được hỗ trợ
+
+| Định dạng | Nội dung trích xuất |
+|-----------|---------------------|
+| PDF | Văn bản + hình ảnh nhúng |
+| DOCX / DOC | Nội dung và cấu trúc tài liệu |
+| PPTX / PPT | Nội dung các trang trình chiếu |
+| XLSX / XLS / CSV | Dữ liệu bảng tính |
+| Markdown / TXT | Văn bản thuần túy |
+
+<Tip>
+  Phân tích PDF sử dụng [MinerU](https://mineru.net) để bóc tách văn bản và hình ảnh chính xác. Cấu hình MinerU token để đạt chất lượng cao nhất — xem [Cấu hình](/vi/configuration#mineru-phân-tích-pdf).
+</Tip>
+
+### Cách tải lên
+
+- Nhấn **biểu tượng kẹp giấy** cạnh khung nhập để chọn tệp từ máy
+- **Kéo thả** trực tiếp tệp vào khung nhập
+- **Dán (`Ctrl+V`)** tệp hoặc ảnh chụp màn hình từ bộ nhớ tạm
+- Mở **Trung tâm Tư liệu** để chọn lại các tư liệu đã tải trước đó
+
+Giới hạn kích thước tệp: **200MB**. Tài liệu được phân tích tự động sau khi tải lên và hiển thị trạng thái cho đến khi hoàn tất.
+
+### Vị trí tải lên
+
+| Màn hình | Phạm vi áp dụng |
+|----------|-----------------|
+| Trang chủ | Tải lên trước khi tạo dự án — áp dụng chung cho toàn bộ dự án |
+| Biên tập Dàn ý | Quản lý tài liệu ở thanh bên trái |
+| Biên tập Mô tả | Xem và quản lý tài liệu ở khu vực phía trên |
+| Xem trước Slide (sửa trang đơn) | Gắn ảnh tham chiếu riêng cho một trang cụ thể |
+
+## Dán ảnh trực tiếp (`Ctrl+V`)
+
+Bạn có thể dán ảnh tại trang chủ, trình Biên tập Dàn ý hoặc trên từng thẻ Mô tả trang:
+
+1. Sao chép hình ảnh (ảnh chụp màn hình, biểu đồ, ảnh trên web...)
+2. Nhấn **Ctrl+V** vào khung nhập liệu
+3. Hệ thống tự tải ảnh lên, nhờ AI mô tả ngắn nội dung ảnh và chèn liên kết Markdown ngay tại vị trí con trỏ
+
+Khi một trang vừa gắn template ảnh vừa nhúng nhiều ảnh tư liệu trong mô tả, các mô hình ảnh hỗ trợ nhiều ảnh đầu vào (như GPT Image, hỗ trợ tới 16 ảnh) sẽ nhận đầy đủ cả template lẫn toàn bộ ảnh tư liệu.
+
+## Ảnh tham chiếu phong cách (Style References)
+
+Tải lên một hình ảnh để AI học bảng màu, cách phân bổ bố cục và ngôn ngữ thiết kế ở mục **Chọn Mẫu phong cách** trên trang chủ hoặc phần **Tải ảnh lên** khi chỉnh sửa trang đơn.
+
+## Hộp công cụ Tư liệu (Material Toolbox)
+
+Nhấn **Tạo Tư liệu** trên thanh điều hướng để mở hộp công cụ xử lý ảnh AI hợp nhất. Bạn có thể tạo mới, sửa toàn khung hình, sửa cục bộ theo vùng hoặc xóa chi tiết thừa:
+
+### 1. Tạo ảnh mới (Generate)
+1. Nhập mô tả, ví dụ: `Nền gradient xanh tím với các khối hình học hiện đại`
+2. Chọn tỷ lệ khung hình
+3. Tùy chọn thêm ảnh tham chiếu chính và ảnh phụ
+4. Nhấn **Chạy công cụ**
+
+### 2. Chỉnh sửa toàn ảnh (Full Image Edit)
+1. Chọn **Ảnh nguồn**
+2. Nhập yêu cầu thay đổi toàn bộ khung hình (ví dụ: `Đổi phong cách sang kim loại bạc tối giản nhưng giữ nguyên bố cục chính`)
+3. Nhấn **Chạy công cụ**
+
+### 3. Chỉnh sửa theo vùng (Region Edit)
+Dùng khi chỉ muốn thay đổi một phần ảnh (nút CTA, tiêu đề, vật thể):
+1. Chuyển sang chế độ **Chỉnh sửa vùng** và chọn ảnh nguồn
+2. Nhấn **Bắt đầu chọn vùng** và kéo khoanh khu vực cần sửa
+3. Nhập câu lệnh chỉnh sửa và chọn cách ghép kết quả:
+   - **Chỉ ghép đè vùng đã chọn**: giữ nguyên phần bên ngoài, chỉ đắp vùng mới vào đúng khu vực khoanh
+   - **Thay bằng toàn bộ ảnh mới sinh**: AI tập trung sửa vùng chọn và xuất toàn khung hình mới
+4. Nhấn **Chạy công cụ**
+
+### 4. Xóa thông minh (Smart Erase)
+Dùng để xóa logo, watermark hoặc chi tiết thừa trên ảnh:
+1. Chuyển sang chế độ **Xóa thông minh**
+2. Khoanh vùng vật thể cần xóa và mô tả ngắn phần nền thay thế (nếu cần)
+3. Nhấn **Chạy công cụ**
+
+### 5. Sửa nối tiếp nhiều bước (Continue Editing)
+Sau khi một lượt xử lý xong, nhấn **Dùng kết quả làm ảnh nguồn mới** để tiếp tục tinh chỉnh nối tiếp (ví dụ: xóa watermark trước, sau đó đổi màu một chi tiết). Mọi kết quả đều được lưu thành tư liệu mới mà không ghi đè ảnh gốc.
+
+## Trung tâm Tư liệu (Material Center)
+
+Nhấn **Trung tâm Tư liệu** trên thanh điều hướng trên cùng để quản lý toàn bộ tài nguyên:
+
+- **Lọc**: Xem theo dự án hiện tại, tất cả tư liệu hoặc tư liệu dùng chung
+- **Xem trước**: Nhấn biểu tượng con mắt để phóng to toàn màn hình
+- **Tải xuống**: Chọn nhiều tư liệu và tải về dạng file nén ZIP
+- **Xóa**: Xóa từng ảnh hoặc xóa hàng loạt
+- **Tải lên**: Thêm trực tiếp ảnh mới vào thư viện
+
+## Chạy song song nhiều tác vụ tư liệu
+
+Sau khi gửi một tác vụ tạo/sửa ảnh tư liệu, bạn có thể gửi tiếp tác vụ khác ngay mà không cần đợi. Danh sách tác vụ được chia sẻ theo từng dự án — đóng hộp công cụ ở lối vào này và mở lại từ lối vào khác vẫn giữ nguyên danh sách tác vụ và tiến độ cập nhật.

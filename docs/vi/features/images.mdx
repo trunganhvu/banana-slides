@@ -1,0 +1,87 @@
+---
+title: "Sinh & Tinh chỉnh Ảnh Slide"
+description: "Tạo ảnh slide hàng loạt và tinh chỉnh sắc nét từng trang"
+---
+
+Màn hình Xem trước Slide là bước biên tập cuối cùng. Tại đây bạn sinh ảnh, tinh chỉnh chi tiết từng trang, quản lý lịch sử phiên bản và xuất tệp thành phẩm.
+
+## Sinh ảnh hàng loạt cho toàn bộ slide
+
+Nhấn **Sinh tất cả ảnh** — AI xử lý song song toàn bộ các trang. Mỗi thẻ hiển thị trạng thái tiến độ trực tiếp và hiện ngay bản xem trước khi hoàn tất.
+
+<Note>
+  Nếu độ phân giải đang đặt ở 1K, hộp thoại sẽ khuyến nghị chuyển lên **2K hoặc 4K** vì độ rõ của chữ trên slide cải thiện đáng kể. Đổi thông số này tại **Cài đặt dự án → Cài đặt chung**.
+</Note>
+
+## Chế độ Kiểm soát Chất lượng (Quality Control)
+
+Bật **Kiểm soát chất lượng ảnh** tại **Cài đặt → Cấu hình sinh ảnh** hoặc ngay tại thanh công cụ màn hình Xem trước Slide.
+
+Khi bật, ảnh mới tạo chưa lưu vội thành phiên bản chính thức mà được mô hình Vision kiểm tra trước:
+- Chữ trên slide có bị lỗi font, mất nét hay sai nội dung rõ rệt không
+- Bố cục, minh họa hoặc chất lượng hiển thị có bị quá thấp không
+- Nội dung trực quan và phong cách có bị lệch quá xa mô tả trang hay không
+
+Nếu không đạt, Banana Slides tự động sinh lại tối đa **3 lần**. Chỉ ảnh vượt qua đánh giá mới được lưu vào cơ sở dữ liệu và lịch sử phiên bản; nếu cả 3 lần đều không đạt, trang sẽ báo lỗi để bạn điều chỉnh lại mô tả trang cho rõ ràng hơn.
+
+## Tinh chỉnh một trang riêng lẻ
+
+Khi chỉ một trang chưa ưng ý, bạn không cần tạo lại cả bài:
+
+1. Nhấn biểu tượng **Chỉnh sửa** (cây bút) trên thẻ slide
+2. Sửa lại **Mô tả trang** hoặc nhập **Yêu cầu chỉnh sửa** ở khung bên dưới / bảng thuộc tính bên phải
+3. Nhấn **Sinh ảnh** — chỉ riêng trang này được vẽ lại
+
+**Ví dụ câu lệnh chỉnh sửa:**
+- `Đổi màu nền sang gradient xanh tối`
+- `Đưa tiêu đề lên phía trên và tăng cỡ chữ`
+- `Thay phần bên phải thành biểu đồ cột, giữ nguyên số liệu cũ`
+- `Đổi phong cách tổng thể sang minh họa vẽ tay`
+
+<Tip>
+  Nếu chỉ muốn lưu lại nội dung mô tả vừa sửa mà chưa muốn vẽ lại ảnh ngay, nhấn **Chỉ lưu Dàn ý/Mô tả**.
+</Tip>
+
+## Chọn vùng chỉnh sửa (Region Select)
+
+Khi muốn sửa tập trung vào một khu vực cụ thể mà giữ nguyên bố cục xung quanh:
+
+1. Mở chế độ sửa trang đơn, sau đó nhấn **Chọn vùng** phía trên hình slide
+2. **Nhấn giữ và kéo chuột** khoanh vùng cần thay đổi
+3. Vùng chọn được cắt riêng và đính kèm làm ảnh tham chiếu cho AI
+4. Nhập mô tả thay đổi vào ô lệnh rồi nhấn **Sinh ảnh**
+
+<Note>
+  Hộp chọn vùng hoạt động như **ảnh tham chiếu định hướng** cho mô hình AI tập trung vào vùng đó. Nếu cần xóa hoặc thay cục bộ chính xác từng pixel một chi tiết nhỏ, hãy dùng công cụ **Chỉnh sửa vùng** hoặc **Xóa thông minh** trong **Hộp công cụ Tư liệu**.
+</Note>
+
+## Bảng thuộc tính trang (Page Properties Panel)
+
+Thanh nắm ở mép phải màn hình Xem trước giúp bạn mở nhanh bảng thuộc tính trang hiện tại — mọi thay đổi tự động lưu sau khoảng 1 giây ngừng gõ:
+
+- **Tiêu đề & Chương mục**: Cập nhật trực tiếp tiêu đề trang và nhóm chương.
+- **Mô tả & Các trường mở rộng**: Hỗ trợ Markdown, dán ảnh và chèn ảnh từ thư viện tư liệu.
+- **Kịch bản thuyết minh (Narration script)**: Nằm ở cuối bảng để đọc khi xuất Video thuyết minh (để trống hệ thống tự sinh).
+- **Kéo đổi độ rộng bảng**: Hỗ trợ kéo mép trái (300–640px) hoặc nhấp đúp để khôi phục mặc định; trạng thái đóng/mở được ghi nhớ cho lần truy cập sau.
+
+## Lịch sử phiên bản (Version History)
+
+Mỗi lần tạo lại ảnh, phiên bản cũ đều được tự động lưu giữ:
+
+1. Mở chế độ sửa trang đơn
+2. Nhấn **Lịch sử phiên bản** ở góc dưới bên trái ảnh
+3. Chọn bất kỳ phiên bản cũ nào để khôi phục lại chỉ với 1 lần nhấn
+
+## Tạo lại hàng loạt cho các trang đã chọn
+
+1. Bật **Chọn nhiều** trên thanh công cụ
+2. Tích chọn các trang muốn vẽ lại
+3. Nhấn **Sinh ảnh đã chọn (N)**
+
+## Cài đặt dự án
+
+Nhấn biểu tượng bánh răng **Cài đặt dự án** ở góc trên bên phải gồm 3 tab:
+
+- **Cài đặt dự án**: Đổi Tỷ lệ khung hình, Yêu cầu bổ sung, Mô tả phong cách hoặc Đổi Template.
+- **Cài đặt xuất file**: Tùy chỉnh bộ trích xuất chữ (OCR / Vision / Hybrid), phương pháp xóa nền/inpaint chữ và tùy chọn **Cho phép kết quả một phần**.
+- **Cài đặt chung**: Đổi nhà cung cấp API, mô hình, độ phân giải ảnh (`1K / 2K / 4K`), số luồng xử lý song song và chạy **Kiểm tra dịch vụ**.

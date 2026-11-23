@@ -1,0 +1,107 @@
+---
+title: "Bắt đầu nhanh"
+description: "Trải nghiệm trực tuyến hoặc tự triển khai Banana Slides trên máy cá nhân"
+---
+
+## Ứng dụng Web trực tuyến
+
+Không cần cài đặt — trải nghiệm ngay tại: [banana-slides-4h7.pages.dev](https://banana-slides-4h7.pages.dev/)
+
+<Tip>
+  Muốn tự chạy hệ thống công khai với chi phí ~$5/tháng trên **Cloudflare Pages + Containers + R2 + Supabase PostgreSQL**? Xem ngay [Hướng dẫn triển khai Cloud](/vi/deployment).
+</Tip>
+
+---
+
+## Tự triển khai bằng Docker (Self-Hosting)
+
+### Bước 1: Cài đặt Docker
+
+<Tabs>
+  <Tab title="Windows / macOS">
+    Tải và cài đặt [Docker Desktop](https://www.docker.com/products/docker-desktop/). Sau khi cài xong, khởi động ứng dụng và kiểm tra biểu tượng Docker đã hoạt động trên khay hệ thống (Windows) hoặc thanh menu (macOS).
+  </Tab>
+  <Tab title="Linux">
+    ```bash
+    curl -fsSL https://get.docker.com | sh
+    ```
+  </Tab>
+</Tabs>
+
+### Bước 2: Tải cấu hình và khởi chạy
+
+Tạo thư mục mới, di chuyển vào thư mục đó và tải các tệp cấu hình để chạy dịch vụ:
+
+```bash
+mkdir banana-slides && cd banana-slides && \
+curl -O https://raw.githubusercontent.com/trunganhvu/banana-slides/main/docker-compose.prod.yml && \
+curl -O https://raw.githubusercontent.com/trunganhvu/banana-slides/main/.env.example && \
+cp .env.example .env
+```
+
+Mở tệp `.env` để điền API Key của bạn (xem [Cấu hình](/vi/configuration)), sau đó khởi chạy:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+<Note>
+  Hệ thống hỗ trợ cả định dạng API của Gemini lẫn chuẩn OpenAI. Bạn có thể cấu hình khóa API và mô hình văn bản/hình ảnh trong `.env` hoặc trực tiếp tại mục **Cài đặt** trên giao diện web.
+</Note>
+
+### Bước 3: Mở ứng dụng
+
+Truy cập [http://localhost:3011](http://localhost:3011) trên trình duyệt.
+
+<Note>
+  Cổng mặc định là `3011` (Frontend) và `5011` (Backend). Để thay đổi, chỉnh `FRONTEND_PORT` và `BACKEND_PORT` trong tệp `.env`.
+</Note>
+
+---
+
+## Cập nhật phiên bản mới
+
+Trong ứng dụng, mở **Cài đặt → Giới thiệu → Kiểm tra cập nhật** để đối chiếu mã SHA phiên bản hiện tại với bản mới nhất. Phiên bản chạy từ mã nguồn cục bộ cũng kiểm tra theo Git SHA hiện hành.
+
+```bash
+docker compose -f docker-compose.prod.yml pull && \
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## Xem nhật ký hoạt động (Logs)
+
+```bash
+docker logs -f --tail 100 banana-slides-backend
+```
+
+---
+
+## Chạy trực tiếp từ mã nguồn
+
+<Accordion title="Mở rộng để xem hướng dẫn chạy từ mã nguồn">
+
+### Yêu cầu hệ thống
+
+- Python 3.10+
+- Trình quản lý gói [uv](https://github.com/astral-sh/uv)
+- Node.js 18+ và npm
+
+### Khởi chạy Backend
+
+```bash
+git clone https://github.com/trunganhvu/banana-slides
+cd banana-slides
+cp .env.example .env  # Chỉnh .env và điền API Key
+cd backend
+uv run alembic upgrade head && uv run python app.py
+```
+
+### Khởi chạy Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+</Accordion>

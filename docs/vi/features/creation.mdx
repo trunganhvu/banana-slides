@@ -1,0 +1,124 @@
+---
+title: "Tạo bài thuyết trình"
+description: "Bốn cách bắt đầu sáng tạo — chọn phương thức phù hợp nhất với bạn"
+---
+
+Tại trang chủ, chọn phương thức tạo mới, nhập nội dung và nhấn **Tạo dự án mới**.
+
+Cả ba chế độ nhập văn bản đều yêu cầu có ít nhất một ký tự không phải khoảng trắng. Giao diện sẽ chặn nếu ô nhập chỉ toàn khoảng trắng, và API cũng tự động cắt khoảng trắng dư ở hai đầu.
+
+## Từ Ý tưởng (Đơn giản nhất)
+
+Chỉ cần một câu mô tả chủ đề — AI tự xử lý trọn bộ quy trình: dàn ý → mô tả từng trang → sinh ảnh slide.
+
+**Phù hợp khi**: Chưa có tài liệu sẵn, muốn tạo nhanh bài thuyết trình hoàn chỉnh.
+
+**Các bước:**
+1. Chọn tab **Từ Ý tưởng**
+2. Nhập chủ đề, ví dụ: `Tạo bài thuyết trình 8 trang về chuyển đổi số trong giáo dục`
+3. Chọn mẫu template và tỷ lệ khung hình (tùy chọn)
+4. Nhấn **Tạo dự án mới**
+
+Hệ thống chuyển sang trình Biên tập Dàn ý để bạn rà soát và tinh chỉnh lại cấu trúc do AI đề xuất.
+
+## Từ Dàn ý
+
+Khi bạn đã có khung nội dung rõ ràng và không muốn AI tự đoán cấu trúc:
+
+**Phù hợp khi**: Đã có sẵn mục lục hoặc gạch đầu dòng ý chính.
+
+**Các bước:**
+1. Chọn tab **Từ Dàn ý**
+2. Dán dàn ý vào — hỗ trợ tiêu đề + gạch đầu dòng hoặc chỉ tiêu đề từng trang
+3. Nhấn **Tạo dự án mới** — AI tự phân tích thành các thẻ trang có cấu trúc
+
+**Ví dụ định dạng:**
+```text
+Slide 1: Nguồn gốc của Trí tuệ Nhân tạo
+- Hội nghị Dartmouth năm 1956
+- Tầm nhìn của các nhà nghiên cứu tiên phong
+
+Slide 2: Sự trỗi dậy của Machine Learning
+Bước chuyển từ hệ thống luật cứng sang học từ dữ liệu
+```
+
+## Từ Mô tả chi tiết
+
+Khi bạn đã có sẵn kịch bản chi tiết từng trang và muốn bỏ qua bước lập dàn ý:
+
+**Phù hợp khi**: Nội dung từng trang đã hoàn thiện hoặc được soạn sẵn từ công cụ AI khác.
+
+**Các bước:**
+1. Chọn tab **Từ Mô tả chi tiết**
+2. Dán mô tả đầy đủ từng trang (gồm bố cục, màu sắc, nội dung chữ)
+3. Nhấn **Tạo dự án mới** — bỏ qua bước dàn ý, đi thẳng sang màn hình tạo ảnh slide
+
+**Ví dụ định dạng:**
+```text
+Slide 1: Trang bìa
+Trang bìa tối giản, logo công ty ở giữa, tiêu đề chữ trắng in đậm trên nền gradient xanh đậm.
+
+Slide 2: Tổng quan thị trường
+Biểu đồ cột tăng trưởng thị trường 5 năm, các con số nổi bật đặt trong thẻ thông số.
+```
+
+## Làm mới PPT cũ (PPT Renovation)
+
+Tải lên tệp PDF hoặc PPTX cũ — AI đọc nội dung và thiết kế lại phiên bản trực quan hiện đại hơn:
+
+**Phù hợp khi**: Bài thuyết trình cũ đã lỗi thời về thẩm mỹ hoặc cần làm lại từ một bộ slide sẵn có.
+
+**Các bước:**
+1. Chọn tab **Làm mới PPT**
+2. Tải lên tệp PDF hoặc PPTX
+3. Tùy chọn tích **Giữ nguyên bố cục gốc** nếu muốn bám sát cấu trúc trang cũ
+4. Nhấn **Tạo dự án mới**
+
+<Note>
+  Khuyến nghị chuyển PPTX sang PDF trước khi tải lên để đạt kết quả ổn định nhất. Tải trực tiếp PPTX đòi hỏi LibreOffice trên máy chủ chuyển đổi, có thể bị lệch bố cục nếu thiếu font chữ.
+</Note>
+
+Nếu tác vụ báo lỗi token MinerU hết hạn hoặc không hợp lệ, hãy cập nhật lại tại **Cài đặt → Cấu hình MinerU**, chạy kiểm tra kết nối **MinerU PDF Parsing** rồi tạo lại dự án. Xem [Cấu hình](/vi/configuration#mineru-phân-tích-pdf).
+
+## Tỷ lệ khung hình (Aspect Ratio)
+
+Chọn tỷ lệ bên dưới khung nhập trước khi tạo dự án:
+
+| Tỷ lệ | Phù hợp cho |
+|-------|-------------|
+| `16:9` | Màn hình rộng tiêu chuẩn (mặc định) |
+| `4:3` | Máy chiếu / slide truyền thống |
+| `21:9` | Màn hình siêu rộng |
+| `1:1` | Hình vuông (mạng xã hội) |
+| `9:16` | Màn hình dọc (điện thoại) |
+
+<Note>
+  Một số mô hình sinh ảnh không hỗ trợ các tỷ lệ đặc biệt. Nếu sinh ảnh lỗi, hãy thử đổi về `16:9`. Bạn vẫn có thể đổi tỷ lệ sau khi tạo dự án trong **Cài đặt dự án** (cần sinh lại ảnh để có hiệu lực).
+</Note>
+
+## Mẫu thiết kế & Phong cách
+
+Thiết lập phong cách trực quan trước khi tạo dự án:
+
+**Cách 1: Chọn từ thư viện mẫu (Template)**
+- Chọn từ bộ sưu tập mẫu có sẵn hoặc tải lên hình ảnh template riêng của bạn.
+
+**Cách 2: Mô tả phong cách bằng văn bản**
+- Tích chọn **Dùng mô tả văn bản cho phong cách**
+- Mô tả phong cách mong muốn, ví dụ: `Phong cách công nghệ hiện đại, nền tối, tông chuyển sắc xanh dương - tím`
+- Nhấn vào các phong cách gợi ý sẵn (như "Doanh nghiệp Tối giản", "Công nghệ Hiện đại") để điền nhanh mô tả chuẩn studio
+- Hoặc tải lên một ảnh mẫu để AI tự động trích xuất mô tả phong cách từ ảnh đó
+
+**Lưu thành Mẫu phong cách của tôi:**
+
+Sau khi viết mô tả phong cách, nhấn **Lưu thành mẫu** ở góc trên bên phải khung nhập, đặt tên và chọn nhãn màu. Các lần sau bạn chỉ cần nhấn vào thẻ trong mục **Phong cách của tôi** để điền lại ngay lập tức.
+
+## Đính kèm Tài liệu tham khảo
+
+Đính kèm tài liệu ngay khi tạo dự án — AI sẽ trích xuất dữ liệu gốc làm căn cứ biên soạn nội dung:
+
+- **Định dạng hỗ trợ**: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD
+- **Cách tải lên**: Nhấn biểu tượng kẹp giấy, kéo thả trực tiếp hoặc dán (`Ctrl+V`)
+- **Giới hạn dung lượng**: 200MB
+
+Tài liệu tự động được phân tích sau khi tải lên; nút tạo dự án sẽ mở khóa ngay khi quá trình phân tích hoàn tất. Xem [Tư liệu & Tài liệu tham khảo](/vi/features/materials).

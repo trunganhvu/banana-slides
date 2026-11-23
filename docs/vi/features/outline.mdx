@@ -1,0 +1,88 @@
+---
+title: "Biên tập Dàn ý"
+description: "Rà soát, điều chỉnh dàn ý do AI tạo ra hoặc tự xây dựng từ đầu"
+---
+
+Trình Biên tập Dàn ý là bước thứ hai. Dàn ý AI được trình bày dưới dạng các thẻ trang gồm **tiêu đề + ý chính**, giúp bạn kiểm soát mạch nội dung trước khi chuyển sang bước vẽ hình.
+
+## Dàn ý mang thông điệp cốt lõi (Takeaway) của từng trang
+
+Với các trang nội dung, **ý chính đầu tiên nên là thông điệp đúc kết (takeaway)** — một câu khẳng định khán giả cần nhớ sau khi xem trang đó, thay vì chỉ nêu tên chủ đề:
+
+- ✅ `Nút thắt năng lực tính toán là nguyên nhân gốc rễ của mọi mùa đông AI` *(thông điệp đúc kết)*
+- ❌ `Nhìn lại các mùa đông AI trong lịch sử` *(chỉ là tiêu đề chủ đề)*
+
+Các trang chức năng — trang bìa, mục lục, chuyển chương, hỏi đáp Q&A — không cần câu takeaway mà chỉ cần mô tả ngắn nội dung trang.
+
+Cách viết này mang lại lợi ích kép: đọc lướt các câu takeaway theo thứ tự là bạn kiểm tra được ngay mạch lập luận có bị đứt gãy hay không; đồng thời ở bước tạo mô tả tiếp theo, AI sẽ lấy câu này làm trọng tâm hiển thị nổi bật trên slide.
+
+<Tip>
+  Nếu câu takeaway của một trang còn chung chung (ví dụ "phần này rất quan trọng"), thường là bạn chưa chốt được luận điểm chính của trang đó — hãy làm rõ ngay ở bước này trước khi đi tiếp.
+</Tip>
+
+## Tinh chỉnh nhanh bằng AI
+
+Thanh nhập lệnh trên cùng là cách chỉnh sửa toàn bộ dàn ý nhanh nhất. Nhập yêu cầu tự nhiên và nhấn **Ctrl+Enter**.
+
+**Các câu lệnh thường dùng:**
+- `Thêm mục phân tích đối thủ cạnh tranh sau phần giới thiệu`
+- `Gộp trang 4 và trang 5 lại, giữ nguyên các ý chính`
+- `Đưa phần kết luận lên trước trang Hỏi & Đáp`
+- `Đổi tiêu đề trang 2 thành "Lợi thế cốt lõi"`
+- `Xóa trang 6`
+
+<Tip>
+  Bạn có thể ra nhiều lệnh nối tiếp nhau — AI ghi nhớ ngữ cảnh hội thoại trước đó. Ví dụ: "Thêm một phần case study thực tế", sau đó gõ tiếp "Chuyển phần đó lên trang 3".
+</Tip>
+
+## Chỉnh sửa thủ công từng thẻ
+
+Nhấn trực tiếp vào bất kỳ thẻ trang nào để sửa tiêu đề hoặc nội dung ý chính:
+
+1. Nhấn vào tiêu đề hoặc nội dung gạch đầu dòng trên thẻ
+2. Chỉnh sửa trực tiếp
+3. Nhấn ra ngoài để tự động lưu
+
+Nút xóa nằm ở góc trên bên phải mỗi thẻ (có hộp thoại xác nhận).
+
+## Thêm trang mới
+
+Nhấn **Thêm trang** trên thanh công cụ để chèn một thẻ trang trống vào cuối danh sách.
+
+## Sắp xếp thứ tự bằng kéo thả
+
+Giữ biểu tượng tay nắm kéo (⠿) ở cạnh trái thẻ và kéo tới vị trí mong muốn — thứ tự trang cập nhật ngay lập tức.
+
+## Tạo lại toàn bộ dàn ý
+
+Nếu chưa ưng ý với khung sườn hiện tại, nhấn **Tạo lại dàn ý** để AI soạn mới từ đầu.
+
+Bạn có thể chuyển sang xem dự án khác trong lúc AI đang tạo dàn ý; kết quả streaming của mỗi dự án được lưu độc lập và không bị lẫn sang dự án khác.
+
+<Warning>
+  Thao tác tạo lại sẽ ghi đè toàn bộ nội dung dàn ý hiện có. Hệ thống sẽ hỏi xác nhận trước khi thực hiện và không thể hoàn tác.
+</Warning>
+
+## Thiết lập Yêu cầu sinh dàn ý
+
+Mở rộng mục **Yêu cầu sinh dàn ý** trên thanh công cụ để thêm các ràng buộc chung áp dụng cho mọi lần tạo và tạo lại.
+
+**Ví dụ yêu cầu:**
+- `Mỗi trang không quá 4 gạch đầu dòng ngắn`
+- `Trình bày theo dòng thời gian từ năm cũ đến mới`
+- `Nhấn mạnh số liệu định lượng và ví dụ thực tế`
+
+Nhấn **Tùy chỉnh** để lưu các yêu cầu hay dùng thành preset trên trình duyệt hiện tại và chèn lại chỉ với 1 cú nhấp.
+
+## Nhập / Xuất (Import / Export)
+
+Nhấn nút **Nhập/Xuất**:
+
+- **Xuất Dàn ý**: Lưu dàn ý hiện tại ra tệp `.md` — dễ dàng chỉnh sửa bằng trình soạn thảo văn bản rồi nhập ngược lại.
+- **Nhập (Import)**: Nạp dàn ý từ tệp `.md` hoặc `.txt`, **nối thêm** vào sau danh sách trang hiện có.
+
+Xem quy chuẩn tệp tại [Định dạng Nhập & Xuất Markdown](/vi/features/import-export).
+
+## Bước tiếp theo
+
+Khi dàn ý đã hoàn chỉnh, nhấn **Tiếp theo →** ở góc trên bên phải để chuyển sang [Biên tập Mô tả](/vi/features/descriptions).

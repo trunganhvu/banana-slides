@@ -55,6 +55,8 @@
 !docs/superpowers/specs/*.md
 !docs/superpowers/plans/*.md
 !docs/desktop-handover.md
+!docs/deploy-cloudflare-supabase.md
+!docs/logo/**
 !.github/**/*.md
 *.pyc
 .env
