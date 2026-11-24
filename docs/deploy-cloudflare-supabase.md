@@ -154,7 +154,7 @@ Cloudflare Pages tự build lại bản Web. Nếu webhook GitHub chưa tự ch�
 
 ### C. Khi thêm migration Database mới (Alembic)
 1. Viết migration hỗ trợ cả SQLite lẫn PostgreSQL (ví dụ cột `Boolean` phải dùng `server_default=sa.false()` hoặc `sa.true()`, tránh `sa.text('0')` hay SQL chỉ có ở SQLite).
-2. Khi container khởi động sau `wrangler deploy`, `cloudflare-backend/entrypoint.sh` tự chạy `alembic upgrade head`.
+2. Để tối ưu tốc độ cold start miễn phí, `cloudflare-backend/wrangler.jsonc` đặt sẵn `RUN_STARTUP_MIGRATE="0"` và `BANANA_SKIP_AUTO_MIGRATE="1"`, nên container không chạy Alembic mỗi lần ngủ dậy. Khi có migration mới, bạn cần chạy `alembic upgrade head` (hoặc áp dụng SQL tương ứng trên Supabase) ở thời điểm deploy, hoặc tạm đặt `RUN_STARTUP_MIGRATE="1"` trong `cloudflare-backend/wrangler.jsonc` cho lần deploy đó rồi tắt lại sau khi hoàn tất.
 3. **Nếu migration tạo thêm bảng mới trong schema `public`:** Vào Supabase SQL Editor bật ngay RLS và thu hồi quyền `anon`/`authenticated` cho bảng mới:
    ```sql
    ALTER TABLE public.<ten_bang_moi> ENABLE ROW LEVEL SECURITY;

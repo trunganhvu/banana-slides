@@ -13,7 +13,6 @@ from typing import Optional, List, Union
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from PIL import Image
-from markitdown import MarkItDown
 from services.ai_providers.text import strip_think_tags
 
 logger = logging.getLogger(__name__)
@@ -297,6 +296,8 @@ class FileParserService:
         """
         try:
             # Use markitdown to convert spreadsheet to markdown
+            from markitdown import MarkItDown
+
             md = MarkItDown()
             result = md.convert(file_path)
             markdown_content = result.text_content

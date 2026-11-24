@@ -1,20 +1,33 @@
 import React, { useEffect } from 'react';
 import { Modal } from './Modal';
 import { useAuth } from '@/context/AuthContext';
+import { useT } from '@/hooks/useT';
 import { Sparkles } from 'lucide-react';
 
+const loginModalI18n = {
+  zh: {
+    loading: 'Đang tải dữ liệu...',
+    unavailable: 'Tạm thời chưa thể tải đăng nhập Google. Vui lòng thử lại sau.',
+  },
+  en: {
+    loading: 'Loading...',
+    unavailable: 'Google Sign-In is temporarily unavailable. Please try again later.',
+  },
+};
+
 export const LoginModal: React.FC = () => {
-  const { isLoginModalOpen, closeLoginModal, renderGoogleButton } = useAuth();
+  const { isLoginModalOpen, closeLoginModal, renderGoogleButton, googleClientId, isAuthConfigLoading } = useAuth();
+  const t = useT(loginModalI18n);
 
   useEffect(() => {
-    if (isLoginModalOpen) {
+    if (isLoginModalOpen && googleClientId) {
       // Delay slightly for DOM element to mount
       const timer = setTimeout(() => {
         renderGoogleButton('google-modal-btn');
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isLoginModalOpen, renderGoogleButton]);
+  }, [isLoginModalOpen, googleClientId, renderGoogleButton]);
 
   return (
     <Modal
@@ -36,10 +49,21 @@ export const LoginModal: React.FC = () => {
         </p>
 
         <div className="w-full flex justify-center items-center my-6 min-h-[50px]">
-          <div
-            id="google-modal-btn"
-            className="flex justify-center items-center w-full [&>div]:!mx-auto [&>iframe]:!mx-auto"
-          />
+          {!googleClientId && isAuthConfigLoading ? (
+            <div className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-300">
+              <span className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+              <span>{t('loading')}</span>
+            </div>
+          ) : !googleClientId ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400 px-4">
+              {t('unavailable')}
+            </p>
+          ) : (
+            <div
+              id="google-modal-btn"
+              className="flex justify-center items-center w-full [&>div]:!mx-auto [&>iframe]:!mx-auto"
+            />
+          )}
         </div>
       </div>
     </Modal>

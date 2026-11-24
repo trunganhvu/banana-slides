@@ -35,9 +35,10 @@ RUN chmod +x /usr/local/bin/uv
 
 COPY pyproject.toml uv.lock ./
 ENV UV_HTTP_TIMEOUT=300
-RUN uv sync --frozen --no-install-project
+RUN uv sync --frozen --no-install-project --compile-bytecode
 
 COPY backend/ ./backend/
+RUN /app/.venv/bin/python -m compileall -q /app/backend
 COPY assets/ ./assets/
 COPY cloudflare-backend/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh && mkdir -p /app/backend/instance /app/uploads

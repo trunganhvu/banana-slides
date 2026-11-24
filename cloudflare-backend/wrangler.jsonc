@@ -35,6 +35,8 @@
     "R2_ACCOUNT_ID": "4644ee642eed5fdba3acd252904dea25",
     "R2_BUCKET_NAME": "banana-slides-storage",
     "FLASK_ENV": "production",
-    "OUTPUT_LANGUAGE": "vi"
+    "OUTPUT_LANGUAGE": "vi",
+    "BANANA_SKIP_AUTO_MIGRATE": "1",
+    "RUN_STARTUP_MIGRATE": "0"
   }
 }

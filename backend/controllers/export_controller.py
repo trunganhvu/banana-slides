@@ -22,7 +22,7 @@ from utils import (
 )
 from utils.client_settings import get_current_client_override, extract_client_settings_from_request
 from utils.filename_utils import build_export_filename
-from services import ExportService, FileService
+from services import FileService
 from services.ai_service_manager import get_ai_service
 from services.html_slide_service import ensure_html_pages_rendered
 from services.prompts import normalize_narration_generation_config
@@ -32,6 +32,12 @@ logger = logging.getLogger(__name__)
 export_bp = Blueprint('export', __name__, url_prefix='/api/projects')
 
 EDITABLE_EXPORT_CACHE_VERSION = 1
+
+
+def _get_export_service():
+    """Lazily load ExportService to avoid importing python-pptx/fitz during startup."""
+    from services.export_service import ExportService
+    return ExportService
 
 
 def _sha256_file(path: Path) -> str:
@@ -150,7 +156,8 @@ def _parse_pptx_transition_effects():
         for effect in request.args.get('transition_effects', '').split(',')
         if effect.strip()
     ))
-    valid_effects = [effect for effect in effects if effect in ExportService.PPTX_TRANSITION_EFFECTS]
+    export_service = _get_export_service()
+    valid_effects = [effect for effect in effects if effect in export_service.PPTX_TRANSITION_EFFECTS]
     if not valid_effects:
         return [], "At least one valid transition effect is required"
     return valid_effects, None
@@ -318,7 +325,7 @@ def export_pptx(project_id):
             return bad_request(transition_error)
 
         # Generate PPTX file on disk
-        ExportService.create_pptx_from_images(
+        _get_export_service().create_pptx_from_images(
             image_paths,
             output_file=output_path,
             aspect_ratio=project.image_aspect_ratio,
@@ -402,7 +409,7 @@ def export_pdf(project_id):
         output_path = os.path.join(exports_dir, filename)
 
         # Generate PDF file on disk
-        ExportService.create_pdf_from_images(image_paths, output_file=output_path, aspect_ratio=project.image_aspect_ratio)
+        _get_export_service().create_pdf_from_images(image_paths, output_file=output_path, aspect_ratio=project.image_aspect_ratio)
 
         # Build download URLs
         download_path = f"/files/{project_id}/exports/{filename}"
@@ -775,7 +782,7 @@ def export_editable_pptx(project_id):
                 'error_details': {
                     'stage': 'queue_submission',
                     'retryable': True,
-                    'technical_message': ExportService._safe_technical_message(submission_error),
+                    'technical_message': _get_export_service()._safe_technical_message(submission_error),
                 },
                 'help_text': 'Hàng đợi tác vụ nền tạm thời không khả dụng, Vui lòng xuất lại sau. ',
             })

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Landing } from './pages/Landing';
@@ -14,28 +14,72 @@ import { LoginModal } from './components/shared/LoginModal';
 import { useProjectStore } from './store/useProjectStore';
 import { useToast, AccessCodeGuard, DesktopTitleBar, UpdateChecker, ApiKeyReminderModal } from './components/shared';
 import { getDesktopTopInset } from './components/shared/UpdateChecker';
+import { useT } from './hooks/useT';
 import { isDesktop } from '@/utils';
+
+const appI18n = {
+  zh: {
+    loading: 'Đang tải dữ liệu...',
+  },
+  en: {
+    loading: 'Loading...',
+  },
+};
+
+function LoadingScreen() {
+  const t = useT(appI18n);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0c0f17]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{t('loading')}</span>
+      </div>
+    </div>
+  );
+}
+
+function SessionSyncIndicator() {
+  const { user, isSyncingSession } = useAuth();
+  const t = useT(appI18n);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!user || !isSyncingSession) {
+      setVisible(false);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setVisible(true);
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [user, isSyncingSession]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-md border border-slate-200 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-200"
+    >
+      <span className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <span>{t('loading')}</span>
+    </div>
+  );
+}
 
 function RootRoute() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0c0f17]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">Đang khởi tạo Banana Slides...</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return user ? <Home /> : <Landing />;
 }
 
 function PublicLandingRoute() {
-  const { user, isLoading } = useAuth();
-  if (isLoading) return null;
+  const { user } = useAuth();
   if (user) {
     return <Navigate to="/" replace />;
   }
@@ -46,14 +90,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0c0f17]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">Đang khởi tạo Banana Slides...</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
@@ -156,6 +193,7 @@ function AppRoutes() {
       </Routes>
       <ApiKeyReminderModal />
       <LoginModal />
+      <SessionSyncIndicator />
       <ToastContainer />
     </Router>
   );

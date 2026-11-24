@@ -40,11 +40,11 @@ if [ -n "${R2_ACCOUNT_ID:-}" ] && [ -n "${R2_BUCKET_NAME:-}" ] && [ -n "${AWS_AC
       exit 1
     fi
     attempt=$((attempt + 1))
-    if [ "$attempt" -ge 30 ]; then
+    if [ "$attempt" -ge 300 ]; then
       echo "Error: timed out waiting for R2 FUSE mount at $UPLOAD_DIR" >&2
       exit 1
     fi
-    sleep 1
+    sleep 0.1
   done
   R2_MOUNTED=1
   echo "Mounted Cloudflare R2 bucket '$R2_BUCKET_NAME' at $UPLOAD_DIR"
@@ -53,7 +53,9 @@ else
 fi
 
 cd /app/backend
-/app/.venv/bin/alembic upgrade head
+if [ "${RUN_STARTUP_MIGRATE:-1}" = "1" ]; then
+  /app/.venv/bin/alembic upgrade head
+fi
 
 if [ "$R2_MOUNTED" -eq 1 ]; then
   /app/.venv/bin/python app.py &

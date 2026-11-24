@@ -14,12 +14,13 @@ Supported provider formats:
     gemini    -- Google AI Studio / Gemini API (API key auth)
     openai    -- OpenAI-compatible & self-hosted local LLM servers (Ollama, LM Studio, vLLM, llama.cpp...)
 """
+import importlib
 import os
 import logging
 from typing import Any, Dict, Optional
 
-from .text import TextProvider, GenAITextProvider, OpenAITextProvider, AnthropicTextProvider, LazyLLMTextProvider, CodexTextProvider
-from .image import ImageProvider, GenAIImageProvider, OpenAIImageProvider, AnthropicImageProvider, LazyLLMImageProvider, CodexImageProvider
+from .text.base import TextProvider
+from .image.base import ImageProvider
 from .lazyllm_env import TEXT2IMAGE_CAPABLE_LAZYLLM_VENDORS
 from .openai_compat import (
     LOCAL_DUMMY_API_KEY,
@@ -44,6 +45,38 @@ __all__ = [
 LAZYLLM_VENDORS = {'qwen', 'doubao', 'deepseek', 'glm', 'siliconflow', 'sensenova', 'minimax', 'kimi', 'ppio', 'aiping'}
 
 _GOOGLE_MODEL_PREFIXES = ('gemini', 'imagen', 'gemma', 'learnlm', 'models/')
+
+_LAZY_PROVIDER_EXPORTS = {
+    'GenAITextProvider': ('.text.genai_provider', 'GenAITextProvider'),
+    'OpenAITextProvider': ('.text.openai_provider', 'OpenAITextProvider'),
+    'AnthropicTextProvider': ('.text.anthropic_provider', 'AnthropicTextProvider'),
+    'LazyLLMTextProvider': ('.text.lazyllm_provider', 'LazyLLMTextProvider'),
+    'CodexTextProvider': ('.text.codex_provider', 'CodexTextProvider'),
+    'GenAIImageProvider': ('.image.genai_provider', 'GenAIImageProvider'),
+    'OpenAIImageProvider': ('.image.openai_provider', 'OpenAIImageProvider'),
+    'AnthropicImageProvider': ('.image.anthropic_provider', 'AnthropicImageProvider'),
+    'LazyLLMImageProvider': ('.image.lazyllm_provider', 'LazyLLMImageProvider'),
+    'CodexImageProvider': ('.image.codex_provider', 'CodexImageProvider'),
+}
+
+
+def __getattr__(name: str):
+    """Lazily import concrete AI provider classes on first attribute access."""
+    target = _LAZY_PROVIDER_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module_name, attr_name = target
+    module = importlib.import_module(module_name, __name__)
+    value = getattr(module, attr_name)
+    globals()[name] = value
+    return value
+
+
+def _resolve_provider_class(name: str):
+    """Resolve a provider class from module globals (preserving mock.patch) or lazy import."""
+    if name in globals():
+        return globals()[name]
+    return __getattr__(name)
 
 
 def get_provider_format() -> str:
@@ -333,14 +366,16 @@ def get_caption_provider(model: Optional[str] = None) -> TextProvider:
     resolved_model = _normalize_model_for_provider(candidate, 'caption', config)
     if config['format'] == 'openai':
         logger.info("Caption provider: OpenAI-compatible, model=%s, base=%s", resolved_model, config['api_base'])
-        return OpenAITextProvider(
+        openai_cls = _resolve_provider_class('OpenAITextProvider')
+        return openai_cls(
             api_key=config['api_key'],
             api_base=config['api_base'],
             model=resolved_model,
             is_local=config.get('is_local'),
         )
     logger.info("Caption provider: Gemini, model=%s", resolved_model)
-    return GenAITextProvider(api_key=config['api_key'], api_base=config['api_base'], model=resolved_model)
+    genai_cls = _resolve_provider_class('GenAITextProvider')
+    return genai_cls(api_key=config['api_key'], api_base=config['api_base'], model=resolved_model)
 
 
 def get_text_provider(model: Optional[str] = None) -> TextProvider:
@@ -350,14 +385,16 @@ def get_text_provider(model: Optional[str] = None) -> TextProvider:
     resolved_model = _normalize_model_for_provider(candidate, 'text', config)
     if config['format'] == 'openai':
         logger.info("Text provider: OpenAI-compatible, model=%s, base=%s", resolved_model, config['api_base'])
-        return OpenAITextProvider(
+        openai_cls = _resolve_provider_class('OpenAITextProvider')
+        return openai_cls(
             api_key=config['api_key'],
             api_base=config['api_base'],
             model=resolved_model,
             is_local=config.get('is_local'),
         )
     logger.info("Text provider: Gemini, model=%s", resolved_model)
-    return GenAITextProvider(api_key=config['api_key'], api_base=config['api_base'], model=resolved_model)
+    genai_cls = _resolve_provider_class('GenAITextProvider')
+    return genai_cls(api_key=config['api_key'], api_base=config['api_base'], model=resolved_model)
 
 
 def get_image_provider(model: Optional[str] = None) -> ImageProvider:
@@ -376,7 +413,8 @@ def get_image_provider(model: Optional[str] = None) -> ImageProvider:
             config['api_base'],
             protocol,
         )
-        return OpenAIImageProvider(
+        openai_cls = _resolve_provider_class('OpenAIImageProvider')
+        return openai_cls(
             api_key=config['api_key'],
             api_base=config['api_base'],
             model=resolved_model,
@@ -384,4 +422,5 @@ def get_image_provider(model: Optional[str] = None) -> ImageProvider:
             image_quality=image_quality,
         )
     logger.info("Image provider: Gemini, model=%s", resolved_model)
-    return GenAIImageProvider(api_key=config['api_key'], api_base=config['api_base'], model=resolved_model)
+    genai_cls = _resolve_provider_class('GenAIImageProvider')
+    return genai_cls(api_key=config['api_key'], api_base=config['api_base'], model=resolved_model)

@@ -27,12 +27,14 @@ export interface Env {
   // Runtime defaults
   FLASK_ENV?: string;
   OUTPUT_LANGUAGE?: string;
+  BANANA_SKIP_AUTO_MIGRATE?: string;
+  RUN_STARTUP_MIGRATE?: string;
 }
 
 const CONTAINER_PORT = 5000;
 const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
-const STARTUP_WAIT_ATTEMPTS = 120;
-const STARTUP_POLL_INTERVAL_MS = 500;
+const STARTUP_WAIT_ATTEMPTS = 300;
+const STARTUP_POLL_INTERVAL_MS = 200;
 
 const FORWARDED_ENV_KEYS: ReadonlyArray<keyof Env> = [
   "DATABASE_URL",
@@ -56,6 +58,8 @@ const FORWARDED_ENV_KEYS: ReadonlyArray<keyof Env> = [
   "AWS_SECRET_ACCESS_KEY",
   "FLASK_ENV",
   "OUTPUT_LANGUAGE",
+  "BANANA_SKIP_AUTO_MIGRATE",
+  "RUN_STARTUP_MIGRATE",
 ];
 
 function buildContainerEnv(env: Env): Record<string, string> {
@@ -64,6 +68,7 @@ function buildContainerEnv(env: Env): Record<string, string> {
     UPLOAD_FOLDER: "/app/uploads",
     FLASK_ENV: env.FLASK_ENV || "production",
     OUTPUT_LANGUAGE: env.OUTPUT_LANGUAGE || "vi",
+    BANANA_SKIP_AUTO_MIGRATE: env.BANANA_SKIP_AUTO_MIGRATE || "1",
   };
 
   for (const key of FORWARDED_ENV_KEYS) {
