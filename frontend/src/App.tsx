@@ -87,7 +87,7 @@ function PublicLandingRoute() {
 }
 
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isSyncingSession } = useAuth();
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -97,7 +97,10 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/" replace />;
   }
 
-  if (adminOnly && !user.is_admin) {
+  if (adminOnly && user.role !== 'admin') {
+    if (isSyncingSession) {
+      return <LoadingScreen />;
+    }
     return <Navigate to="/" replace />;
   }
 

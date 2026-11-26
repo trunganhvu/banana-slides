@@ -254,8 +254,8 @@ def update_settings():
         # Update image generation configuration
         if "image_resolution" in data:
             resolution = data["image_resolution"]
-            if resolution not in ["1K", "2K", "4K"]:
-                return bad_request("Resolution must be 1K, 2K, or 4K")
+            if resolution not in ["1K", "2K"]:
+                return bad_request("Resolution must be 1K or 2K")
             settings.image_resolution = resolution
 
         if "image_quality" in data:
@@ -297,8 +297,8 @@ def update_settings():
 
         if "image_model" in data:
             raw_image_model = (data["image_model"] or "").strip()
-            if new_format == "gemini" and raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image", "gemini-3-pro-image-preview", "imagen-3.0-generate-002"):
-                raw_image_model = "gemini-2.5-flash-image"
+            if new_format == "gemini" and raw_image_model in ("gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-image", "gemini-2.5-flash-image", "gemini-3-pro-image-preview", "imagen-3.0-generate-002"):
+                raw_image_model = "gemini-3.1-flash-lite-image"
             settings.image_model = raw_image_model or None
 
         if "mineru_api_base" in data:

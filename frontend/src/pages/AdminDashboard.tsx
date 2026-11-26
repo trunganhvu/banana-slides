@@ -67,8 +67,13 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Failed to load admin data:', err);
+      const apiErr = err.response?.data?.error;
+      const errMessage =
+        typeof apiErr === 'string'
+          ? apiErr
+          : apiErr?.message || 'Không thể tải dữ liệu quản trị viên';
       show({
-        message: err.response?.data?.error || 'Không thể tải dữ liệu quản trị viên',
+        message: errMessage,
         type: 'error'
       });
     } finally {
@@ -80,7 +85,7 @@ export const AdminDashboard: React.FC = () => {
     if (!authLoading && user?.role === 'admin') {
       fetchData();
     }
-  }, [authLoading, user]);
+  }, [authLoading, user?.id, user?.role]);
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) return users;

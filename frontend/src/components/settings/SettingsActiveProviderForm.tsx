@@ -79,7 +79,7 @@ const GOOGLE_GEMINI_METADATA: {
     { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite', badgeVi: 'Mặc định', badgeEn: 'Default' },
   ],
   imageModels: [
-    { id: 'gemini-2.5-flash-image', label: 'gemini-2.5-flash-image', badgeVi: 'Mặc định', badgeEn: 'Default' },
+    { id: 'gemini-3.1-flash-lite-image', label: 'gemini-3.1-flash-lite-image', badgeVi: 'Mặc định', badgeEn: 'Default' },
   ],
   captionModels: [
     { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite', badgeVi: 'Mặc định', badgeEn: 'Default' },
@@ -141,7 +141,7 @@ export const SettingsActiveProviderForm: React.FC<SettingsActiveProviderFormProp
             api_base_url: '',
             api_key: '',
             text_model: 'gemini-3.5-flash-lite',
-            image_model: 'gemini-2.5-flash-image',
+            image_model: 'gemini-3.1-flash-lite-image',
             image_caption_model: 'gemini-3.5-flash-lite',
           });
 

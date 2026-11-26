@@ -97,10 +97,11 @@ const normalizeGoogleModel = (model: string | undefined, fallback: string): stri
   if (
     trimmed === 'gemini-2.0-flash-preview-image-generation' ||
     trimmed === 'gemini-2.0-flash-image' ||
+    trimmed === 'gemini-2.5-flash-image' ||
     trimmed === 'gemini-3-pro-image-preview' ||
     trimmed === 'imagen-3.0-generate-002'
   ) {
-    return 'gemini-2.5-flash-image';
+    return 'gemini-3.1-flash-lite-image';
   }
   if (
     trimmed === 'gemini-2.0-flash' ||
@@ -515,7 +516,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     ai_provider_format: provider,
     api_base_url: apiBaseUrl,
     api_key: '',
-    image_resolution: data.image_resolution || '2K',
+    image_resolution: data.image_resolution === '1K' ? '1K' : '2K',
     enable_image_quality_control: data.enable_image_quality_control ?? false,
     max_description_workers: data.max_description_workers || 5,
     max_image_workers: data.max_image_workers || 8,
@@ -526,7 +527,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     image_model:
       provider === 'openai'
         ? (data.image_model || '')
-        : normalizeGoogleModel(data.image_model, 'gemini-2.5-flash-image'),
+        : normalizeGoogleModel(data.image_model, 'gemini-3.1-flash-lite-image'),
     mineru_api_base: data.mineru_api_base || '',
     mineru_token: '',
     image_caption_model:
@@ -589,7 +590,6 @@ export const Settings: React.FC = () => {
           options: [
             { value: '1K', label: '1K (1024px)' },
             { value: '2K', label: '2K (2048px)' },
-            { value: '4K', label: '4K (4096px)' },
           ],
         },
         {
@@ -713,9 +713,24 @@ export const Settings: React.FC = () => {
             ) {
               form.api_base_url = clientConfig.api_base_url;
             }
-            if (clientConfig.text_model) form.text_model = clientConfig.text_model;
-            if (clientConfig.image_model) form.image_model = clientConfig.image_model;
-            if (clientConfig.image_caption_model) form.image_caption_model = clientConfig.image_caption_model;
+            if (clientConfig.text_model) {
+              form.text_model =
+                activeFormProvider === 'gemini'
+                  ? normalizeGoogleModel(clientConfig.text_model, 'gemini-3.5-flash-lite')
+                  : clientConfig.text_model;
+            }
+            if (clientConfig.image_model) {
+              form.image_model =
+                activeFormProvider === 'gemini'
+                  ? normalizeGoogleModel(clientConfig.image_model, 'gemini-3.1-flash-lite-image')
+                  : clientConfig.image_model;
+            }
+            if (clientConfig.image_caption_model) {
+              form.image_caption_model =
+                activeFormProvider === 'gemini'
+                  ? normalizeGoogleModel(clientConfig.image_caption_model, 'gemini-3.5-flash-lite')
+                  : clientConfig.image_caption_model;
+            }
           }
           if (clientConfig.mineru_token) form.mineru_token = clientConfig.mineru_token;
           if (clientConfig.baidu_api_key) form.baidu_api_key = clientConfig.baidu_api_key;

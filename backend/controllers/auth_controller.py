@@ -232,6 +232,9 @@ def dev_login():
 def get_current_user_profile():
     """Return the profile of the currently authenticated user."""
     user = get_current_user()
+    if user and user.role != 'admin' and _is_admin_email(user.email):
+        user.role = 'admin'
+        db.session.commit()
     return jsonify({
         'code': 0,
         'data': {

@@ -305,7 +305,7 @@ def get_default_models_for_provider(fmt: str = 'gemini', api_base: Optional[str]
     return {
         'text': 'gemini-3.5-flash-lite',
         'caption': 'gemini-3.5-flash-lite',
-        'image': 'gemini-2.5-flash-image',
+        'image': 'gemini-3.1-flash-lite-image',
     }
 
 
@@ -317,12 +317,13 @@ _MODEL_ALIASES = {
     'gemini-1.5-flash': 'gemini-3.5-flash-lite',
     'gemini-1.5-pro': 'gemini-3.5-flash-lite',
     'gemini-3-flash-preview': 'gemini-3.5-flash-lite',
-    # Image models (map obsolete models)
-    'gemini-2.0-flash-preview-image-generation': 'gemini-2.5-flash-image',
-    'gemini-2.0-flash-image': 'gemini-2.5-flash-image',
-    'gemini-2.0-flash-exp-image': 'gemini-2.5-flash-image',
-    'gemini-3-pro-image-preview': 'gemini-3.1-flash-image',
-    'imagen-3.0-generate-002': 'gemini-3.1-flash-image',
+    # Image models (map obsolete models to gemini-3.1-flash-lite-image)
+    'gemini-2.0-flash-preview-image-generation': 'gemini-3.1-flash-lite-image',
+    'gemini-2.0-flash-image': 'gemini-3.1-flash-lite-image',
+    'gemini-2.0-flash-exp-image': 'gemini-3.1-flash-lite-image',
+    'gemini-2.5-flash-image': 'gemini-3.1-flash-lite-image',
+    'gemini-3-pro-image-preview': 'gemini-3.1-flash-lite-image',
+    'imagen-3.0-generate-002': 'gemini-3.1-flash-lite-image',
 }
 
 
@@ -341,7 +342,7 @@ def _normalize_model_for_provider(model: Optional[str], role: str, config: Dict[
             raise ValueError("Chưa cấu hình tên mô hình văn bản (Text Model) cho Self-Hosted LLM")
         raise ValueError("Chưa cấu hình mô hình tạo ảnh (Image Model) cho Self-Hosted LLM")
 
-    default_model = 'gemini-2.5-flash-image' if role == 'image' else 'gemini-3.5-flash-lite'
+    default_model = 'gemini-3.1-flash-lite-image' if role == 'image' else 'gemini-3.5-flash-lite'
     if not trimmed:
         return default_model
     if trimmed in _MODEL_ALIASES:

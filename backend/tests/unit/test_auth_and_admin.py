@@ -265,3 +265,28 @@ def test_google_sso_valid_token_issues_jwt_and_checks_params(client, monkeypatch
         params={'id_token': 'valid-id-token'},
         timeout=10,
     )
+
+
+def test_auth_me_promotes_user_when_email_added_to_admin_emails(client, app, monkeypatch):
+    # First log in while email is NOT in ADMIN_EMAILS -> role='user'
+    reg_res = client.post('/api/auth/dev-login', json={'email': 'promoted@example.com', 'name': 'Promoted'})
+    assert reg_res.status_code == 200
+    reg_data = reg_res.get_json()['data']
+    assert reg_data['user']['role'] == 'user'
+    token = reg_data['token']
+
+    # Confirm admin endpoints are forbidden initially
+    forbidden = client.get('/api/admin/stats', headers={'Authorization': f'Bearer {token}'})
+    assert forbidden.status_code == 403
+
+    # Add email to ADMIN_EMAILS and call /api/auth/me
+    monkeypatch.setenv('ADMIN_EMAILS', 'admin@example.com, promoted@example.com')
+    me_res = client.get('/api/auth/me', headers={'Authorization': f'Bearer {token}'})
+    assert me_res.status_code == 200
+    assert me_res.get_json()['data']['user']['role'] == 'admin'
+
+    # Now admin endpoints succeed with the same JWT token (auth_middleware reads DB user.role)
+    stats_res = client.get('/api/admin/stats', headers={'Authorization': f'Bearer {token}'})
+    assert stats_res.status_code == 200
+    users_res = client.get('/api/admin/users', headers={'Authorization': f'Bearer {token}'})
+    assert users_res.status_code == 200
